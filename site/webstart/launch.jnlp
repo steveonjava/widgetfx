@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="http://piccolo2d.googlecode.com/svn/site/webstart/" href="launch.jnlp">
+    <information>
+        <title>WidgetFX</title>
+        <vendor>WidgetFX.org</vendor>
+        <description>JavaFX Desktop Widget Platform</description>
+        <description kind="short">WidgetFX</description>
+        <homepage href="http://widgetfx.org"/>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <j2se version="1.6+"/>
+        <jar href="javafxrt.jar"      main="false"/>
+        <jar href="javafxgui.jar"     main="false"/>
+        <jar href="javafx-swing.jar"  main="false"/>
+        <jar href="Scenario.jar"      main="false"/>
+        <jar href="WidgetFX.jar" main="true" download="eager"/>
+    </resources>
+    <application-desc main-class="org.widgetfx.Main">
+    </application-desc>
+</jnlp>
