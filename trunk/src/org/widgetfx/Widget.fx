@@ -16,11 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.widgetfx;
+import javafx.application.*;
 
 /**
  * @author Stephen Chin
+ * @author Keith Combs
  */
-Container {
-    title: "WidgetFX"
-    visible: true
+public class Widget extends Application {
+    public attribute name:String;
 }

@@ -15,12 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx;
+package org.widgetfx.widget;
+
+import org.widgetfx.*;
+import javafx.ext.swing.Canvas;
+import javafx.scene.geometry.*;
+import javafx.scene.paint.*;
 
 /**
  * @author Stephen Chin
+ * @author Keith Combs
  */
-Container {
-    title: "WidgetFX"
-    visible: true
+Widget {
+    name: "Slide Show";
+    content: Canvas {
+        content: [Rectangle {width: 100, height: 100, fill: Color.BLUE}]
+    }
 }
