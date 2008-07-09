@@ -38,8 +38,8 @@ The following link may work as a shortcut (no promises): http://openjfx.java.sun
 
 Installing the JavaFX Script Plugin for the First Time
 
-   # Download and install NetBeans IDE 6.1 from the NetBeans IDE 6.1 Download page.
-   # Download this developmental build of the JavaFX Script plugin NetBeans IDE 6.1 that is based on the OpenJFX compiler.  Choose a zip or tar.gz file depending on your platform.
+   # Download and install NetBeans IDE 6.1 from the [http://download.netbeans.org/netbeans/6.1/final/ NetBeans IDE 6.1 Download page].
+   # Download this [http://deadlock.netbeans.org/hudson/job/JavaFX_NB_daily developmental build] of the JavaFX Script plugin NetBeans IDE 6.1 that is based on the OpenJFX compiler.  Choose a zip or tar.gz file depending on your platform.
    # Unzip the file locally.
    # Start NetBeans IDE by using the appropriate step from the following list:
           * *Windows, Solaris and Linux.* Double-click the NetBeans desktop icon.
