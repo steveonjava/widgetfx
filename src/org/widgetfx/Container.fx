@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.widgetfx;
+import java.lang.Class;
 import org.widgetfx.widget.*;
 import javafx.scene.paint.*;
 import javafx.application.*;
@@ -29,6 +30,9 @@ import javafx.scene.text.*;
 import javafx.scene.layout.*;
 import javafx.ext.swing.*;
 import javafx.animation.*;
+import com.sun.javafx.runtime.sequence.Sequence;
+import com.sun.javafx.runtime.sequence.Sequences;
+import com.sun.javafx.runtime.Entry;
 
 /**
  * @author Stephen Chin
@@ -58,10 +62,6 @@ public class Container extends Frame {
         ]
     }
 
-    attribute clock = Clock {};
-
-    attribute clockView:ComponentView;
-
     postinit {
         dockRight();
         loadWidgets();
@@ -75,11 +75,26 @@ public class Container extends Frame {
         y = -decorationTop;
     }
 
-    public function loadWidgets():Void {
-        clock.onStart();
-        clockView = ComponentView {
+    attribute clock:ComponentView;
+    attribute slideShow:ComponentView;
+
+    private function loadWidgets():Void {
+        clock = createWidgetView(loadWidget("org.widgetfx.widget.Clock"));
+        slideShow = createWidgetView(loadWidget("org.widgetfx.widget.SlideShow"));
+    }
+    
+    private function loadWidget(widgetClassName:String) {
+        var widgetClass:Class = Class.forName(widgetClassName);
+        var name = Entry.entryMethodName();
+        var args = Sequences.make(java.lang.String.<<class>>) as java.lang.Object;
+        return widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
+    }
+    
+    public function createWidgetView(app:Widget):ComponentView {
+        if (app.onStart <> null) app.onStart();
+        var view:ComponentView = ComponentView {
             effect: DropShadow {offsetX: 2, offsetY: 2}
-            component: clock.content
+            component: app.content
             var docked = true;
             var dockedParent : Group
             var parent : Frame;
@@ -91,14 +106,14 @@ public class Container extends Frame {
             }
             onMouseDragged: function(e:MouseEvent):Void {
                 if (docked) {
-                    dockedParent = clockView.getParent() as Group;
+                    dockedParent = view.getParent() as Group;
                     dockedParent.content = null;
                     parent = Frame {
                         // todo - figure out coordinates of widget to pop it out
                         x: SCREEN_WIDTH - 174
                         y: -10
-                        title: "Clock"
-                        content: clockView
+                        title: app.name
+                        content: view
                         visible: true
                         fill: null
                         opacity: 0.7
@@ -115,11 +130,12 @@ public class Container extends Frame {
                 if (not docked and e.getScreenX() > x) {
                     parent.content = null;
                     parent.close();
-                    dockedParent.content = [clockView];
+                    dockedParent.content = [view];
                     docked = true;
                 }
             }
         }
+        return view;
     }
     
     public function loadContent():Void {
@@ -156,7 +172,12 @@ public class Container extends Frame {
                         ]
                     },
                     HBox { // Clock Widget
-                        content: clockView
+                        content: clock
+                        horizontalAlignment: HorizontalAlignment.CENTER
+                        translateX: bind (width - decorationSide * 2) / 2
+                    },
+                    HBox { // SlideShow Widget
+                        content: slideShow
                         horizontalAlignment: HorizontalAlignment.CENTER
                         translateX: bind (width - decorationSide * 2) / 2
                     },
