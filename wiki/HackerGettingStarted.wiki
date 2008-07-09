@@ -1,0 +1,54 @@
+#summary Getting started with developing on the codebase for hackers
+
+= Introduction =
+
+In order to develop the WidgetFX framework, a number of technologies are needed, many of which are cutting edge.  This document may become outdated very quickly, so please update it if you notice any discrepancies.
+
+= Details =
+
+You need the following technologies to get started developing WidgetFX
+  * Java Update 10 (for transparency, shaped windows, and performance)
+  * JavaFX compiler build (the latest...  can be obtained through Netbeans)
+  * Netbeans 6.1 or later for JavaFX Script development (Eclipse works, IntelliJ doesn't work currently, but Netbeans is recommended)
+  * Latest Netbeans JavaFX Script Plug-in
+
+== Downloading Java Update 10 ==
+
+To install the Java Update 10, do the following:
+  # Go to the early access website for Java SE 10: https://jdk6.dev.java.net/6u10ea.html
+  # Download and install the Kernel installer of the latest build
+  * Note: You will also need a current 1.6 JDK from Sun: http://java.sun.com/
+
+Make sure to check back frequently and get the latest build.
+
+== Getting the latest compiler build (optional if you are using Netbeans) ==
+
+The JavaFX Script compiler project is on Java.net here: https://openjfx-compiler.dev.java.net/
+
+To grab the latest compiler build, do the following:
+  # Go to the JavaFX compiler continuous build site: http://openjfx.java.sun.com/hudson/job/openjfx-compiler/
+  # Click on the "Last Successful Artifacts" link
+  # Download the distribution (currently it is labeled all and comes as a zip file)
+
+The following link may work as a shortcut (no promises): http://openjfx.java.sun.com/hudson/job/openjfx-compiler/lastSuccessfulBuild/artifact//*zip*/archive.zip
+
+== Getting the latest version of Netbeans and the JavaFX Script Plug-in ==
+
+(copied from Netbeans instructions at the following URL: http://javafx.netbeans.org/download-compiler-JFXplugin.html)
+
+Installing the JavaFX Script Plugin for the First Time
+
+   # Download and install NetBeans IDE 6.1 from the NetBeans IDE 6.1 Download page.
+   # Download this developmental build of the JavaFX Script plugin NetBeans IDE 6.1 that is based on the OpenJFX compiler.  Choose a zip or tar.gz file depending on your platform.
+   # Unzip the file locally.
+   # Start NetBeans IDE by using the appropriate step from the following list:
+          * *Windows, Solaris and Linux.* Double-click the NetBeans desktop icon.
+          * *Mac.* On Mac OS, the 6.1 executable is installed in the /Application/NetBeans/ directory. Double-click the NetBeans icon in this folder.
+          * *Note:* If you are still using a version of the NetBeans IDE 6.1 that was built prior to the official final release, you need to modify the ${nb-install-dir}/etc/netbeans.conf file and replace the switch option -J-ea with -J-da before you start the IDE. This workaround is needed to successfully build JavaFX Script applications in NetBeans IDE 6.1. It turns off assertions, which are enabled in older builds of the NetBeans IDE 6.1 by default. This has been resolved in the final release of the NetBeans IDE 6.1.
+   # Choose Tools > Plugins from the main menu of the IDE.
+   # Select the Downloaded tab and click Add Plugins.
+   # Install the JavaFX Script plugins:
+         # Use the file chooser to locate the JavaFX Script plugin bits you've just downloaded and unzipped on your system.
+         # Select all the .nbm files included in the downloaded bits, and click Open. The Plugins dialog is updated with your selection, as shown in the following image. http://javafx.netbeans.org/images/JavaFXplugins-dialog.png
+         # Click Install and follow the instructions in the Installer.
+   # Restart the IDE.
