@@ -18,6 +18,7 @@
 package org.widgetfx.widget;
 
 import org.widgetfx.*;
+import javafx.application.*;
 import javafx.ext.swing.*;
 import javafx.async.*;
 import javafx.scene.*;
@@ -58,7 +59,7 @@ Widget {
         timeline.start();
     }
         
-    content: Canvas {content: [
+    stage: Stage {content: [
         Circle { // Clock Rim
             centerX: width / 2, centerY: height / 2, radius: Math.min(width, height) / 2;
             fill: RadialGradient {

@@ -75,8 +75,8 @@ public class Container extends Frame {
         y = -decorationTop;
     }
 
-    attribute clock:ComponentView;
-    attribute slideShow:ComponentView;
+    attribute clock:Group;
+    attribute slideShow:Group;
 
     private function loadWidgets():Void {
         clock = createWidgetView(loadWidget("org.widgetfx.widget.Clock"));
@@ -90,32 +90,31 @@ public class Container extends Frame {
         return widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
     }
     
-    public function createWidgetView(app:Widget):ComponentView {
+    public function createWidgetView(app:Widget):Group {
         if (app.onStart <> null) app.onStart();
-        var view:ComponentView = ComponentView {
+        var group:Group = Group {
             effect: DropShadow {offsetX: 2, offsetY: 2}
-            component: app.content
-            var docked = true;
+            content: app.stage.content
+            var docked = true
             var dockedParent : Group
-            var parent : Frame;
-            var lastScreenPosX : Integer;
-            var lastScreenPosY : Integer;
+            var parent : Frame
+            var lastScreenPosX : Integer
+            var lastScreenPosY : Integer
             onMousePressed: function(e:MouseEvent):Void {
                 lastScreenPosX = e.getScreenX().intValue();
                 lastScreenPosY = e.getScreenY().intValue();
             }
             onMouseDragged: function(e:MouseEvent):Void {
                 if (docked) {
-                    dockedParent = view.getParent() as Group;
+                    dockedParent = group.getParent() as Group;
                     dockedParent.content = null;
                     parent = Frame {
                         // todo - figure out coordinates of widget to pop it out
                         x: SCREEN_WIDTH - 174
                         y: -10
                         title: app.name
-                        content: view
+                        stage: Stage {content: group, fill: null}
                         visible: true
-                        fill: null
                         opacity: 0.7
                     }
                     docked = false;
@@ -128,82 +127,103 @@ public class Container extends Frame {
             }
             onMouseReleased: function(e:MouseEvent):Void {
                 if (not docked and e.getScreenX() > x) {
-                    parent.content = null;
+                    parent.stage = null;
                     parent.close();
-                    dockedParent.content = [view];
+                    dockedParent.content = [group];
                     docked = true;
                 }
             }
         }
-        return view;
+        return group;
     }
     
     public function loadContent():Void {
-        content = [
-            Line { // Drag Bar
-                endY: bind height - (decorationTop + decorationBottom)
-                stroke: Color.BLACK
-                strokeWidth: 2
-                effect: DropShadow {}
-                onMouseDragged: function(e:MouseEvent):Void {
-                    width = width - e.getDragX().intValue();
-                    x = x + e.getDragX().intValue();
-                }
-                cursor: Cursor.H_RESIZE;
-            },
-            VBox { // Content Area
-                translateX: 8, translateY: 8
-                spacing: 8
-                content: [
-                    HBox { // Logo Text
-                        content: [
-                            Text {
-                                font: Font {style: FontStyle.BOLD_ITALIC}
-                                fill: Color.WHITE
-                                textOrigin: TextOrigin.TOP
-                                content: "Widget"
-                            },
-                            Text {
-                                font: Font {style: FontStyle.BOLD_ITALIC}
-                                fill: Color.ORANGE
-                                textOrigin: TextOrigin.TOP
-                                content: "FX"
-                            }
-                        ]
-                    },
-                    HBox { // Clock Widget
-                        content: clock
-                        horizontalAlignment: HorizontalAlignment.CENTER
-                        translateX: bind (width - decorationSide * 2) / 2
-                    },
-                    HBox { // SlideShow Widget
-                        content: slideShow
-                        horizontalAlignment: HorizontalAlignment.CENTER
-                        translateX: bind (width - decorationSide * 2) / 2
-                    },
-                    ComponentView { // Transparent Checkbox
-                        var transparent:CheckBox = CheckBox {
-                            text: "Transparent"
-                            foreground: Color.WHITE
-                            action: function():Void {
-                                if (transparent.selected) {
-                                    fill = transparentBG
-                                } else {
-                                    fill = solidBG
+        var rolloverOpacity : Number = .5;
+        var rolloverTimeline = Timeline {
+            autoReverse: true
+            toggle: true
+            
+            keyFrames: [
+                KeyFrame {time: 0s, values: rolloverOpacity => 0.1},
+                KeyFrame {time: 1s, values: rolloverOpacity => 0.7 tween Interpolator.LINEAR}
+            ]
+
+        }
+        var stageFill = transparentBG;
+        stage = Stage {
+            content: [
+                Line { // Drag Bar
+                    endY: bind height - (decorationTop + decorationBottom)
+                    stroke: Color.BLACK
+                    strokeWidth: 4
+                    opacity: bind rolloverOpacity
+                    onMouseDragged: function(e:MouseEvent):Void {
+                        width = width - e.getDragX().intValue();
+                        x = x + e.getDragX().intValue();
+                    }
+                    cursor: Cursor.H_RESIZE;
+                },
+                VBox { // Content Area
+                    translateX: 8, translateY: 8
+                    spacing: 8
+                    content: [
+                        HBox { // Logo Text
+                            content: [
+                                Text {
+                                    font: Font {style: FontStyle.BOLD_ITALIC}
+                                    fill: Color.WHITE
+                                    textOrigin: TextOrigin.TOP
+                                    content: "Widget"
+                                },
+                                Text {
+                                    font: Font {style: FontStyle.BOLD_ITALIC}
+                                    fill: Color.ORANGE
+                                    textOrigin: TextOrigin.TOP
+                                    content: "FX"
+                                }
+                            ]
+                        },
+                        HBox { // Clock Widget
+                            content: clock
+                            horizontalAlignment: HorizontalAlignment.CENTER
+                            translateX: bind (width - decorationSide * 2) / 2
+                        },
+                        HBox { // SlideShow Widget
+                            content: slideShow
+                            horizontalAlignment: HorizontalAlignment.CENTER
+                            translateX: bind (width - decorationSide * 2) / 2
+                        },
+                        ComponentView { // Transparent Checkbox
+                            var transparent:CheckBox = CheckBox {
+                                text: "Transparent"
+                                foreground: Color.WHITE
+                                selected: true
+                                action: function():Void {
+                                    if (transparent.selected) {
+                                        stageFill = transparentBG
+                                    } else {
+                                        stageFill = solidBG
+                                    }
                                 }
                             }
+                            component: transparent
+                        },
+                        ComponentView { // Exit Button
+                            component: Button {
+                                text: "Exit"
+                                action: function():Void {java.lang.System.exit(0);}
+                            }
                         }
-                        component: transparent
-                    },
-                    ComponentView { // Exit Button
-                        component: Button {
-                            text: "Exit"
-                            action: function():Void {java.lang.System.exit(0);}
-                        }
+                    ]                
+                    onMouseEntered: function(e:MouseEvent):Void {
+                        rolloverTimeline.start();
                     }
-                ]
-            }
-        ];
-        fill = solidBG;
+                    onMouseExited: function(e:MouseEvent):Void {
+                        rolloverTimeline.start();
+                    }
+                }
+            ],
+            fill: bind stageFill;
+        };
     }
 }
