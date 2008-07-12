@@ -27,14 +27,39 @@ import javax.imageio.*;
 import java.io.*;
 import java.util.*;
 import javafx.animation.*;
+import javafx.lang.*;
+import java.lang.*;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
+var fileImage : Image;
+var start = 0s;
+
+private function getKeyFrames(directory:File):KeyFrame[] {
+    var files = Arrays.asList(directory.listFiles());
+    return for (file in files) {
+        var name = file.getName();
+        var index = name.lastIndexOf('.');
+        var extension = if (index == -1) then null else name.substring(index + 1);
+        if (file.isDirectory()) {
+            getKeyFrames(file);
+        } else if (ImageIO.getImageReadersBySuffix(extension).hasNext()) {
+            var keyFrame = KeyFrame {time: start, action:function():Void {
+                    fileImage = Image {url: file.toURL().toString(), size: 150};
+                }
+            }
+            start = start + 10s;
+            keyFrame;
+        } else {
+            []
+        }
+    }
+}
+
 Widget {
     name: "Slide Show";
-    var fileImage : Image;
     stage: Stage {
         content: [
             Rectangle {width: 100, height: 100, fill: Color.BLUE},
@@ -44,19 +69,15 @@ Widget {
         ]
     }
     onStart: function():Void {
-        var directory = new File("C:\\Documents and Settings\\All Users\\Documents\\My Pictures\\anime\\wallpaper");
-        var files = Arrays.asList(directory.listFiles());
-        var counter = 0;
-        var timeline = Timeline {
-            repeatCount: Timeline.INDEFINITE;
-            keyFrames: for (file in files) {
-                KeyFrame {time: 5s * indexof file, action:function():Void {
-                        fileImage = Image {url: file.toURL().toString(), size: 150};
-                    }
-                }
-
+        var home = System.getProperty("user.home");
+        var directory = new File(home, "My Documents\\My Pictures");
+        if (directory.exists()) {
+            var counter = 0;
+            var timeline = Timeline {
+                repeatCount: Timeline.INDEFINITE;
+                keyFrames: getKeyFrames(directory);
             }
+            timeline.start();
         }
-        timeline.start();
     }
 }
