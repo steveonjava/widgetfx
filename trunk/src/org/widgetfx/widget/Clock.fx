@@ -61,7 +61,7 @@ Widget {
         
     stage: Stage {content: [
         Circle { // Clock Rim
-            centerX: width / 2, centerY: height / 2, radius: Math.min(width, height) / 2;
+            centerX: width / 2, centerY: height / 2, radius: Math.min(width, height) / 2
             fill: RadialGradient {
                 centerX: 0.6, centerY: -0.6, radius: 2.0
                 stops: [
@@ -73,11 +73,13 @@ Widget {
                 ]
             }
         },
+        Circle { // Clock Shadow
+            centerX: width / 2, centerY: height / 2, radius: Math.min(width, height) / 2 - 2.5
+            fill: Color.BLACK
+        },
         Circle { // Clock Face
             // workaround to prevent the InnerShadow from affecting the size of the clock
-            clip: Circle {centerX: width / 2, centerY: height / 2, radius: Math.min(width, height) / 2}
-            effect: InnerShadow {radius: 20}
-            centerX: width / 2, centerY: height / 2, radius: Math.min(width, height) / 2 - 2.5;
+            centerX: width / 2, centerY: height / 2 - 0.5, radius: Math.min(width, height) / 2 - 5.5
             fill: RadialGradient {
                 centerX: 0.6, centerY: -0.75, radius: 1.5
                 stops: [

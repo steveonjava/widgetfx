@@ -18,6 +18,7 @@
 package org.widgetfx.widget;
 
 import org.widgetfx.*;
+import org.widgetfx.util.*;
 import javafx.application.*;
 import javafx.ext.swing.Canvas;
 import javafx.scene.geometry.*;
@@ -47,7 +48,11 @@ private function getKeyFrames(directory:File):KeyFrame[] {
             getKeyFrames(file);
         } else if (ImageIO.getImageReadersBySuffix(extension).hasNext()) {
             var keyFrame = KeyFrame {time: start, action:function():Void {
-                    fileImage = Image {url: file.toURL().toString(), size: 150};
+                    BackgroundTask {
+                        action: function():Void {
+                            fileImage = Image {url: file.toURL().toString(), size: 150};
+                        }
+                    }
                 }
             }
             start = start + 10s;
