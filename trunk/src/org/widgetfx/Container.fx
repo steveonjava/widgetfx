@@ -45,7 +45,7 @@ public class Container extends Frame {
     attribute decorationSide = 4;
     attribute decorationBottom = 4;
     
-    public attribute preferredWidth = 150;
+    public attribute preferredWidth = 166;
     
     private attribute transparentBG = LinearGradient {
         endY: 0
@@ -75,12 +75,16 @@ public class Container extends Frame {
         y = -decorationTop;
     }
 
-    attribute clock:Group;
+    attribute widgets:Group[];
     attribute slideShow:Group;
+    attribute rss:Group;
 
     private function loadWidgets():Void {
-        clock = createWidgetView(loadWidget("org.widgetfx.widget.Clock"));
-        slideShow = createWidgetView(loadWidget("org.widgetfx.widget.SlideShow"));
+        widgets = [
+            createWidgetView(loadWidget("org.widgetfx.widget.Clock")),
+            createWidgetView(loadWidget("org.widgetfx.widget.SlideShow")),
+            createWidgetView(loadWidget("org.widgetfx.widget.WebFeed"))
+        ]
     }
     
     private function loadWidget(widgetClassName:String) {
@@ -93,8 +97,10 @@ public class Container extends Frame {
     public function createWidgetView(app:Widget):Group {
         if (app.onStart <> null) app.onStart();
         var group:Group = Group {
-            effect: DropShadow {offsetX: 2, offsetY: 2}
+            // disabled, because it is a huge performance drain...
+//            effect: DropShadow {offsetX: 2, offsetY: 2}
             content: app.stage.content
+            clip: Rectangle {width: app.stage.width, height: app.stage.height}
             var docked = true
             var dockedParent : Group
             var parent : Frame
@@ -138,14 +144,14 @@ public class Container extends Frame {
     }
     
     public function loadContent():Void {
-        var rolloverOpacity : Number = .5;
+        var rolloverOpacity = 0.01;
         var rolloverTimeline = Timeline {
             autoReverse: true
             toggle: true
             
             keyFrames: [
-                KeyFrame {time: 0s, values: rolloverOpacity => 0.1},
-                KeyFrame {time: 1s, values: rolloverOpacity => 0.7 tween Interpolator.LINEAR}
+                KeyFrame {time: 0ms, values: rolloverOpacity => 0.01},
+                KeyFrame {time: 300ms, values: rolloverOpacity => 0.8 tween Interpolator.LINEAR}
             ]
 
         }
@@ -155,7 +161,7 @@ public class Container extends Frame {
                 Line { // Drag Bar
                     endY: bind height - (decorationTop + decorationBottom)
                     stroke: Color.BLACK
-                    strokeWidth: 4
+                    strokeWidth: 3
                     opacity: bind rolloverOpacity
                     onMouseDragged: function(e:MouseEvent):Void {
                         width = width - e.getDragX().intValue();
@@ -183,15 +189,12 @@ public class Container extends Frame {
                                 }
                             ]
                         },
-                        HBox { // Clock Widget
-                            content: clock
-                            horizontalAlignment: HorizontalAlignment.CENTER
-                            translateX: bind (width - decorationSide * 2) / 2
-                        },
-                        HBox { // SlideShow Widget
-                            content: slideShow
-                            horizontalAlignment: HorizontalAlignment.CENTER
-                            translateX: bind (width - decorationSide * 2) / 2
+                        for (widget in widgets) {
+                            HBox {
+                                content: widget
+                                horizontalAlignment: HorizontalAlignment.CENTER
+                                translateX: bind (width - 16 - decorationSide * 2) / 2
+                            }
                         },
                         ComponentView { // Transparent Checkbox
                             var transparent:CheckBox = CheckBox {

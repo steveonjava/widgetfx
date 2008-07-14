@@ -66,8 +66,9 @@ private function getKeyFrames(directory:File):KeyFrame[] {
 Widget {
     name: "Slide Show";
     stage: Stage {
+        width: 150;
+        height: 150;
         content: [
-            Rectangle {width: 100, height: 100, fill: Color.BLUE},
             ImageView {
                 image: bind fileImage
             }
