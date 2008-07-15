@@ -48,9 +48,13 @@ private function getKeyFrames(directory:File):KeyFrame[] {
             getKeyFrames(file);
         } else if (ImageIO.getImageReadersBySuffix(extension).hasNext()) {
             var keyFrame = KeyFrame {time: start, action:function():Void {
-                    BackgroundTask {
-                        action: function():Void {
-                            fileImage = Image {url: file.toURL().toString(), size: 150};
+                    JavaFXWorker {
+                        background: function() {
+                            return Image {url: file.toURL().toString(), size: 150};
+                        }
+                        
+                        action: function(result) {
+                            fileImage = result as Image;
                         }
                     }
                 }
@@ -78,12 +82,18 @@ Widget {
         var home = System.getProperty("user.home");
         var directory = new File(home, "My Documents\\My Pictures");
         if (directory.exists()) {
-            var counter = 0;
-            var timeline = Timeline {
-                repeatCount: Timeline.INDEFINITE;
-                keyFrames: getKeyFrames(directory);
+            JavaFXWorker {
+                background: function() {
+                    return getKeyFrames(directory) as Object;
+                }
+                action: function(result) {
+                    var timeline = Timeline {
+                        repeatCount: Timeline.INDEFINITE;
+                        keyFrames: result as KeyFrame[];
+                    }
+                    timeline.start();
+                }
             }
-            timeline.start();
         }
     }
 }
