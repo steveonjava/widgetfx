@@ -41,9 +41,9 @@ public class Container extends Frame {
     static attribute SCREEN_BOUNDS = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration().getBounds();
     static attribute SCREEN_WIDTH = SCREEN_BOUNDS.width;
     static attribute SCREEN_HEIGHT = SCREEN_BOUNDS.height;
-    attribute decorationTop = 30;
-    attribute decorationSide = 4;
-    attribute decorationBottom = 4;
+    static attribute DECORATION_TOP = 30;
+    static attribute DECORATION_SIDE = 4;
+    static attribute DECORATION_BOTTOM = 4;
     
     public attribute preferredWidth = 166;
     
@@ -69,10 +69,10 @@ public class Container extends Frame {
     }
     
     public function dockRight():Void {
-        width = preferredWidth + decorationSide * 2;
-        height = SCREEN_HEIGHT + decorationTop + decorationBottom;
-        x = SCREEN_WIDTH - width + decorationSide;
-        y = -decorationTop;
+        width = preferredWidth + DECORATION_SIDE * 2;
+        height = SCREEN_HEIGHT + DECORATION_TOP + DECORATION_BOTTOM;
+        x = SCREEN_WIDTH - width + DECORATION_SIDE;
+        y = -DECORATION_TOP;
     }
 
     attribute widgets:Group[];
@@ -112,12 +112,13 @@ public class Container extends Frame {
             }
             onMouseDragged: function(e:MouseEvent):Void {
                 if (docked) {
+                    var xPos = e.getScreenX().intValue() - e.getLocalXY().getX().intValue() - DECORATION_SIDE;
+                    var yPos = e.getScreenY().intValue() - e.getLocalXY().getY().intValue() - DECORATION_TOP;
                     dockedParent = group.getParent() as Group;
                     dockedParent.content = null;
                     parent = Frame {
-                        // todo - figure out coordinates of widget to pop it out
-                        x: SCREEN_WIDTH - 174
-                        y: -10
+                        x: xPos
+                        y: yPos
                         title: app.name
                         stage: Stage {content: group, fill: null}
                         visible: true
@@ -159,7 +160,7 @@ public class Container extends Frame {
         stage = Stage {
             content: [
                 Line { // Drag Bar
-                    endY: bind height - (decorationTop + decorationBottom)
+                    endY: bind height - (DECORATION_TOP + DECORATION_BOTTOM)
                     stroke: Color.BLACK
                     strokeWidth: 3
                     opacity: bind rolloverOpacity
@@ -193,7 +194,7 @@ public class Container extends Frame {
                             HBox {
                                 content: widget
                                 horizontalAlignment: HorizontalAlignment.CENTER
-                                translateX: bind (width - 16 - decorationSide * 2) / 2
+                                translateX: bind (width - 16 - DECORATION_SIDE * 2) / 2
                             }
                         },
                         ComponentView { // Transparent Checkbox
