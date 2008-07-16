@@ -20,7 +20,7 @@ package org.widgetfx.widget;
 import org.widgetfx.*;
 import org.widgetfx.util.*;
 import javafx.application.*;
-import javafx.ext.swing.Canvas;
+import javafx.ext.swing.*;
 import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
 import javafx.scene.image.*;
@@ -35,6 +35,8 @@ import java.lang.*;
  * @author Stephen Chin
  * @author Keith Combs
  */
+var home = System.getProperty("user.home");
+var directory = new File(home, "My Documents\\My Pictures");
 var fileImage : Image;
 var start = 0s;
 
@@ -69,6 +71,13 @@ private function getKeyFrames(directory:File):KeyFrame[] {
 
 Widget {
     name: "Slide Show";
+    config: FlowPanel {
+        content: [
+            Label {text: "Directory:"},
+            TextField {text: directory.toString()}
+        ]
+    }
+
     stage: Stage {
         width: 150;
         height: 150;
@@ -79,8 +88,6 @@ Widget {
         ]
     }
     onStart: function():Void {
-        var home = System.getProperty("user.home");
-        var directory = new File(home, "My Documents\\My Pictures");
         if (directory.exists()) {
             JavaFXWorker {
                 background: function() {

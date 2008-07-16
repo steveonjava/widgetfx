@@ -16,7 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.widgetfx;
-import javafx.application.*;
+import javafx.application.Application;
+import javafx.ext.swing.Component;
 
 /**
  * @author Stephen Chin
@@ -24,4 +25,6 @@ import javafx.application.*;
  */
 public class Widget extends Application {
     public attribute name:String;
+    
+    public attribute config:Component;
 }

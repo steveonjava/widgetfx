@@ -44,6 +44,8 @@ public class Container extends Frame {
     static attribute DECORATION_TOP = 30;
     static attribute DECORATION_SIDE = 4;
     static attribute DECORATION_BOTTOM = 4;
+    static attribute BORDER = 8;
+    static attribute DS_RADIUS = 10;
     
     public attribute preferredWidth = 166;
     
@@ -98,9 +100,12 @@ public class Container extends Frame {
         if (app.onStart <> null) app.onStart();
         var group:Group = Group {
             // disabled, because it is a huge performance drain...
-//            effect: DropShadow {offsetX: 2, offsetY: 2}
-            content: app.stage.content
-            clip: Rectangle {width: app.stage.width, height: app.stage.height}
+            content: Group {
+                content: app.stage.content
+                clip: Rectangle {width: app.stage.width, height: app.stage.height}
+            }
+            cache: true
+            //effect: DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
             var docked = true
             var dockedParent : Group
             var parent : Frame
@@ -109,6 +114,20 @@ public class Container extends Frame {
             onMousePressed: function(e:MouseEvent):Void {
                 lastScreenPosX = e.getScreenX().intValue();
                 lastScreenPosY = e.getScreenY().intValue();
+            }
+            onMouseClicked: function(e:MouseEvent):Void {
+                if (e.getButton() == 3) {
+                    Dialog {
+                        stage: Stage {
+                            content: [
+                                ComponentView {
+                                    component: app.config
+                                }
+                            ]
+                        }
+                        visible: true
+                    }
+                }
             }
             onMouseDragged: function(e:MouseEvent):Void {
                 if (docked) {
@@ -171,8 +190,8 @@ public class Container extends Frame {
                     cursor: Cursor.H_RESIZE;
                 },
                 VBox { // Content Area
-                    translateX: 8, translateY: 8
-                    spacing: 8
+                    translateX: BORDER, translateY: BORDER
+                    spacing: BORDER
                     content: [
                         HBox { // Logo Text
                             content: [
@@ -194,23 +213,8 @@ public class Container extends Frame {
                             HBox {
                                 content: widget
                                 horizontalAlignment: HorizontalAlignment.CENTER
-                                translateX: bind (width - 16 - DECORATION_SIDE * 2) / 2
+                                translateX: bind width / 2 - BORDER - DECORATION_SIDE// + DS_RADIUS
                             }
-                        },
-                        ComponentView { // Transparent Checkbox
-                            var transparent:CheckBox = CheckBox {
-                                text: "Transparent"
-                                foreground: Color.WHITE
-                                selected: true
-                                action: function():Void {
-                                    if (transparent.selected) {
-                                        stageFill = transparentBG
-                                    } else {
-                                        stageFill = solidBG
-                                    }
-                                }
-                            }
-                            component: transparent
                         },
                         ComponentView { // Exit Button
                             component: Button {
