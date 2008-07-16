@@ -26,5 +26,7 @@ import javafx.ext.swing.Component;
 public class Widget extends Application {
     public attribute name:String;
     
+    public attribute resizable:Boolean = false;
+    
     public attribute config:Component;
 }

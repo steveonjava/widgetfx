@@ -46,7 +46,7 @@ Widget {
     var timeline = Timeline {
         repeatCount: Timeline.INDEFINITE
         keyFrames: [
-            KeyFrame {time: 0.98s, values: bounce => true, action: function():Void {
+            KeyFrame {time: 0.96s, values: bounce => true, action: function():Void {
                     date = java.util.Date {}
                 }
             },
@@ -142,7 +142,7 @@ Widget {
                                     strokeWidth: 3, stroke: Color.DODGERBLUE
                                 }
                             ]
-                            rotate: bind seconds * 6 + (if (bounce) 3 else 0)
+                            rotate: bind seconds * 6 + (if (bounce) 2 else 0)
                         }
                     }
                 ]
