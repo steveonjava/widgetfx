@@ -39,6 +39,8 @@ var home = System.getProperty("user.home");
 var directory = new File(home, "My Documents\\My Pictures");
 var fileImage : Image;
 var start = 0s;
+var width = 150;
+var height = bind width * 3 / 4;
 
 private function getKeyFrames(directory:File):KeyFrame[] {
     var files = Arrays.asList(directory.listFiles());
@@ -52,7 +54,7 @@ private function getKeyFrames(directory:File):KeyFrame[] {
             var keyFrame = KeyFrame {time: start, action:function():Void {
                     JavaFXWorker {
                         background: function() {
-                            return Image {url: file.toURL().toString(), size: 150};
+                            return Image {url: file.toURL().toString(), size: bind java.lang.Math.max(height, width)};
                         }
                         
                         action: function(result) {
@@ -70,17 +72,17 @@ private function getKeyFrames(directory:File):KeyFrame[] {
 }
 
 Widget {
-    name: "Slide Show";
+    name: "Slide Show"
+    resizable: true
     config: FlowPanel {
         content: [
             Label {text: "Directory:"},
             TextField {text: directory.toString()}
         ]
     }
-
     stage: Stage {
-        width: 150;
-        height: 150;
+        width: bind width with inverse
+        height: bind height
         content: [
             ImageView {
                 image: bind fileImage

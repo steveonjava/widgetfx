@@ -25,6 +25,7 @@ import javafx.scene.*;
 import javafx.scene.geometry.*;
 import javafx.animation.*;
 import javafx.scene.effect.*;
+import javafx.scene.effect.light.*;
 import javafx.scene.paint.*;
 import javafx.scene.transform.*;
 import javafx.scene.text.*;
@@ -83,46 +84,84 @@ private function launchUri(uri:URI) {
     }
 }
 
+var border = 6;
+var width = 150;
+var height = 200;
+var entryWidth = bind width - border * 2;
+var entryHeight = 25; // todo don't hardcode the height of the entries
+
 Widget {
     name: "Web Feed"
+    resizable: true
     stage: Stage {
-        width: 150
-        height: 200
+        width: bind width with inverse
+        height: bind height with inverse
         content: [
-            Rectangle {width: 150, height: 200, fill: Color.BLACK},
-            VBox {content:
-                for (entry in entrySequence) {
+            Rectangle {
+                cache: true
+                effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
+                width: bind width, height: bind height
+                fill: Color.BLACK
+                arcHeight: 7, arcWidth: 7
+            },
+            VBox {
+                translateX: border, translateY: border
+                clip: Rectangle {width: bind entryWidth, height: height - border * 2}
+                content: for (entry in entrySequence) {
                     Group {
-                        cache: true
+                        var groupOpacity = 0.0;
                         var groupFill = Color.BLACK;
                         content: [
                             Rectangle {
-                                width: 150
-                                height: 25 // todo don't hardcode the height of the entries
+                                width: bind entryWidth
+                                height: entryHeight
+                                opacity: bind groupOpacity
                                 fill: bind groupFill
                             },
                             VBox {
                                 content: [
-                                    fitTextToWidth(Text {font: Font {size: 11}, content: entry.getTitle(), fill: Color.WHITE, textOrigin: TextOrigin.TOP}, 150),
+                                    fitTextToWidth(Text {
+                                            font: Font {size: 11}
+                                            content: entry.getTitle()
+                                            fill: Color.WHITE
+                                            textOrigin: TextOrigin.TOP
+                                        }, entryWidth - border * 2),
                                     Group {content: [
-                                        fitTextToWidth(Text {font: Font {size: 9}, content: feed.getTitle(), fill: Color.CYAN, textOrigin: TextOrigin.TOP, horizontalAlignment: HorizontalAlignment.LEADING}, 150 - 55),
-                                        Text {font: Font {size: 9}, content: dateSince(entry.getPublishedDate()), fill: Color.CYAN, textOrigin: TextOrigin.TOP, horizontalAlignment: HorizontalAlignment.TRAILING, translateX: 150}
+                                        fitTextToWidth(Text {
+                                            font: Font {size: 9}
+                                            content: feed.getTitle()
+                                            fill: Color.CYAN
+                                            textOrigin: TextOrigin.TOP
+                                            horizontalAlignment: HorizontalAlignment.LEADING
+                                        }, entryWidth - 55),
+                                        Text {
+                                            font: Font {size: 9}
+                                            content: dateSince(entry.getPublishedDate())
+                                            fill: Color.CYAN
+                                            textOrigin: TextOrigin.TOP
+                                            horizontalAlignment: HorizontalAlignment.TRAILING
+                                            translateX: bind entryWidth
+                                        }
                                     ]}
                                 ],
                             }
                         ]
                         onMouseEntered: function(event):Void {
-                            groupFill = Color.DARKSLATEGRAY;
+                            groupFill = Color.SLATEGRAY;
+                            groupOpacity = .6;
                         }
                         onMouseExited: function(event):Void {
                             groupFill = Color.BLACK;
+                            groupOpacity = 0;
                         }
                         onMousePressed: function(event):Void {
                             groupFill = Color.DARKGRAY;
+                            groupOpacity = .6;
                         }
                         onMouseClicked: function(event):Void {
-                            groupFill = Color.DARKSLATEGRAY;
+                            groupFill = Color.SLATEGRAY;
                             launchUri(new URI(entry.getLink()));
+                            groupOpacity = .6;
                         }
                     }
                 }

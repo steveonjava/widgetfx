@@ -41,13 +41,14 @@ public class Container extends Frame {
     static attribute SCREEN_BOUNDS = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration().getBounds();
     static attribute SCREEN_WIDTH = SCREEN_BOUNDS.width;
     static attribute SCREEN_HEIGHT = SCREEN_BOUNDS.height;
+    static attribute DEFAULT_WIDTH = 150;
     static attribute DECORATION_TOP = 30;
-    static attribute DECORATION_SIDE = 4;
+    static attribute DECORATION_SIDE = 5;
     static attribute DECORATION_BOTTOM = 4;
-    static attribute BORDER = 8;
+    static attribute BORDER = 4;
     static attribute DS_RADIUS = 10;
     
-    public attribute preferredWidth = 166;
+    public attribute preferredWidth = DEFAULT_WIDTH + BORDER * 2;
     
     private attribute transparentBG = LinearGradient {
         endY: 0
@@ -77,16 +78,20 @@ public class Container extends Frame {
         y = -DECORATION_TOP;
     }
 
-    attribute widgets:Group[];
+    attribute widgets:Widget[];
+    attribute widgetViews:Group[];
     attribute slideShow:Group;
     attribute rss:Group;
 
     private function loadWidgets():Void {
         widgets = [
-            createWidgetView(loadWidget("org.widgetfx.widget.Clock")),
-            createWidgetView(loadWidget("org.widgetfx.widget.SlideShow")),
-            createWidgetView(loadWidget("org.widgetfx.widget.WebFeed"))
-        ]
+            loadWidget("org.widgetfx.widget.Clock"),
+            loadWidget("org.widgetfx.widget.SlideShow"),
+            loadWidget("org.widgetfx.widget.WebFeed")
+        ];
+        widgetViews = for (widget in widgets) {
+            createWidgetView(widget);
+        };
     }
     
     private function loadWidget(widgetClassName:String) {
@@ -99,13 +104,12 @@ public class Container extends Frame {
     public function createWidgetView(app:Widget):Group {
         if (app.onStart <> null) app.onStart();
         var group:Group = Group {
-            // disabled, because it is a huge performance drain...
             content: Group {
                 content: app.stage.content
-                clip: Rectangle {width: app.stage.width, height: app.stage.height}
+                clip: Rectangle {width: bind app.stage.width, height: bind app.stage.height}
             }
             cache: true
-            //effect: DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+            effect: DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
             var docked = true
             var dockedParent : Group
             var parent : Frame
@@ -186,6 +190,11 @@ public class Container extends Frame {
                     onMouseDragged: function(e:MouseEvent):Void {
                         width = width - e.getDragX().intValue();
                         x = x + e.getDragX().intValue();
+                        for (widget in widgets) {
+                            if (widget.resizable) {
+                                widget.stage.width = width - BORDER * 2 - DECORATION_SIDE * 2;
+                            }
+                        }
                     }
                     cursor: Cursor.H_RESIZE;
                 },
@@ -209,11 +218,11 @@ public class Container extends Frame {
                                 }
                             ]
                         },
-                        for (widget in widgets) {
+                        for (widget in widgetViews) {
                             HBox {
                                 content: widget
                                 horizontalAlignment: HorizontalAlignment.CENTER
-                                translateX: bind width / 2 - BORDER - DECORATION_SIDE// + DS_RADIUS
+                                translateX: bind width / 2 - BORDER - DECORATION_SIDE + DS_RADIUS
                             }
                         },
                         ComponentView { // Exit Button
