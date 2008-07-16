@@ -93,6 +93,7 @@ Widget {
             VBox {content:
                 for (entry in entrySequence) {
                     Group {
+                        cache: true
                         var groupFill = Color.BLACK;
                         content: [
                             Rectangle {

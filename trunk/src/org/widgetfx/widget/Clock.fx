@@ -63,54 +63,60 @@ Widget {
         width: bind width;
         height: bind height;
         content: [
-            Circle { // Clock Rim
-                centerX: width / 2, centerY: height / 2, radius: Math.min(width, height) / 2
-                fill: RadialGradient {
-                    centerX: 0.6, centerY: -0.6, radius: 2.0
-                    stops: [
-                        Stop {offset: 0.0, color: Color.WHITE},
-                        Stop {offset: 0.35, color: Color.WHITE},
-                        Stop {offset: 0.5, color: Color.BLACK},
-                        Stop {offset: 0.7, color: Color.WHITE},
-                        Stop {offset: 0.85, color: Color.BLACK}
-                    ]
-                }
-            },
-            Circle { // Clock Shadow
-                centerX: width / 2, centerY: height / 2, radius: Math.min(width, height) / 2 - 2.5
-                fill: Color.BLACK
-            },
-            Circle { // Clock Face
-                // workaround to prevent the InnerShadow from affecting the size of the clock
-                centerX: width / 2, centerY: height / 2 - 0.5, radius: Math.min(width, height) / 2 - 5.5
-                fill: RadialGradient {
-                    centerX: 0.6, centerY: -0.75, radius: 1.5
-                    stops: [
-                        Stop {offset: 0.0, color: Color.WHITE},
-                        Stop {offset: 1.0, color: Color.BLACK}
-                    ]
-                }
-            },
-            Group { // Clock Digits
-                translateX: width / 2 + 2, translateY: height / 2 + 2
-                content: for( i in [1..12] )
-                    Text {
-                        var radians = Math.toRadians(30 * i - 90)
-                        translateX: (width / 2 * .8) * Math.cos(radians)
-                        translateY: (height / 2 * .8) * Math.sin(radians)
-                        content: "{i}"
-                        font: Font {name: "SansSerif", size: 9}
-                        textOrigin: TextOrigin.TOP
-                        verticalAlignment: VerticalAlignment.CENTER
-                        horizontalAlignment: HorizontalAlignment.CENTER
-                        fill: Color.WHITE
-                    }
+            Group { // Static Content
+                cache: true
+                content: [
+                    Circle { // Clock Rim
+                        centerX: width / 2, centerY: height / 2, radius: Math.min(width, height) / 2
+                        fill: RadialGradient {
+                            centerX: 0.6, centerY: -0.6, radius: 2.0
+                            stops: [
+                                Stop {offset: 0.0, color: Color.WHITE},
+                                Stop {offset: 0.35, color: Color.WHITE},
+                                Stop {offset: 0.5, color: Color.BLACK},
+                                Stop {offset: 0.7, color: Color.WHITE},
+                                Stop {offset: 0.85, color: Color.BLACK}
+                            ]
+                        }
+                    },
+                    Circle { // Clock Shadow
+                        centerX: width / 2, centerY: height / 2, radius: Math.min(width, height) / 2 - 2.5
+                        fill: Color.BLACK
+                    },
+                    Circle { // Clock Face
+                        // workaround to prevent the InnerShadow from affecting the size of the clock
+                        centerX: width / 2, centerY: height / 2 - 0.5, radius: Math.min(width, height) / 2 - 5.5
+                        fill: RadialGradient {
+                            centerX: 0.6, centerY: -0.75, radius: 1.5
+                            stops: [
+                                Stop {offset: 0.0, color: Color.WHITE},
+                                Stop {offset: 1.0, color: Color.BLACK}
+                            ]
+                        }
+                    },
+                    Group { // Clock Digits
+                        translateX: width / 2 + 2, translateY: height / 2 + 2
+                        content: for( i in [1..12] )
+                            Text {
+                                var radians = Math.toRadians(30 * i - 90)
+                                translateX: (width / 2 * .8) * Math.cos(radians)
+                                translateY: (height / 2 * .8) * Math.sin(radians)
+                                content: "{i}"
+                                font: Font {name: "SansSerif", size: 9}
+                                textOrigin: TextOrigin.TOP
+                                verticalAlignment: VerticalAlignment.CENTER
+                                horizontalAlignment: HorizontalAlignment.CENTER
+                                fill: Color.WHITE
+                            }
+                    },
+                ]
             },
             Group { // Clock Hands
                 translateX: width / 2, translateY: height / 2
 
                 content: [
                     Group { // Hour Hand
+                        cache: true
                         effect: DropShadow {offsetY: 1, offsetX: 0, radius: 2}
                         content: Line {startX: 0, startY: width / 2 * .2, endX: 0, endY: -width / 2 * .46
                             strokeWidth: 4, stroke: Color.WHITE
@@ -118,6 +124,7 @@ Widget {
                         }
                     },
                     Group { // Minute Hand
+                        cache: true
                         effect: DropShadow {offsetY: 2, offsetX: 0, radius: 2}
                         content: Line {startX: 0, startY: width / 2 * .2, endX: 0, endY: -width / 2 * .7
                             strokeWidth: 4, stroke: Color.WHITE
@@ -141,6 +148,7 @@ Widget {
                 ]
             },
             Circle { // Center Pin
+                cache: true
                 centerX: width / 2, centerY: height / 2, radius: 3.2
                 stroke: Color.DARKSLATEGRAY
                 effect: DropShadow {offsetY: 1, radius: 2}
