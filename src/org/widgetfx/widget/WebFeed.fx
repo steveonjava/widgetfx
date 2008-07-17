@@ -54,7 +54,7 @@ var feedInfoCache = HashMapFeedInfoCache.getInstance();
 var feedFetcher:FeedFetcher = new HttpURLFeedFetcher(feedInfoCache);
 var feed:SyndFeed = feedFetcher.retrieveFeed(new URL(feedUrl));
 var entries = feed.getEntries();
-var entrySequence:SyndEntryImpl[] = Sequences.make(Class.forName("com.sun.syndication.feed.synd.SyndEntryImpl"), entries);
+var entrySequence:SyndEntryImpl[] = Sequences.make(SyndEntryImpl.<<class>>, entries);
 
 private function dateSince(date:Date):String {
     var offset:Number = System.currentTimeMillis() - date.getTime();

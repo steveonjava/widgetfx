@@ -42,9 +42,6 @@ public class Container extends Frame {
     static attribute SCREEN_WIDTH = SCREEN_BOUNDS.width;
     static attribute SCREEN_HEIGHT = SCREEN_BOUNDS.height;
     static attribute DEFAULT_WIDTH = 150;
-    static attribute DECORATION_TOP = 30;
-    static attribute DECORATION_SIDE = 5;
-    static attribute DECORATION_BOTTOM = 4;
     static attribute BORDER = 4;
     static attribute DS_RADIUS = 10;
     
@@ -64,18 +61,21 @@ public class Container extends Frame {
             Stop {offset: 1.0, color: Color.BLACK}
         ]
     }
+    
+    init {
+        windowStyle = WindowStyle.TRANSPARENT;
+        dockRight();
+    }
 
     postinit {
-        dockRight();
         loadWidgets();
         loadContent();
     }
     
     public function dockRight():Void {
-        width = preferredWidth + DECORATION_SIDE * 2;
-        height = SCREEN_HEIGHT + DECORATION_TOP + DECORATION_BOTTOM;
-        x = SCREEN_WIDTH - width + DECORATION_SIDE;
-        y = -DECORATION_TOP;
+        width = preferredWidth;
+        height = SCREEN_HEIGHT;
+        x = SCREEN_WIDTH - width;
     }
 
     attribute widgets:Widget[];
@@ -135,13 +135,16 @@ public class Container extends Frame {
             }
             onMouseDragged: function(e:MouseEvent):Void {
                 if (docked) {
-                    var xPos = e.getScreenX().intValue() - e.getLocalXY().getX().intValue() - DECORATION_SIDE;
-                    var yPos = e.getScreenY().intValue() - e.getLocalXY().getY().intValue() - DECORATION_TOP;
+                    var xPos = e.getScreenX().intValue() - e.getX().intValue();
+                    var yPos = e.getScreenY().intValue() - e.getY().intValue();
                     dockedParent = group.getParent() as Group;
                     dockedParent.content = null;
                     parent = Frame {
+                        windowStyle: WindowStyle.TRANSPARENT
                         x: xPos
                         y: yPos
+                        width: app.stage.width
+                        height: app.stage.height
                         title: app.name
                         stage: Stage {content: group, fill: null}
                         visible: true
@@ -183,7 +186,7 @@ public class Container extends Frame {
         stage = Stage {
             content: [
                 Line { // Drag Bar
-                    endY: bind height - (DECORATION_TOP + DECORATION_BOTTOM)
+                    endY: bind height
                     stroke: Color.BLACK
                     strokeWidth: 3
                     opacity: bind rolloverOpacity
@@ -192,7 +195,7 @@ public class Container extends Frame {
                         x = x + e.getDragX().intValue();
                         for (widget in widgets) {
                             if (widget.resizable) {
-                                widget.stage.width = width - BORDER * 2 - DECORATION_SIDE * 2;
+                                widget.stage.width = width - BORDER * 2;
                             }
                         }
                     }
@@ -222,7 +225,7 @@ public class Container extends Frame {
                             HBox {
                                 content: widget
                                 horizontalAlignment: HorizontalAlignment.CENTER
-                                translateX: bind width / 2 - BORDER - DECORATION_SIDE + DS_RADIUS
+                                translateX: bind width / 2 - BORDER + DS_RADIUS
                             }
                         },
                         ComponentView { // Exit Button
