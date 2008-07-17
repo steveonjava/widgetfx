@@ -16,6 +16,9 @@
         <jar href="javafxgui.jar"     main="false"/>
         <jar href="javafx-swing.jar"  main="false"/>
         <jar href="Scenario.jar"      main="false"/>
+        <jar href="rome-0.9.jar" main="false"/>
+        <jar href="rome-fetcher-0.9.jar" main="false"/>
+        <jar href="jdom-1.1.jar" main="false"/>
         <jar href="WidgetFX.jar" main="true" download="eager"/>
     </resources>
     <application-desc main-class="org.widgetfx.Main">
