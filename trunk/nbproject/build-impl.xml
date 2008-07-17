@@ -20,6 +20,7 @@ is divided into following sections:
 
         -->
 <project xmlns:javafxproject1="http://www.netbeans.org/ns/javafx-project/1" xmlns:javafxproject2="http://www.netbeans.org/ns/javafx-project/2" xmlns:javafxproject3="http://www.netbeans.org/ns/javafx-project/3" basedir=".." default="default" name="WidgetFX-impl">
+    <import file="jnlp-impl.xml"/>
     <target depends="jar" description="Build whole project." name="default"/>
     <!-- 
                 ======================
@@ -488,7 +489,7 @@ JavaFX SDK is working only on top of JDK 6 (or higher).
             </customize>
         </javafxproject1:java-run>
     </target>
-    <target depends="init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-post-jar" description="Build." name="jar"/>
+    <target depends="init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-post-jar,jnlp" description="Build." name="jar"/>
     <target depends="init,compile-single" name="run-single">
         <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
         <javafxproject1:java-run classname="${run.class}"/>

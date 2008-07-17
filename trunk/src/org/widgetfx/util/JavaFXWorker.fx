@@ -17,35 +17,45 @@
  */
 package org.widgetfx.util;
 
-import javax.swing.SwingWorker;
+import java.lang.InterruptedException;
+import java.util.concurrent.ExecutionException;
 import java.lang.Object;
+import javafx.async.AbstractAsyncOperation;
+import javax.swing.SwingWorker;
 
 /**
  * @author Stephen Chin
  */
-public class JavaFXWorker {
-    public attribute background: function():Object;
-
-    public attribute action: function(result: Object):Void;
+public class JavaFXWorker extends AbstractAsyncOperation {
+    private attribute worker:SwingWorker;
+    
+    public attribute inBackground: function():Object;
     
     public attribute result: Object;
-
-    public attribute finished: Boolean;
     
-    postinit {
-        var worker = ObjectSwingWorker {
+    public function cancel():Void {
+        if (worker.cancel(true)) {
+            listener.onCancel();
+        }
+    }
+    
+    function onCompletion(value: Object) {
+        result = value;
+    }
+
+    function start():Void {
+        worker = ObjectSwingWorker {
             public function doInBackground():Object {
-                return background();
+                return inBackground();
             }
             
             public function done():Void {
                 try {
-                    result = get();
-                    if (action <> null) {
-                        action(result);
-                    }
-                } finally {
-                    finished = true;
+                    listener.onCompletion(get());
+                } catch (e1:InterruptedException) {
+                    listener.onCancel();
+                } catch (e2:ExecutionException) {
+                    listener.onException(e2);
                 }
             }
         };

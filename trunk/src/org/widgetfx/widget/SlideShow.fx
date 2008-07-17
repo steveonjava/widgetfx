@@ -52,13 +52,13 @@ private function getKeyFrames(directory:File):KeyFrame[] {
             getKeyFrames(file);
         } else if (ImageIO.getImageReadersBySuffix(extension).hasNext()) {
             var keyFrame = KeyFrame {time: start, action:function():Void {
-                    JavaFXWorker {
-                        background: function() {
+                    var worker:JavaFXWorker = JavaFXWorker {
+                        inBackground: function() {
                             return Image {url: file.toURL().toString(), size: bind java.lang.Math.max(height, width)};
                         }
                         
-                        action: function(result) {
-                            fileImage = result as Image;
+                        onDone: function(result) {
+                            fileImage = worker.result as Image;
                         }
                     }
                 }
@@ -91,14 +91,15 @@ Widget {
     }
     onStart: function():Void {
         if (directory.exists()) {
-            JavaFXWorker {
-                background: function() {
-                    return getKeyFrames(directory) as Object;
+            var worker:JavaFXWorker = JavaFXWorker {
+                inBackground: function() {
+                    return 
+                    getKeyFrames(directory) as Object;
                 }
-                action: function(result) {
+                onDone: function(result) {
                     var timeline = Timeline {
                         repeatCount: Timeline.INDEFINITE;
-                        keyFrames: result as KeyFrame[];
+                        keyFrames: worker.result as KeyFrame[];
                     }
                     timeline.start();
                 }
