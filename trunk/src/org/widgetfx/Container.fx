@@ -30,6 +30,7 @@ import javafx.scene.text.*;
 import javafx.scene.layout.*;
 import javafx.ext.swing.*;
 import javafx.animation.*;
+import java.awt.event.MouseAdapter;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
 import com.sun.javafx.runtime.Entry;
@@ -177,19 +178,20 @@ public class Container extends Frame {
             toggle: true
             
             keyFrames: [
-                KeyFrame {time: 0ms, values: rolloverOpacity => 0.01},
-                KeyFrame {time: 300ms, values: rolloverOpacity => 0.8 tween Interpolator.LINEAR}
+                KeyFrame {time: 1s, values: rolloverOpacity => 0.8 tween Interpolator.EASEBOTH}
             ]
 
         }
         var stageFill = transparentBG;
         stage = Stage {
             content: [
-                Line { // Drag Bar
-                    endY: bind height
-                    stroke: Color.BLACK
-                    strokeWidth: 3
-                    opacity: bind rolloverOpacity
+                Group { // Drag Bar
+                    content: [
+                        Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity / 4},
+                        Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity, translateX: 1},
+                        Line {endY: bind height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity / 3, translateX: 2}
+                    ]
+                    cursor: Cursor.H_RESIZE
                     onMouseDragged: function(e:MouseEvent):Void {
                         width = width - e.getDragX().intValue();
                         x = x + e.getDragX().intValue();
@@ -199,7 +201,6 @@ public class Container extends Frame {
                             }
                         }
                     }
-                    cursor: Cursor.H_RESIZE;
                 },
                 VBox { // Content Area
                     translateX: BORDER, translateY: BORDER
@@ -222,7 +223,7 @@ public class Container extends Frame {
                             ]
                         },
                         for (widget in widgetViews) {
-                            HBox {
+                            Group {
                                 content: widget
                                 horizontalAlignment: HorizontalAlignment.CENTER
                                 translateX: bind width / 2 - BORDER + DS_RADIUS
@@ -234,16 +235,18 @@ public class Container extends Frame {
                                 action: function():Void {java.lang.System.exit(0);}
                             }
                         }
-                    ]                
-                    onMouseEntered: function(e:MouseEvent):Void {
-                        rolloverTimeline.start();
-                    }
-                    onMouseExited: function(e:MouseEvent):Void {
-                        rolloverTimeline.start();
-                    }
+                    ]
                 }
             ],
             fill: bind stageFill;
         };
+        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
+            public function mouseEntered(e) {
+                rolloverTimeline.start();
+            }
+            public function mouseExited(e) {
+                rolloverTimeline.start();
+            }
+        });
     }
 }
