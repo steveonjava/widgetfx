@@ -52,9 +52,10 @@ private function getKeyFrames(directory:File):KeyFrame[] {
             getKeyFrames(file);
         } else if (ImageIO.getImageReadersBySuffix(extension).hasNext()) {
             var keyFrame = KeyFrame {time: start, action:function():Void {
+                    var size = java.lang.Math.max(height, width);
                     var worker:JavaFXWorker = JavaFXWorker {
                         inBackground: function() {
-                            return Image {url: file.toURL().toString(), size: bind java.lang.Math.max(height, width)};
+                            return Image {url: file.toURL().toString(), size: size};
                         }
                         
                         onDone: function(result) {
