@@ -45,7 +45,7 @@ public class Container extends Frame {
     static attribute DEFAULT_WIDTH = 180;
     static attribute MIN_WIDTH = 120;
     static attribute MAX_WIDTH = 400;
-    static attribute BORDER = 4;
+    static attribute BORDER = 5;
     static attribute DS_RADIUS = 10;
     
     private attribute currentGraphics:java.awt.GraphicsConfiguration;
@@ -77,7 +77,7 @@ public class Container extends Frame {
         endY: 0
         stops: [
             Stop {offset: 0.0, color: Color.color(0, 0, 0, 0)},
-            Stop {offset: 1.0, color: Color.color(0, 0, 0, .5)}
+            Stop {offset: 1.0, color: Color.color(0, 0, 0, .7)}
         ]
     }
     
@@ -90,7 +90,6 @@ public class Container extends Frame {
     postinit {
         loadWidgets();
         loadContent();
-        dockLeft = true;
     }
 
     attribute widgets:Widget[];
@@ -119,12 +118,14 @@ public class Container extends Frame {
     public function createWidgetView(app:Widget):Group {
         if (app.onStart <> null) app.onStart();
         var group:Group = Group {
-            content: Group {
-                content: app.stage.content
-                clip: Rectangle {width: bind app.stage.width, height: bind app.stage.height}
-            }
             cache: true
-            effect: DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+            content: Group {
+                effect: DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                content: Group {
+                    content: app.stage.content
+                    clip: Rectangle {width: bind app.stage.width, height: bind app.stage.height}
+                }
+            }
             var docked = true
             var dockedParent : Group
             var parent : Frame
@@ -155,16 +156,10 @@ public class Container extends Frame {
                     var yPos = e.getScreenY().intValue() - e.getY().intValue();
                     dockedParent = group.getParent() as Group;
                     dockedParent.content = null;
-                    parent = Frame {
-                        windowStyle: WindowStyle.TRANSPARENT
-                        x: xPos
-                        y: yPos
-                        width: app.stage.width
-                        height: app.stage.height
-                        title: app.name
-                        stage: Stage {content: group, fill: null}
-                        visible: true
-                        opacity: 0.7
+                    parent = WidgetFrame {
+                        widget: app;
+                        wrapper: group;
+                        x: xPos, y: yPos
                     }
                     docked = false;
                 } else {
@@ -190,13 +185,8 @@ public class Container extends Frame {
     public function loadContent():Void {
         var rolloverOpacity = 0.01;
         var rolloverTimeline = Timeline {
-            autoReverse: true
-            toggle: true
-            
-            keyFrames: [
-                KeyFrame {time: 1s, values: rolloverOpacity => 0.8 tween Interpolator.EASEBOTH}
-            ]
-
+            autoReverse: true, toggle: true
+            keyFrames: KeyFrame {time: 1s, values: rolloverOpacity => 0.8 tween Interpolator.EASEBOTH}
         }
         stage = Stage {
             content: [
