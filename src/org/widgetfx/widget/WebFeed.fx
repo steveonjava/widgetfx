@@ -97,12 +97,14 @@ Widget {
         width: bind width with inverse
         height: bind height with inverse
         content: [
-            Rectangle {
+            Group {
                 cache: true
-                effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
-                width: bind width, height: bind height
-                fill: Color.BLACK
-                arcHeight: 7, arcWidth: 7
+                content: Rectangle {
+                    effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
+                    width: bind width, height: bind height
+                    fill: Color.BLACK
+                    arcHeight: 7, arcWidth: 7
+                }
             },
             VBox {
                 translateX: border, translateY: border

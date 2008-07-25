@@ -40,7 +40,7 @@ var directory = new File(home, "My Documents\\My Pictures");
 var fileImage : Image;
 var start = 0s;
 var width = 150;
-var height = bind width * 3 / 4;
+var height = 112;
 
 private function getKeyFrames(directory:File):KeyFrame[] {
     var files = Arrays.asList(directory.listFiles());
@@ -83,7 +83,7 @@ Widget {
     }
     stage: Stage {
         width: bind width with inverse
-        height: bind height
+        height: bind height with inverse
         content: [
             ImageView {
                 image: bind fileImage
