@@ -31,52 +31,66 @@ import javafx.scene.layout.*;
 import javafx.ext.swing.*;
 import javafx.animation.*;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseMotionAdapter;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
 import com.sun.javafx.runtime.Entry;
+import java.util.Arrays;
+import java.awt.Point;
 
 /**
  * @author Stephen Chin
  */
 public class Container extends Frame {
-    static attribute SCREEN_BOUNDS = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration().getBounds();
-    static attribute SCREEN_WIDTH = SCREEN_BOUNDS.width;
-    static attribute SCREEN_HEIGHT = SCREEN_BOUNDS.height;
-    static attribute DEFAULT_WIDTH = 150;
+    static attribute DEFAULT_WIDTH = 180;
+    static attribute MIN_WIDTH = 120;
+    static attribute MAX_WIDTH = 400;
     static attribute BORDER = 4;
     static attribute DS_RADIUS = 10;
     
+    private attribute currentGraphics:java.awt.GraphicsConfiguration;
+    private attribute screenBounds = bind currentGraphics.getBounds() on replace {
+        updateDockLocation();
+    }
+    private attribute dockLeft:Boolean on replace {
+        updateDockLocation();
+    };
+    private attribute dragging:Boolean;
+    
+    private function updateDockLocation() {
+        height = screenBounds.height;
+        x = screenBounds.x + (if (dockLeft) then 0 else screenBounds.width - width);
+        y = screenBounds.y;
+    }
+    
     public attribute preferredWidth = DEFAULT_WIDTH + BORDER * 2;
     
-    private attribute transparentBG = LinearGradient {
+    private attribute transparentBG = bind if (dockLeft) then leftBG else rightBG;
+    private attribute leftBG = LinearGradient {
+        endY: 0
+        stops: [
+            Stop {offset: 0.0, color: Color.color(0, 0, 0, .5)},
+            Stop {offset: 1.0, color: Color.color(0, 0, 0, 0)}
+        ]
+    }
+    private attribute rightBG = LinearGradient {
         endY: 0
         stops: [
             Stop {offset: 0.0, color: Color.color(0, 0, 0, 0)},
             Stop {offset: 1.0, color: Color.color(0, 0, 0, .5)}
         ]
     }
-    private attribute solidBG = LinearGradient {
-        endY: 0
-        stops: [
-            Stop {offset: 0.0, color: Color.SLATEGRAY},
-            Stop {offset: 1.0, color: Color.BLACK}
-        ]
-    }
     
     init {
         windowStyle = WindowStyle.TRANSPARENT;
-        dockRight();
+        width = preferredWidth;
+        currentGraphics = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
     }
 
     postinit {
         loadWidgets();
         loadContent();
-    }
-    
-    public function dockRight():Void {
-        width = preferredWidth;
-        height = SCREEN_HEIGHT;
-        x = SCREEN_WIDTH - width;
+        dockLeft = true;
     }
 
     attribute widgets:Widget[];
@@ -136,6 +150,7 @@ public class Container extends Frame {
             }
             onMouseDragged: function(e:MouseEvent):Void {
                 if (docked) {
+                    dragging = true;
                     var xPos = e.getScreenX().intValue() - e.getX().intValue();
                     var yPos = e.getScreenY().intValue() - e.getY().intValue();
                     dockedParent = group.getParent() as Group;
@@ -160,7 +175,8 @@ public class Container extends Frame {
                 }
             }
             onMouseReleased: function(e:MouseEvent):Void {
-                if (not docked and e.getScreenX() > x) {
+                dragging = false;
+                if (not docked and e.getScreenX() >= x and e.getScreenX() < x + width and e.getScreenY() >= y and e.getScreenY() < y + height) {
                     parent.stage = null;
                     parent.close();
                     dockedParent.content = [group];
@@ -182,7 +198,6 @@ public class Container extends Frame {
             ]
 
         }
-        var stageFill = transparentBG;
         stage = Stage {
             content: [
                 Group { // Drag Bar
@@ -191,15 +206,23 @@ public class Container extends Frame {
                         Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity, translateX: 1},
                         Line {endY: bind height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity / 3, translateX: 2}
                     ]
+                    horizontalAlignment: bind if (dockLeft) then HorizontalAlignment.TRAILING else HorizontalAlignment.LEADING
+                    translateX: bind if (dockLeft) then width else 0
                     cursor: Cursor.H_RESIZE
-                    onMouseDragged: function(e:MouseEvent):Void {
-                        width = width - e.getDragX().intValue();
-                        x = x + e.getDragX().intValue();
+                    onMouseDragged: function(e:MouseEvent) {
+                        dragging = true;
+                        width = if (dockLeft) then e.getScreenX().intValue() - screenBounds.x
+                                else screenBounds.x + screenBounds.width - e.getScreenX().intValue();
+                        width = if (width < MIN_WIDTH) then MIN_WIDTH else if (width > MAX_WIDTH) then MAX_WIDTH else width;
+                        updateDockLocation();
                         for (widget in widgets) {
                             if (widget.resizable) {
                                 widget.stage.width = width - BORDER * 2;
                             }
                         }
+                    }
+                    onMouseReleased: function(e) {
+                        dragging = false;
                     }
                 },
                 VBox { // Content Area
@@ -238,7 +261,7 @@ public class Container extends Frame {
                     ]
                 }
             ],
-            fill: bind stageFill;
+            fill: bind transparentBG;
         };
         (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
             public function mouseEntered(e) {
@@ -248,5 +271,25 @@ public class Container extends Frame {
                 rolloverTimeline.start();
             }
         });
+        (window as RootPaneContainer).getContentPane().addMouseMotionListener(MouseMotionAdapter {
+            public function mouseDragged(e) {
+                getGraphicsConfiguration(e.getLocationOnScreen());
+            }
+        });
+    }
+    
+    private function getGraphicsConfiguration(location:Point) {
+        if (not dragging) {
+            if (not screenBounds.contains(location)) {
+                for (gd in Arrays.asList(java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {
+                    for (gc in Arrays.asList(gd.getConfigurations())) {
+                        if (gc.getBounds().contains(location)) {
+                            currentGraphics = gc;
+                        }
+                    }
+                }
+            }
+            dockLeft = location.x < screenBounds.width / 2 + screenBounds.x;
+        }
     }
 }
