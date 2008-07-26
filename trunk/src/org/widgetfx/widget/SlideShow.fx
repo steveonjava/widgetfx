@@ -113,7 +113,4 @@ Widget {
             }
         ]
     }
-    onStart: function() {
-        System.out.println("onStart: {directoryName}");
-    }
 }
