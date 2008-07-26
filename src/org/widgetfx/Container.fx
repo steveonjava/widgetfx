@@ -120,7 +120,9 @@ public class Container extends Frame {
         var group:Group = Group {
             cache: true
             content: Group {
-                effect: DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                // todo - do dragging optimization outside when undocked
+                // todo - standard size with and without DropShadow when docked
+                effect: bind if (dragging) then null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                 content: Group {
                     content: app.stage.content
                     clip: Rectangle {width: bind app.stage.width, height: bind app.stage.height}
@@ -152,6 +154,7 @@ public class Container extends Frame {
             onMouseDragged: function(e:MouseEvent):Void {
                 if (docked) {
                     dragging = true;
+                    // todo - compensate for widgetframe border
                     var xPos = e.getScreenX().intValue() - e.getX().intValue();
                     var yPos = e.getScreenY().intValue() - e.getY().intValue();
                     dockedParent = group.getParent() as Group;
@@ -160,9 +163,13 @@ public class Container extends Frame {
                         widget: app;
                         wrapper: group;
                         x: xPos, y: yPos
+                        // todo - add opacity to configuration and save
+                        opacity: 0.8
                     }
                     docked = false;
                 } else {
+                    // todo - use stageX instead to get rid of dragging delay
+                    // todo - e-mail Josh about this one...
                     parent.x += e.getScreenX().intValue() - lastScreenPosX;
                     parent.y += e.getScreenY().intValue() - lastScreenPosY;
                     lastScreenPosX = e.getScreenX().intValue();

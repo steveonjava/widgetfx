@@ -100,6 +100,7 @@ Widget {
             Group {
                 cache: true
                 content: Rectangle {
+                    // todo - this is too slow, figure out something else
                     effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
                     width: bind width, height: bind height
                     fill: Color.BLACK
@@ -108,7 +109,7 @@ Widget {
             },
             VBox {
                 translateX: border, translateY: border
-                clip: Rectangle {width: bind entryWidth, height: height - border * 2}
+                clip: Rectangle {width: bind entryWidth, height: bind height - border * 2}
                 content: for (entry in entrySequence) {
                     Group {
                         var groupOpacity = 0.0;

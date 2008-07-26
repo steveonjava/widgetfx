@@ -55,21 +55,20 @@ public class WidgetFrame extends Frame {
 
     init {
         windowStyle = WindowStyle.TRANSPARENT;
-        opacity = 0.7;
     }
     
     private attribute lastScreenPosX;
     private attribute lastScreenPosY;
     private attribute saveLastPos = function(e:MouseEvent):Void {
-        lastScreenPosX = e.getScreenX().intValue();
-        lastScreenPosY = e.getScreenY().intValue();
+        lastScreenPosX = e.getStageX().intValue() + x;
+        lastScreenPosY = e.getStageY().intValue() + y;
     }
     private function mouseDelta(deltaFunction:function(a:Integer, b:Integer):Void):function(c:MouseEvent):Void {
         return function (e:MouseEvent):Void {
-            var xDelta = e.getScreenX().intValue() - lastScreenPosX;
-            var yDelta = e.getScreenY().intValue() - lastScreenPosY;
-            deltaFunction(xDelta, yDelta);
+            var xDelta = e.getStageX().intValue() + x - lastScreenPosX;
+            var yDelta = e.getStageY().intValue() + y - lastScreenPosY;
             saveLastPos(e);
+            deltaFunction(xDelta, yDelta);
         }
     }
     
