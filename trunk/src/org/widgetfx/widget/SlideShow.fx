@@ -36,7 +36,30 @@ import java.lang.*;
  * @author Keith Combs
  */
 var home = System.getProperty("user.home");
-var directory = new File(home, "My Documents\\My Pictures");
+var directoryName = (new File(home, "My Documents\\My Pictures")).getAbsolutePath();
+var directory:File = bind loadDirectory(directoryName);
+
+function loadDirectory(directoryName:String):File {
+    System.out.println("load directory called: {directoryName}");
+    var directory = new File(directoryName);
+    if (directory.exists()) {
+        var worker:JavaFXWorker = JavaFXWorker {
+            inBackground: function() {
+                return 
+                getKeyFrames(directory) as Object;
+            }
+            onDone: function(result) {
+                var timeline = Timeline {
+                    repeatCount: Timeline.INDEFINITE;
+                    keyFrames: worker.result as KeyFrame[];
+                }
+                timeline.start();
+            }
+        }
+    }
+    return directory;
+}
+
 var fileImage : Image;
 var start = 0s;
 var width = 150;
@@ -78,7 +101,7 @@ Widget {
     config: FlowPanel {
         content: [
             Label {text: "Directory:"},
-            TextField {text: directory.toString()}
+            TextField {text: bind directoryName}
         ]
     }
     stage: Stage {
@@ -90,21 +113,7 @@ Widget {
             }
         ]
     }
-    onStart: function():Void {
-        if (directory.exists()) {
-            var worker:JavaFXWorker = JavaFXWorker {
-                inBackground: function() {
-                    return 
-                    getKeyFrames(directory) as Object;
-                }
-                onDone: function(result) {
-                    var timeline = Timeline {
-                        repeatCount: Timeline.INDEFINITE;
-                        keyFrames: worker.result as KeyFrame[];
-                    }
-                    timeline.start();
-                }
-            }
-        }
+    onStart: function() {
+        System.out.println("onStart: {directoryName}");
     }
 }
