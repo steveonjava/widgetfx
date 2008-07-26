@@ -27,8 +27,10 @@ import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Interpolator;
 import javafx.input.MouseEvent;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.geometry.Rectangle;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseMotionAdapter;
 import javax.swing.RootPaneContainer;
 
 /**
@@ -36,6 +38,7 @@ import javax.swing.RootPaneContainer;
  */
 public class WidgetFrame extends Frame {
     public static attribute BORDER = 5;
+    public static attribute DS_RADIUS = 10;
 
     public attribute widget:Widget;
     
@@ -50,16 +53,16 @@ public class WidgetFrame extends Frame {
     private attribute widgetHeight = bind widget.stage.height + BORDER * 2 + 1 on replace {
         height = widgetHeight;
     }
-    
-    public attribute wrapper:Group;
 
     init {
         windowStyle = WindowStyle.TRANSPARENT;
     }
     
+    private attribute resizing:Boolean;
     private attribute lastScreenPosX;
     private attribute lastScreenPosY;
     private attribute saveLastPos = function(e:MouseEvent):Void {
+        resizing = true;
         lastScreenPosX = e.getStageX().intValue() + x;
         lastScreenPosY = e.getStageY().intValue() + y;
     }
@@ -71,6 +74,9 @@ public class WidgetFrame extends Frame {
             deltaFunction(xDelta, yDelta);
         }
     }
+    private attribute doneResizing = function(e:MouseEvent):Void {
+        resizing = false;
+    }
     
     postinit {
         var rolloverOpacity = 0.0;
@@ -80,8 +86,6 @@ public class WidgetFrame extends Frame {
         }
         var dragRect:Group = Group {
             var transparent = Color.rgb(0, 0, 0, .01);
-
-
             content: [
                 Rectangle { // border
                     width: bind width - 1, height: bind height - 1
@@ -104,6 +108,7 @@ public class WidgetFrame extends Frame {
                         widget.stage.height -= yDelta;
                         y += yDelta;
                     })
+                    onMouseReleased: doneResizing
                 },
                 Rectangle { // N resize corner
                     translateX: BORDER, width: bind width - BORDER * 2, height: BORDER
@@ -115,6 +120,7 @@ public class WidgetFrame extends Frame {
                         widget.stage.height -= yDelta;
                         y += yDelta;
                     })
+                    onMouseReleased: doneResizing
                 },
                 Rectangle { // NE resize corner
                     translateX: bind width - BORDER, width: BORDER, height: BORDER
@@ -127,6 +133,7 @@ public class WidgetFrame extends Frame {
                         y += yDelta;
                         widget.stage.height -= yDelta;
                     })
+                    onMouseReleased: doneResizing
                 },
                 Rectangle { // E resize corner
                     translateX: bind width - BORDER, translateY: BORDER
@@ -138,6 +145,7 @@ public class WidgetFrame extends Frame {
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                         widget.stage.width += xDelta;
                     })
+                    onMouseReleased: doneResizing
                 },
                 Rectangle { // SE resize corner
                     translateX: bind width - BORDER, translateY: bind height - BORDER
@@ -150,6 +158,7 @@ public class WidgetFrame extends Frame {
                         widget.stage.width += xDelta;
                         widget.stage.height += yDelta;
                     })
+                    onMouseReleased: doneResizing
                 },
                 Rectangle { // S resize corner
                     translateX: BORDER, translateY: bind height - BORDER
@@ -161,6 +170,7 @@ public class WidgetFrame extends Frame {
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                         widget.stage.height += yDelta;
                     })
+                    onMouseReleased: doneResizing
                 },
                 Rectangle { // SW resize corner
                     translateY: bind height - BORDER, width: BORDER, height: BORDER
@@ -173,6 +183,7 @@ public class WidgetFrame extends Frame {
                         x += xDelta;
                         widget.stage.height += yDelta;
                     })
+                    onMouseReleased: doneResizing
                 },
                 Rectangle { // W resize corner
                     translateY: BORDER, width: BORDER, height: bind height - BORDER * 2
@@ -184,16 +195,30 @@ public class WidgetFrame extends Frame {
                         widget.stage.width -= xDelta;
                         x += xDelta;
                     })
+                    onMouseReleased: doneResizing
                 }
             ]
+            onMousePressed: saveLastPos
+            onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
+                x += xDelta;
+                y += yDelta;
+            })
+            onMouseReleased: doneResizing
             opacity: bind rolloverOpacity;
         }
         stage = Stage {
             content: [
                 dragRect,
                 Group {
+                    cache: true
                     translateX: BORDER, translateY: BORDER
-                    content: wrapper
+                    content: Group {
+                        effect: bind if (resizing) then null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                        content: Group {
+                            content: widget.stage.content
+                            clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                        }
+                    }
                 }
             ]
             fill: null

@@ -18,6 +18,7 @@
 package org.widgetfx.widget;
 
 import org.widgetfx.*;
+import org.widgetfx.util.*;
 import javafx.application.*;
 import javafx.ext.swing.*;
 import javafx.async.*;
@@ -65,16 +66,6 @@ private function dateSince(date:Date):String {
         else "{hours} hr{if (hours > 1) then 's' else ''} ago";
 }
 
-private function fitTextToWidth(text:Text, width:Integer):Text {
-    if (text.getWidth() > width) {
-        text.content = text.content + "...";
-        while (text.getWidth() > width) {
-            text.content = text.content.substring(0, text.content.length() - 4) + "...";
-        }
-    }
-    return text;
-}
-
 private function launchUri(uri:URI) {
     if (Desktop.isDesktopSupported()) {
         var desktop = Desktop.getDesktop();
@@ -101,7 +92,7 @@ Widget {
                 cache: true
                 content: Rectangle {
                     // todo - this is too slow, figure out something else
-                    effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
+//                    effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
                     width: bind width, height: bind height
                     fill: Color.BLACK
                     arcHeight: 7, arcWidth: 7
@@ -123,20 +114,22 @@ Widget {
                             },
                             VBox {
                                 content: [
-                                    fitTextToWidth(Text {
-                                            font: Font {size: 11}
-                                            content: entry.getTitle()
-                                            fill: Color.WHITE
-                                            textOrigin: TextOrigin.TOP
-                                        }, entryWidth - border * 2),
+                                    BoundedText {
+                                        font: Font {size: 11}
+                                        fill: Color.WHITE
+                                        textOrigin: TextOrigin.TOP
+                                        text: entry.getTitle()
+                                        width: bind entryWidth - border * 2
+                                    },
                                     Group {content: [
-                                        fitTextToWidth(Text {
+                                        BoundedText {
                                             font: Font {size: 9}
-                                            content: feed.getTitle()
                                             fill: Color.CYAN
                                             textOrigin: TextOrigin.TOP
                                             horizontalAlignment: HorizontalAlignment.LEADING
-                                        }, entryWidth - 55),
+                                            text: feed.getTitle()
+                                            width: bind entryWidth - 55
+                                        },
                                         Text {
                                             font: Font {size: 9}
                                             content: dateSince(entry.getPublishedDate())

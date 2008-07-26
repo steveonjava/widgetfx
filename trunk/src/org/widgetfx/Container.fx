@@ -55,6 +55,7 @@ public class Container extends Frame {
     private attribute dockLeft:Boolean on replace {
         updateDockLocation();
     };
+    private attribute resizing:Boolean;
     private attribute dragging:Boolean;
     
     private function updateDockLocation() {
@@ -122,7 +123,7 @@ public class Container extends Frame {
             content: Group {
                 // todo - do dragging optimization outside when undocked
                 // todo - standard size with and without DropShadow when docked
-                effect: bind if (dragging) then null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                effect: bind if (resizing) then null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                 content: Group {
                     content: app.stage.content
                     clip: Rectangle {width: bind app.stage.width, height: bind app.stage.height}
@@ -134,8 +135,8 @@ public class Container extends Frame {
             var lastScreenPosX : Integer
             var lastScreenPosY : Integer
             onMousePressed: function(e:MouseEvent):Void {
-                lastScreenPosX = e.getScreenX().intValue();
-                lastScreenPosY = e.getScreenY().intValue();
+                lastScreenPosX = e.getStageX().intValue();
+                lastScreenPosY = e.getStageY().intValue();
             }
             onMouseClicked: function(e:MouseEvent):Void {
                 if (e.getButton() == 3) {
@@ -154,14 +155,12 @@ public class Container extends Frame {
             onMouseDragged: function(e:MouseEvent):Void {
                 if (docked) {
                     dragging = true;
-                    // todo - compensate for widgetframe border
-                    var xPos = e.getScreenX().intValue() - e.getX().intValue();
-                    var yPos = e.getScreenY().intValue() - e.getY().intValue();
+                    var xPos = e.getStageX().intValue() + x - e.getX().intValue() + WidgetFrame.BORDER;
+                    var yPos = e.getStageY().intValue() + y - e.getY().intValue() + WidgetFrame.BORDER;
                     dockedParent = group.getParent() as Group;
                     dockedParent.content = null;
                     parent = WidgetFrame {
                         widget: app;
-                        wrapper: group;
                         x: xPos, y: yPos
                         // todo - add opacity to configuration and save
                         opacity: 0.8
@@ -170,10 +169,10 @@ public class Container extends Frame {
                 } else {
                     // todo - use stageX instead to get rid of dragging delay
                     // todo - e-mail Josh about this one...
-                    parent.x += e.getScreenX().intValue() - lastScreenPosX;
-                    parent.y += e.getScreenY().intValue() - lastScreenPosY;
-                    lastScreenPosX = e.getScreenX().intValue();
-                    lastScreenPosY = e.getScreenY().intValue();
+                    parent.x += e.getStageX().intValue() - lastScreenPosX;
+                    parent.y += e.getStageY().intValue() - lastScreenPosY;
+                    lastScreenPosX = e.getStageX().intValue();
+                    lastScreenPosY = e.getStageY().intValue();
                 }
             }
             onMouseReleased: function(e:MouseEvent):Void {
@@ -207,7 +206,7 @@ public class Container extends Frame {
                     translateX: bind if (dockLeft) then width else 0
                     cursor: Cursor.H_RESIZE
                     onMouseDragged: function(e:MouseEvent) {
-                        dragging = true;
+                        resizing = true;
                         width = if (dockLeft) then e.getScreenX().intValue() - screenBounds.x
                                 else screenBounds.x + screenBounds.width - e.getScreenX().intValue();
                         width = if (width < MIN_WIDTH) then MIN_WIDTH else if (width > MAX_WIDTH) then MAX_WIDTH else width;
@@ -219,7 +218,7 @@ public class Container extends Frame {
                         }
                     }
                     onMouseReleased: function(e) {
-                        dragging = false;
+                        resizing = false;
                     }
                 },
                 VBox { // Content Area
@@ -276,7 +275,7 @@ public class Container extends Frame {
     }
     
     private function getGraphicsConfiguration(location:Point) {
-        if (not dragging) {
+        if (not dragging and not resizing) {
             if (not screenBounds.contains(location)) {
                 for (gd in Arrays.asList(java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {
                     for (gc in Arrays.asList(gd.getConfigurations())) {

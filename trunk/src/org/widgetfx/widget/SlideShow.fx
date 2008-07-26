@@ -101,7 +101,7 @@ Widget {
     config: FlowPanel {
         content: [
             Label {text: "Directory:"},
-            TextField {text: bind directoryName}
+            TextField {text: bind directoryName with inverse}
         ]
     }
     stage: Stage {
