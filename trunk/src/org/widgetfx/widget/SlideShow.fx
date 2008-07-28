@@ -24,11 +24,12 @@ import javafx.ext.swing.*;
 import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
 import javafx.scene.image.*;
+import javafx.util.*;
+import javafx.animation.*;
+import javafx.lang.*;
 import javax.imageio.*;
 import java.io.*;
 import java.util.*;
-import javafx.animation.*;
-import javafx.lang.*;
 import java.lang.*;
 
 /**
@@ -38,21 +39,62 @@ import java.lang.*;
 var home = System.getProperty("user.home");
 var directoryName = (new File(home, "My Documents\\My Pictures")).getAbsolutePath();
 var directory:File = bind loadDirectory(directoryName);
+var imageFiles:File[];
+var random = true;
+var width = 150;
+var height = 100;
+var imageIndex = 0;
+var imageHeight = height;
+var currentFile:File;
+var currentImage:Image;
+var worker:JavaFXWorker;
+var timeline = Timeline {
+    repeatCount: Timeline.INDEFINITE
+    keyFrames: [
+        KeyFrame {time: 0s,
+            action: function() {
+                currentFile = imageFiles[imageIndex++ mod imageFiles.size()];
+                updateImage();
+            }
+        },
+        KeyFrame {time: 15s}
+    ]
+}
 
-function loadDirectory(directoryName:String):File {
-    System.out.println("load directory called: {directoryName}");
+private function updateImage():Void {
+    if (currentFile == null or not currentFile.exists()) {
+        return;
+    }
+    if (worker <> null) {
+        worker.cancel();
+    }
+    worker = JavaFXWorker {
+        inBackground: function() {
+            var image = Image {url: currentFile.toURL().toString(), height: imageHeight};
+            return image;
+        }
+        onDone: function(result) {
+            if (worker.result <> null) {
+                currentImage = worker.result as Image;
+            }
+        }
+    }
+}
+
+private function loadDirectory(directoryName:String):File {
     var directory = new File(directoryName);
     if (directory.exists()) {
+        timeline.stop();
         var worker:JavaFXWorker = JavaFXWorker {
             inBackground: function() {
-                return 
-                getKeyFrames(directory) as Object;
+                var imageFiles = getImageFiles(directory);
+                if (random) {
+                    imageFiles = Sequences.shuffle(imageFiles) as File[];
+                }
+                return imageFiles as Object;
             }
             onDone: function(result) {
-                var timeline = Timeline {
-                    repeatCount: Timeline.INDEFINITE;
-                    keyFrames: worker.result as KeyFrame[];
-                }
+                imageFiles = worker.result as File[];
                 timeline.start();
             }
         }
@@ -60,35 +102,16 @@ function loadDirectory(directoryName:String):File {
     return directory;
 }
 
-var fileImage : Image;
-var start = 0s;
-var width = 150;
-var height = 112;
-
-private function getKeyFrames(directory:File):KeyFrame[] {
+private function getImageFiles(directory:File):File[] {
     var files = Arrays.asList(directory.listFiles());
     return for (file in files) {
         var name = file.getName();
         var index = name.lastIndexOf('.');
         var extension = if (index == -1) then null else name.substring(index + 1);
         if (file.isDirectory()) {
-            getKeyFrames(file);
+            getImageFiles(file);
         } else if (ImageIO.getImageReadersBySuffix(extension).hasNext()) {
-            var keyFrame = KeyFrame {time: start, action:function():Void {
-                    var size = java.lang.Math.max(height, width);
-                    var worker:JavaFXWorker = JavaFXWorker {
-                        inBackground: function() {
-                            return Image {url: file.toURL().toString(), size: size};
-                        }
-                        
-                        onDone: function(result) {
-                            fileImage = worker.result as Image;
-                        }
-                    }
-                }
-            }
-            start = start + 10s;
-            keyFrame;
+            file
         } else {
             []
         }
@@ -98,6 +121,7 @@ private function getKeyFrames(directory:File):KeyFrame[] {
 Widget {
     name: "Slide Show"
     resizable: true
+    aspectRatio: 4.0/3.0
     config: FlowPanel {
         content: [
             Label {text: "Directory:"},
@@ -109,8 +133,14 @@ Widget {
         height: bind height with inverse
         content: [
             ImageView {
-                image: bind fileImage
+                image: bind currentImage
             }
         ]
+    }
+    onResize: function(width:Integer, height:Integer) {
+        if (imageHeight <> height) {
+            imageHeight = height;
+            updateImage();
+        }
     }
 }

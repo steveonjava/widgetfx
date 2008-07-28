@@ -20,7 +20,7 @@ package org.widgetfx;
 /**
  * @author Stephen Chin
  */
-Container {
+Sidebar {
     title: "WidgetFX"
     visible: true
 }
