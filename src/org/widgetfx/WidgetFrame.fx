@@ -37,9 +37,12 @@ import javax.swing.RootPaneContainer;
  * @author Stephen Chin
  */
 public class WidgetFrame extends Frame {
+    public static attribute MIN_SIZE = 100;
     public static attribute BORDER = 5;
-    public static attribute DS_RADIUS = 10;
+    public static attribute DS_RADIUS = 5;
 
+    public attribute sidebar:Sidebar;
+    
     public attribute widget:Widget;
     
     private attribute widgetTitle = bind widget.name on replace {
@@ -54,18 +57,17 @@ public class WidgetFrame extends Frame {
         height = widgetHeight;
     }
 
-    init {
-        windowStyle = WindowStyle.TRANSPARENT;
-    }
-    
     private attribute resizing:Boolean;
+    private attribute dragging:Boolean;
+    private attribute docking:Boolean;
+    
     private attribute lastScreenPosX;
     private attribute lastScreenPosY;
     private attribute saveLastPos = function(e:MouseEvent):Void {
-        resizing = true;
         lastScreenPosX = e.getStageX().intValue() + x;
         lastScreenPosY = e.getStageY().intValue() + y;
     }
+    
     private function mouseDelta(deltaFunction:function(a:Integer, b:Integer):Void):function(c:MouseEvent):Void {
         return function (e:MouseEvent):Void {
             var xDelta = e.getStageX().intValue() + x - lastScreenPosX;
@@ -74,8 +76,60 @@ public class WidgetFrame extends Frame {
             deltaFunction(xDelta, yDelta);
         }
     }
+    
+    private attribute startResizing = function(e:MouseEvent):Void {
+        resizing = true;
+        saveLastPos(e);
+    }
+    
     private attribute doneResizing = function(e:MouseEvent):Void {
+        if (widget.onResize <> null) {
+            widget.onResize(widget.stage.width, widget.stage.height);
+        }
         resizing = false;
+    }    
+    
+    init {
+        windowStyle = WindowStyle.TRANSPARENT;
+    }
+    
+    public function dock(dockX:Integer, dockY:Integer, screenX:Integer, screenY:Integer):Void {
+        docking = true;
+        Timeline {
+            keyFrames: KeyFrame {time: 300ms,
+                values: [
+                    x => dockX tween Interpolator.EASEIN,
+                    y => dockY tween Interpolator.EASEIN
+                ],
+                action: function() {
+                    sidebar.dock(widget, screenX, screenY);
+                    close();
+                }
+            }
+        }.start();
+    }
+    
+    private function resize(widthDelta:Integer, heightDelta:Integer, updateX:Boolean, updateY:Boolean) {
+        if (widget.stage.width + widthDelta < MIN_SIZE) {
+            widthDelta = MIN_SIZE - widget.stage.width;
+        }
+        if (widget.stage.height < MIN_SIZE) {
+            heightDelta = MIN_SIZE - widget.stage.height;
+        }
+        if (updateX) {
+            x -= widthDelta;
+        }
+        if (updateY) {
+            y -= heightDelta;
+        }
+//        if (widget.aspectRatio <> 0) {
+//            var aspectHeight = (newWidth / widget.aspectRatio).intValue();
+//            var aspectWidth = (newHeight * widget.aspectRatio).intValue();
+//            newWidth = if (aspectWidth > newWidth) then aspectWidth else newWidth;
+//            newHeight = if (aspectHeight > newHeight) then aspectHeight else newHeight;
+//        }
+        widget.stage.width += widthDelta;
+        widget.stage.height += heightDelta;
     }
     
     postinit {
@@ -101,12 +155,9 @@ public class WidgetFrame extends Frame {
                     stroke: null, fill: transparent
                     cursor: Cursor.NW_RESIZE
                     blocksMouse: true
-                    onMousePressed: saveLastPos
+                    onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        widget.stage.width -= xDelta;
-                        x += xDelta;
-                        widget.stage.height -= yDelta;
-                        y += yDelta;
+                        resize(-xDelta, -yDelta, true, true);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -115,10 +166,9 @@ public class WidgetFrame extends Frame {
                     stroke: null, fill: transparent
                     cursor: Cursor.N_RESIZE
                     blocksMouse: true
-                    onMousePressed: saveLastPos
+                    onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        widget.stage.height -= yDelta;
-                        y += yDelta;
+                        resize(0, -yDelta, false, true);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -127,11 +177,9 @@ public class WidgetFrame extends Frame {
                     stroke: null, fill: transparent
                     cursor: Cursor.NE_RESIZE
                     blocksMouse: true
-                    onMousePressed: saveLastPos
+                    onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        widget.stage.width += xDelta;
-                        y += yDelta;
-                        widget.stage.height -= yDelta;
+                        resize(xDelta, -yDelta, false, true);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -141,9 +189,9 @@ public class WidgetFrame extends Frame {
                     stroke: null, fill: transparent
                     cursor: Cursor.E_RESIZE
                     blocksMouse: true
-                    onMousePressed: saveLastPos
+                    onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        widget.stage.width += xDelta;
+                        resize(xDelta, 0, false, false);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -153,10 +201,9 @@ public class WidgetFrame extends Frame {
                     stroke: null, fill: transparent
                     cursor: Cursor.SE_RESIZE
                     blocksMouse: true
-                    onMousePressed: saveLastPos
+                    onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        widget.stage.width += xDelta;
-                        widget.stage.height += yDelta;
+                        resize(xDelta, yDelta, false, false);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -166,9 +213,9 @@ public class WidgetFrame extends Frame {
                     stroke: null, fill: transparent
                     cursor: Cursor.S_RESIZE
                     blocksMouse: true
-                    onMousePressed: saveLastPos
+                    onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        widget.stage.height += yDelta;
+                        resize(0, yDelta, false, false);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -177,11 +224,9 @@ public class WidgetFrame extends Frame {
                     stroke: null, fill: transparent
                     cursor: Cursor.SW_RESIZE
                     blocksMouse: true
-                    onMousePressed: saveLastPos
+                    onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        widget.stage.width -= xDelta;
-                        x += xDelta;
-                        widget.stage.height += yDelta;
+                        resize(-xDelta, yDelta, true, false);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -190,20 +235,35 @@ public class WidgetFrame extends Frame {
                     stroke: null, fill: transparent
                     cursor: Cursor.W_RESIZE
                     blocksMouse: true
-                    onMousePressed: saveLastPos
+                    onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        widget.stage.width -= xDelta;
-                        x += xDelta;
+                        resize(-xDelta, 0, true, false);
                     })
                     onMouseReleased: doneResizing
                 }
             ]
-            onMousePressed: saveLastPos
-            onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                x += xDelta;
-                y += yDelta;
-            })
-            onMouseReleased: doneResizing
+            onMousePressed: saveLastPos;
+            onMouseDragged: function(e) {
+                if (not docking) {
+                    mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
+                        dragging = true;
+                        x += xDelta;
+                        y += yDelta;
+                    })(e);
+                    sidebar.hover(widget, e.getScreenX(), e.getScreenY());
+                }
+            }
+            onMouseReleased: function(e) {
+                if (not docking) {
+                    dragging = false;
+                    var screenX = e.getScreenX();
+                    var screenY = e.getScreenY();
+                    var targetBounds = sidebar.hover(widget, screenX, screenY);
+                    if (targetBounds <> null) {
+                        dock(targetBounds.x, targetBounds.y, screenX, screenY);
+                    }
+                }
+            }
             opacity: bind rolloverOpacity;
         }
         stage = Stage {

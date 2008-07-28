@@ -28,5 +28,13 @@ public class Widget extends Application {
     
     public attribute resizable:Boolean = false;
     
+    public attribute aspectRatio:Number = 0;
+    
     public attribute config:Component;
+    
+    public attribute onResize:function(width:Integer, height:Integer):Void;
+    
+    public attribute onDock:function():Void;
+
+    public attribute onUndock:function():Void;
 }

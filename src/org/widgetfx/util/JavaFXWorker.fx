@@ -19,6 +19,7 @@ package org.widgetfx.util;
 
 import java.lang.InterruptedException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CancellationException;
 import java.lang.Object;
 import javafx.async.AbstractAsyncOperation;
 import javax.swing.SwingWorker;
@@ -53,6 +54,8 @@ public class JavaFXWorker extends AbstractAsyncOperation {
                 try {
                     listener.onCompletion(get());
                 } catch (e1:InterruptedException) {
+                    listener.onCancel();
+                } catch (e3:CancellationException) {
                     listener.onCancel();
                 } catch (e2:ExecutionException) {
                     listener.onException(e2);
