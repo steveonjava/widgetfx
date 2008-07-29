@@ -31,6 +31,7 @@ import javax.imageio.*;
 import java.io.*;
 import java.util.*;
 import java.lang.*;
+import javax.swing.JFileChooser;
 
 /**
  * @author Stephen Chin
@@ -122,11 +123,28 @@ Widget {
     name: "Slide Show"
     resizable: true
     aspectRatio: 4.0/3.0
-    config: FlowPanel {
-        content: [
-            Label {text: "Directory:"},
-            TextField {text: bind directoryName with inverse}
-        ]
+    configuration: Configuration {
+        component: FlowPanel {
+            var browsebutton:Button = Button {
+                    text: "Browse...";
+                    action: function() {
+                        var chooser:JFileChooser = new JFileChooser(directoryName);
+                        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                        var returnVal = chooser.showOpenDialog(browsebutton.getJButton());
+                        if (returnVal == JFileChooser.APPROVE_OPTION) {
+                            directoryName = chooser.getSelectedFile().getAbsolutePath();
+                        }
+                    }
+                }
+            content: [
+                Label {text: "Directory:"},
+                TextField {text: bind directoryName with inverse},
+                browsebutton
+            ]
+        }
+        onSave: function() {
+            loadDirectory(directoryName);
+        }
     }
     stage: Stage {
         width: bind width with inverse

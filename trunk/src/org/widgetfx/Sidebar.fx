@@ -188,8 +188,8 @@ public class Sidebar extends Frame {
         return widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
     }
     
-    private function createWidgetView(app:Widget):Group {
-        if (app.onStart <> null) app.onStart();
+    private function createWidgetView(widget:Widget):Group {
+        if (widget.onStart <> null) widget.onStart();
         var group:Group = Group {
             cache: true
             horizontalAlignment: HorizontalAlignment.CENTER
@@ -198,8 +198,8 @@ public class Sidebar extends Frame {
                 // todo - standard size with and without DropShadow when docked
                 effect: bind if (resizing) then null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                 content: Group {
-                    content: app.stage.content
-                    clip: Rectangle {width: bind app.stage.width, height: bind app.stage.height}
+                    content: widget.stage.content
+                    clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
                 }
             }
             var docked = true;
@@ -214,11 +214,37 @@ public class Sidebar extends Frame {
             }
             onMouseClicked: function(e:MouseEvent):Void {
                 if (e.getButton() == 3) {
-                    Dialog {
+                    var configDialog:Dialog = Dialog {
                         stage: Stage {
                             content: [
                                 ComponentView {
-                                    component: app.config
+                                    component: BorderPanel {
+                                        center: widget.configuration.component
+                                        bottom: FlowPanel {
+                                            alignment: HorizontalAlignment.RIGHT
+                                            content: [
+                                                Button {
+                                                    text: "Save"
+                                                    action: function() {
+                                                        if (widget.configuration.onSave <> null) {
+                                                            widget.configuration.onSave();
+                                                        }
+                                                        configDialog.close();
+                                                    }
+                                                },
+                                                Button {
+                                                    text: "Cancel"
+                                                    action: function() {
+                                                        if (widget.configuration.onCancel <> null) {
+                                                            widget.configuration.onCancel();
+                                                        }
+                                                        configDialog.close();
+                                                    }
+                                                }
+                                            ]
+
+                                        }
+                                    }
                                 }
                             ]
                         }
@@ -235,19 +261,19 @@ public class Sidebar extends Frame {
                         delete group from widgetViews;
                         widgetFrame = WidgetFrame {
                             sidebar: this;
-                            widget: app;
+                            widget: widget;
                             x: xPos, y: yPos
                             // todo - add opacity to configuration and save
                             opacity: 0.8
                         }
                         docked = false;
-                        hover(app, e.getScreenX(), e.getScreenY(), true);
+                        hover(widget, e.getScreenX(), e.getScreenY(), true);
                     } else {
                         widgetFrame.x += e.getStageX().intValue() - lastScreenPosX;
                         widgetFrame.y += e.getStageY().intValue() - lastScreenPosY;
                         lastScreenPosX = e.getStageX().intValue();
                         lastScreenPosY = e.getStageY().intValue();
-                        hover(app, e.getScreenX(), e.getScreenY(), false);
+                        hover(widget, e.getScreenX(), e.getScreenY(), false);
                     }
                 }
             }
@@ -255,7 +281,7 @@ public class Sidebar extends Frame {
                 if (not docking and not docked) {
                     var screenX = e.getScreenX();
                     var screenY = e.getScreenY();
-                    var targetBounds = hover(app, screenX, screenY, false);
+                    var targetBounds = hover(widget, screenX, screenY, false);
                     if (targetBounds <> null) {
                         docking = true;
                         widgetFrame.dock(targetBounds.x, targetBounds.y, screenX, screenY);

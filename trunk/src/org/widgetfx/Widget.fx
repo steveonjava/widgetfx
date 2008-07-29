@@ -17,7 +17,6 @@
  */
 package org.widgetfx;
 import javafx.application.Application;
-import javafx.ext.swing.Component;
 
 /**
  * @author Stephen Chin
@@ -30,7 +29,7 @@ public class Widget extends Application {
     
     public attribute aspectRatio:Number = 0;
     
-    public attribute config:Component;
+    public attribute configuration:Configuration;
     
     public attribute onResize:function(width:Integer, height:Integer):Void;
     
