@@ -32,11 +32,14 @@ import javafx.ext.swing.*;
 import javafx.animation.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
 import com.sun.javafx.runtime.Entry;
 import java.util.Arrays;
 import java.awt.Point;
+import java.lang.System;
 
 /**
  * @author Stephen Chin
@@ -48,9 +51,13 @@ public class Sidebar extends Frame {
     static attribute BORDER = 5;
     static attribute DS_RADIUS = 5;
     
+    private attribute left = new JRadioButtonMenuItem("Left");
+    private attribute right = new JRadioButtonMenuItem("Right");
+    private attribute mainMenu = createMainMenu();
     private attribute logo:Node;
     private attribute widgets:Widget[];
     private attribute widgetViews:Node[];
+    private attribute hoverPlaceholder;
     
     private attribute currentGraphics:java.awt.GraphicsConfiguration;
     private attribute screenBounds = bind currentGraphics.getBounds() on replace {
@@ -58,6 +65,9 @@ public class Sidebar extends Frame {
     }
     private attribute dockLeft:Boolean on replace {
         updateDockLocation();
+        // todo - bind directly once JRadioButtonMenuItem support is added
+        left.setSelected(dockLeft);
+        right.setSelected(not dockLeft);
     };
     private attribute resizing:Boolean;
     private attribute dragging:Boolean;
@@ -97,8 +107,58 @@ public class Sidebar extends Frame {
         loadContent();
     }
     
-    private attribute hoverPlaceholder;
-
+    public function createMainMenu():JPopupMenu {
+        // todo - replace with javafx JPopupMenu equivalent when one exists
+        var menu = new JPopupMenu();
+        // todo - replace with javafx JCheckBoxMenuItem equivalent when one exists
+        var alwaysOnTop = new JCheckBoxMenuItem("Always on Top");
+        alwaysOnTop.addActionListener(ActionListener {
+            public function actionPerformed(e: ActionEvent): Void {
+                window.setAlwaysOnTop(alwaysOnTop.isSelected());
+            }
+        });
+        menu.add(alwaysOnTop);
+        
+        // todo - replace with javafx Menu once JRadioButtonMenuItem support is added
+        var group = new ButtonGroup();
+        var dockSubmenu = new JMenu("Dock Sidebar");
+        group.add(left);
+        left.setSelected(dockLeft);
+        left.addActionListener(ActionListener {
+            public function actionPerformed(e: ActionEvent): Void {
+                dockLeft = left.isSelected();
+            }
+        });
+        dockSubmenu.add(left);
+        group.add(right);
+        right.setSelected(not dockLeft);
+        right.addActionListener(ActionListener {
+            public function actionPerformed(e: ActionEvent): Void {
+                dockLeft = not right.isSelected();
+            }
+        });
+        dockSubmenu.add(right);
+        menu.add(dockSubmenu);
+        menu.addSeparator();
+        menu.add(MenuItem {
+            text: "Hide"
+            action: function() {
+                hide();
+            }
+        }.getJMenuItem());
+        menu.add(MenuItem {
+            text: "Exit"
+            action: function() {
+                System.exit(0);
+            }
+        }.getJMenuItem());
+        return menu;
+    }
+    
+    public function hide() {
+        (window as java.awt.Frame).setExtendedState(java.awt.Frame.ICONIFIED);
+    }
+    
     public function hover(widget:Widget, screenX:Integer, screenY:Integer):java.awt.Rectangle {
         return hover(widget, screenX, screenY, false);
     }
@@ -309,7 +369,7 @@ public class Sidebar extends Frame {
         }
     }
     
-    public function loadContent():Void {
+    private function loadContent():Void {
         var rolloverOpacity = 0.01;
         var rolloverTimeline = Timeline {
             autoReverse: true, toggle: true
@@ -333,7 +393,7 @@ public class Sidebar extends Frame {
             ]
         }
         var menus = HBox { // Menu Buttons
-            translateX: width, translateY: 4
+            translateX: bind width, translateY: 4
             spacing: 4
             horizontalAlignment: HorizontalAlignment.TRAILING
             content: [
@@ -362,6 +422,9 @@ public class Sidebar extends Frame {
                     onMouseExited: function(e) {
                         color = Color.GRAY;
                     }
+                    onMouseReleased: function(e) {
+                        mainMenu.show(window, e.getStageX(), e.getStageY());
+                    }
                 },
                 Group {
                     var color = Color.GRAY;
@@ -386,7 +449,7 @@ public class Sidebar extends Frame {
                         color = Color.GRAY;
                     }
                     onMouseClicked: function(e) {
-                        java.lang.System.exit(0);
+                        hide();
                     }
                 }
             ]
