@@ -51,11 +51,22 @@ import com.sun.javafx.runtime.sequence.Sequences;
  * @author Stephen Chin
  */
 var feedUrl = "http://www.animesuki.com/rss.php";
-var feedInfoCache = HashMapFeedInfoCache.getInstance();
-var feedFetcher:FeedFetcher = new HttpURLFeedFetcher(feedInfoCache);
-var feed:SyndFeed = feedFetcher.retrieveFeed(new URL(feedUrl));
-var entries = feed.getEntries();
-var entrySequence:SyndEntryImpl[] = Sequences.make(SyndEntryImpl.<<class>>, entries);
+var feed:SyndFeed;
+var entrySequence:SyndEntryImpl[];
+
+var border = 6;
+var width = 150;
+var height = 200;
+var entryWidth = bind width - border * 2;
+var entryHeight = 25; // todo don't hardcode the height of the entries
+
+private function updateFeed():Void {
+    var feedInfoCache = HashMapFeedInfoCache.getInstance();
+    var feedFetcher:FeedFetcher = new HttpURLFeedFetcher(feedInfoCache);
+    feed = feedFetcher.retrieveFeed(new URL(feedUrl));
+    var entries = feed.getEntries();
+    entrySequence = Sequences.make(SyndEntryImpl.<<class>>, entries);
+}
 
 private function dateSince(date:Date):String {
     var offset:Number = System.currentTimeMillis() - date.getTime();
@@ -75,15 +86,98 @@ private function launchUri(uri:URI) {
     }
 }
 
-var border = 6;
-var width = 150;
-var height = 200;
-var entryWidth = bind width - border * 2;
-var entryHeight = 25; // todo don't hardcode the height of the entries
+private function createEntryDisplay(entry:SyndEntryImpl):Node {
+    Group {
+        var groupOpacity = 0.0;
+        var groupFill = Color.BLACK;
+        content: [
+            Rectangle {
+                width: bind entryWidth
+                height: entryHeight
+                opacity: bind groupOpacity
+                fill: bind groupFill
+            },
+            VBox {
+                content: [
+                    BoundedText {
+                        font: Font {size: 11}
+                        fill: Color.WHITE
+                        textOrigin: TextOrigin.TOP
+                        text: entry.getTitle()
+                        width: bind entryWidth - border * 2
+                    },
+                    Group {content: [
+                        BoundedText {
+                            font: Font {size: 9}
+                            fill: Color.CYAN
+                            textOrigin: TextOrigin.TOP
+                            horizontalAlignment: HorizontalAlignment.LEADING
+                            text: feed.getTitle()
+                            width: bind entryWidth - 55
+                        },
+                        Text {
+                            font: Font {size: 9}
+                            content: dateSince(entry.getPublishedDate())
+                            fill: Color.CYAN
+                            textOrigin: TextOrigin.TOP
+                            horizontalAlignment: HorizontalAlignment.TRAILING
+                            translateX: bind entryWidth
+                        }
+                    ]}
+                ],
+            }
+        ]
+        onMouseEntered: function(event):Void {
+            groupFill = Color.SLATEGRAY;
+            groupOpacity = 0.6;
+        }
+        onMouseExited: function(event):Void {
+            groupFill = Color.BLACK;
+            groupOpacity = 0.0;
+        }
+        onMousePressed: function(event):Void {
+            groupFill = Color.DARKGRAY;
+            groupOpacity = 0.6;
+        }
+        onMouseClicked: function(event):Void {
+            if (event.getButton() == 1) {
+                groupFill = Color.SLATEGRAY;
+                launchUri(new URI(entry.getLink()));
+                groupOpacity = 0.6;
+            }
+        }
+    }
+}
+
+Timeline {
+    repeatCount: Timeline.INDEFINITE
+    keyFrames: [
+        KeyFrame {time: 0s, action: updateFeed},
+        KeyFrame {time: 15m}
+    ]
+}.start();
 
 Widget {
     name: "Web Feed"
     resizable: true
+    configuration: Configuration {
+        
+        component: ClusterPanel {
+            var label = Label {text: "RSS Feed:"};
+            var textField = TextField {text: bind feedUrl with inverse};
+            vcluster: ParallelCluster { content: [
+                label,
+                textField
+            ]}
+            hcluster: SequentialCluster { content: [
+                label,
+                textField
+            ]}
+        }
+        onSave: function() {
+            updateFeed();
+        }
+    }
     stage: Stage {
         width: bind width with inverse
         height: bind height with inverse
@@ -101,65 +195,8 @@ Widget {
             VBox {
                 translateX: border, translateY: border
                 clip: Rectangle {width: bind entryWidth, height: bind height - border * 2}
-                content: for (entry in entrySequence) {
-                    Group {
-                        var groupOpacity = 0.0;
-                        var groupFill = Color.BLACK;
-                        content: [
-                            Rectangle {
-                                width: bind entryWidth
-                                height: entryHeight
-                                opacity: bind groupOpacity
-                                fill: bind groupFill
-                            },
-                            VBox {
-                                content: [
-                                    BoundedText {
-                                        font: Font {size: 11}
-                                        fill: Color.WHITE
-                                        textOrigin: TextOrigin.TOP
-                                        text: entry.getTitle()
-                                        width: bind entryWidth - border * 2
-                                    },
-                                    Group {content: [
-                                        BoundedText {
-                                            font: Font {size: 9}
-                                            fill: Color.CYAN
-                                            textOrigin: TextOrigin.TOP
-                                            horizontalAlignment: HorizontalAlignment.LEADING
-                                            text: feed.getTitle()
-                                            width: bind entryWidth - 55
-                                        },
-                                        Text {
-                                            font: Font {size: 9}
-                                            content: dateSince(entry.getPublishedDate())
-                                            fill: Color.CYAN
-                                            textOrigin: TextOrigin.TOP
-                                            horizontalAlignment: HorizontalAlignment.TRAILING
-                                            translateX: bind entryWidth
-                                        }
-                                    ]}
-                                ],
-                            }
-                        ]
-                        onMouseEntered: function(event):Void {
-                            groupFill = Color.SLATEGRAY;
-                            groupOpacity = .6;
-                        }
-                        onMouseExited: function(event):Void {
-                            groupFill = Color.BLACK;
-                            groupOpacity = 0;
-                        }
-                        onMousePressed: function(event):Void {
-                            groupFill = Color.DARKGRAY;
-                            groupOpacity = .6;
-                        }
-                        onMouseClicked: function(event):Void {
-                            groupFill = Color.SLATEGRAY;
-                            launchUri(new URI(entry.getLink()));
-                            groupOpacity = .6;
-                        }
-                    }
+                content: bind for (entry in entrySequence) {
+                    createEntryDisplay(entry);
                 }
             }
         ]
