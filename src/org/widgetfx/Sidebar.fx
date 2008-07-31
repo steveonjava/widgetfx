@@ -78,18 +78,19 @@ public class Sidebar extends Frame {
     public attribute preferredWidth = DEFAULT_WIDTH + BORDER * 2;
     
     private attribute transparentBG = bind if (dockLeft) then leftBG else rightBG;
-    private attribute leftBG = LinearGradient {
+    private attribute bgOpacity = 0.7;
+    private attribute leftBG = bind LinearGradient {
         endY: 0
         stops: [
-            Stop {offset: 0.0, color: Color.color(0, 0, 0, .5)},
+            Stop {offset: 0.0, color: Color.color(0, 0, 0, bgOpacity)},
             Stop {offset: 1.0, color: Color.color(0, 0, 0, 0)}
         ]
     }
-    private attribute rightBG = LinearGradient {
+    private attribute rightBG = bind LinearGradient {
         endY: 0
         stops: [
             Stop {offset: 0.0, color: Color.color(0, 0, 0, 0)},
-            Stop {offset: 1.0, color: Color.color(0, 0, 0, .7)}
+            Stop {offset: 1.0, color: Color.color(0, 0, 0, bgOpacity)}
         ]
     }
     
@@ -320,7 +321,7 @@ public class Sidebar extends Frame {
         var rolloverOpacity = 0.01;
         var rolloverTimeline = Timeline {
             autoReverse: true, toggle: true
-            keyFrames: KeyFrame {time: 1s, values: rolloverOpacity => 0.8 tween Interpolator.EASEBOTH}
+            keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => 0.8 tween Interpolator.EASEBOTH, bgOpacity => 0.8 tween Interpolator.EASEBOTH]}
         }
         logo = HBox { // Logo Text
             translateX: BORDER, translateY: BORDER

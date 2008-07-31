@@ -40,7 +40,7 @@ import javax.swing.JFileChooser;
  */
 var home = System.getProperty("user.home");
 var directoryName = (new File(home, "My Documents\\My Pictures")).getAbsolutePath();
-var directory:File = bind loadDirectory(directoryName);
+var directory:File;
 var imageFiles:File[];
 var random = true;
 var width = 150;

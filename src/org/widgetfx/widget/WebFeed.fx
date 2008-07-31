@@ -51,7 +51,7 @@ import com.sun.javafx.runtime.sequence.Sequences;
 /**
  * @author Stephen Chin
  */
-var feedUrl = "http://www.animesuki.com/rss.php";
+var feedUrl = "http://www.animenewsnetwork.com/all/rss.xml";
 var feed:SyndFeed;
 var entrySequence:SyndEntryImpl[];
 
