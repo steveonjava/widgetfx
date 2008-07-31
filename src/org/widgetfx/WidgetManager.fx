@@ -17,6 +17,8 @@
  */
 package org.widgetfx;
 
+import org.widgetfx.config.Configuration;
+
 /**
  * @author Stephen Chin
  * @author kcombs

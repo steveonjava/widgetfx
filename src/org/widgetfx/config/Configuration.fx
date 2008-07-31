@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx;
-import org.widgetfx.config.Property;
+package org.widgetfx.config;
+
+import org.widgetfx.WidgetManager;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -38,7 +39,7 @@ import javafx.ext.swing.FlowPanel;
 public class Configuration {
     public attribute component:Component;
     
-    public attribute configurationProperties:Property[];
+    public attribute properties:Property[];
     
     public attribute onLoad:function();
     
@@ -54,17 +55,17 @@ public class Configuration {
     
     public function load() {
         var propertyFile = getPropertyFile();
-        if (propertyFile.exists() and configurationProperties <> null) {
-            var properties = Properties {};
+        if (propertyFile.exists() and properties <> null) {
+            var savedProperties = Properties {};
             var reader = new FileReader(propertyFile);
             try {
-                properties.load(reader);
+                savedProperties.load(reader);
             } finally {
                 reader.close();
             }
-            for (config in configurationProperties) {
-                if (properties.containsKey(config.name)) {
-                    config.setStringValue(properties.get(config.name) as String);
+            for (property in properties) {
+                if (savedProperties.containsKey(property.name)) {
+                    property.setStringValue(savedProperties.get(property.name) as String);
                 }
             }
         }
@@ -75,16 +76,16 @@ public class Configuration {
     
     public function save() {
         var propertyFile = getPropertyFile();
-        if (configurationProperties <> null) {
-            var properties = Properties {};
-            for (config in configurationProperties) {
-                properties.put(config.name, config.getStringValue());
+        if (properties <> null) {
+            var savedProperties = Properties {};
+            for (property in properties) {
+                savedProperties.put(property.name, property.getStringValue());
             }
             propertyFile.getParentFile().mkdirs();
             propertyFile.createNewFile();
             var writer = new FileWriter(propertyFile);
             try {
-                properties.store(writer, null);
+                savedProperties.store(writer, null);
             } finally {
                 writer.close();
             }

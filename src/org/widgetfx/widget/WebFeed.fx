@@ -18,6 +18,7 @@
 package org.widgetfx.widget;
 
 import org.widgetfx.*;
+import org.widgetfx.config.*;
 import org.widgetfx.util.*;
 import javafx.application.*;
 import javafx.ext.swing.*;
@@ -161,7 +162,13 @@ Widget {
     name: "Web Feed"
     resizable: true
     configuration: Configuration {
-        
+        properties: [
+            StringProperty {
+                name: "feedUrl";
+                value: bind feedUrl with inverse;
+            }
+        ]
+
         component: ClusterPanel {
             var label = Label {text: "RSS Feed:"};
             var textField = TextField {text: bind feedUrl with inverse};
