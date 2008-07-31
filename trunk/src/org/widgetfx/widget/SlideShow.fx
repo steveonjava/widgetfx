@@ -22,9 +22,11 @@ import org.widgetfx.config.*;
 import org.widgetfx.util.*;
 import javafx.application.*;
 import javafx.ext.swing.*;
+import javafx.scene.*;
 import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
 import javafx.scene.image.*;
+import javafx.scene.text.*;
 import javafx.util.*;
 import javafx.animation.*;
 import javafx.lang.*;
@@ -41,6 +43,7 @@ import javax.swing.JFileChooser;
 var home = System.getProperty("user.home");
 var directoryName = (new File(home, "My Documents\\My Pictures")).getAbsolutePath();
 var directory:File;
+var status = "Loading Images...";
 var imageFiles:File[];
 var random = true;
 var width = 150;
@@ -64,7 +67,9 @@ var timeline = Timeline {
 }
 
 private function updateImage():Void {
-    if (currentFile == null or not currentFile.exists()) {
+    if (not currentFile.exists()) {
+        currentImage = null;
+        status = "Missing File: {currentFile}";
         return;
     }
     if (worker <> null) {
@@ -78,6 +83,7 @@ private function updateImage():Void {
         onDone: function(result) {
             if (worker.result <> null) {
                 currentImage = worker.result as Image;
+                status = null;
             }
         }
     }
@@ -87,18 +93,19 @@ private function loadDirectory(directoryName:String):File {
     var directory = new File(directoryName);
     if (directory.exists()) {
         timeline.stop();
-        var worker:JavaFXWorker = JavaFXWorker {
-            inBackground: function() {
-                var imageFiles = getImageFiles(directory);
-                if (random) {
-                    imageFiles = Sequences.shuffle(imageFiles) as File[];
-                }
-                return imageFiles as Object;
+        if (worker <> null) {
+            worker.cancel();
+        }
+        currentImage = null;
+        status = "Loading Images...";
+        imageFiles = getImageFiles(directory);
+        if (imageFiles.size() > 0) {
+            if (random) {
+                imageFiles = Sequences.shuffle(imageFiles) as File[];
             }
-            onDone: function(result) {
-                imageFiles = worker.result as File[];
-                timeline.start();
-            }
+            timeline.start();
+        } else {
+            status = "No Images Found"
         }
     }
     return directory;
@@ -112,7 +119,7 @@ private function getImageFiles(directory:File):File[] {
         var extension = if (index == -1) then null else name.substring(index + 1);
         if (file.isDirectory()) {
             getImageFiles(file);
-        } else if (ImageIO.getImageReadersBySuffix(extension).hasNext()) {
+        } else if (extension <> null and ImageIO.getImageReadersBySuffix(extension).hasNext()) {
             file
         } else {
             []
@@ -164,6 +171,24 @@ Widget {
         width: bind width with inverse
         height: bind height with inverse
         content: [
+            Group {
+                content: [
+                    Rectangle {
+                        width: bind width
+                        height: bind height
+                        fill: Color.BLACK
+                        arcWidth: 8, arcHeight: 8
+                    },
+                    Text {
+                        translateY: bind height / 2
+                        translateX: bind width / 2
+                        horizontalAlignment: HorizontalAlignment.CENTER
+                        content: bind status;
+                        fill: Color.WHITE;
+                    }
+                ]
+                opacity: bind if (status == null) then 0 else 1;
+            },
             ImageView {
                 image: bind currentImage
             }
@@ -172,7 +197,9 @@ Widget {
     onResize: function(width:Integer, height:Integer) {
         if (imageHeight <> height) {
             imageHeight = height;
-            updateImage();
+            if (status == null) {
+                updateImage();
+            }
         }
     }
 }
