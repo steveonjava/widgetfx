@@ -18,6 +18,7 @@
 package org.widgetfx.widget;
 
 import org.widgetfx.*;
+import org.widgetfx.config.*;
 import org.widgetfx.util.*;
 import javafx.application.*;
 import javafx.ext.swing.*;
@@ -124,6 +125,16 @@ Widget {
     resizable: true
     aspectRatio: 4.0/3.0
     configuration: Configuration {
+        configurationProperties: [
+            StringProperty {
+                name: "directoryName"
+                value: bind directoryName with inverse
+            },
+            BooleanProperty {
+                name: "random"
+                value: bind random with inverse
+            }
+        ]
         component: FlowPanel {
             var browsebutton:Button = Button {
                     text: "Browse...";
@@ -141,6 +152,9 @@ Widget {
                 TextField {text: bind directoryName with inverse},
                 browsebutton
             ]
+        }
+        onLoad: function() {
+            loadDirectory(directoryName);
         }
         onSave: function() {
             loadDirectory(directoryName);

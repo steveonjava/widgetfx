@@ -279,6 +279,11 @@ public class WidgetFrame extends Frame {
                             clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
                         }
                     }
+                    onMouseClicked: function(e:MouseEvent):Void {
+                        if (e.getButton() == 3 and widget.configuration <> null) {
+                            widget.configuration.showDialog();
+                        }
+                    }
                 }
             ]
             fill: null
