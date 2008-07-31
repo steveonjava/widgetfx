@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.widgetfx;
-import java.lang.Class;
 import org.widgetfx.widget.*;
 import javafx.scene.paint.*;
 import javafx.application.*;
@@ -34,9 +33,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import com.sun.javafx.runtime.sequence.Sequence;
-import com.sun.javafx.runtime.sequence.Sequences;
-import com.sun.javafx.runtime.Entry;
 import java.util.Arrays;
 import java.awt.Point;
 import java.lang.System;
@@ -55,9 +51,10 @@ public class Sidebar extends Frame {
     private attribute right = new JRadioButtonMenuItem("Right");
     private attribute mainMenu = createMainMenu();
     private attribute logo:Node;
-    private attribute widgets:Widget[];
     private attribute widgetViews:Node[];
     private attribute hoverPlaceholder;
+    
+    public attribute widgets = bind WidgetManager.getInstance().widgets;
     
     private attribute currentGraphics:java.awt.GraphicsConfiguration;
     private attribute screenBounds = bind currentGraphics.getBounds() on replace {
@@ -103,8 +100,12 @@ public class Sidebar extends Frame {
     }
 
     postinit {
-        loadWidgets();
         loadContent();
+        WidgetManager.getInstance().loadWidgets();
+        widgetViews = for (instance in widgets) {
+            updateWidth(instance.widget);
+            createWidgetView(instance.widget);
+        };
     }
     
     public function createMainMenu():JPopupMenu {
@@ -228,25 +229,6 @@ public class Sidebar extends Frame {
         }
         return false;
     }
-
-    private function loadWidgets():Void {
-        widgets = [
-            loadWidget("org.widgetfx.widget.Clock"),
-            loadWidget("org.widgetfx.widget.SlideShow"),
-            loadWidget("org.widgetfx.widget.WebFeed")
-        ];
-        widgetViews = for (widget in widgets) {
-            updateWidth(widget);
-            createWidgetView(widget);
-        };
-    }
-    
-    private function loadWidget(widgetClassName:String) {
-        var widgetClass:Class = Class.forName(widgetClassName);
-        var name = Entry.entryMethodName();
-        var args = Sequences.make(java.lang.String.<<class>>) as java.lang.Object;
-        return widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
-    }
     
     private function createWidgetView(widget:Widget):Group {
         if (widget.onStart <> null) widget.onStart();
@@ -273,43 +255,8 @@ public class Sidebar extends Frame {
                 lastScreenPosY = e.getStageY().intValue();
             }
             onMouseClicked: function(e:MouseEvent):Void {
-                if (e.getButton() == 3) {
-                    var configDialog:Dialog = Dialog {
-                        stage: Stage {
-                            content: [
-                                ComponentView {
-                                    component: BorderPanel {
-                                        center: widget.configuration.component
-                                        bottom: FlowPanel {
-                                            alignment: HorizontalAlignment.RIGHT
-                                            content: [
-                                                Button {
-                                                    text: "Save"
-                                                    action: function() {
-                                                        if (widget.configuration.onSave <> null) {
-                                                            widget.configuration.onSave();
-                                                        }
-                                                        configDialog.close();
-                                                    }
-                                                },
-                                                Button {
-                                                    text: "Cancel"
-                                                    action: function() {
-                                                        if (widget.configuration.onCancel <> null) {
-                                                            widget.configuration.onCancel();
-                                                        }
-                                                        configDialog.close();
-                                                    }
-                                                }
-                                            ]
-
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                        visible: true
-                    }
+                if (e.getButton() == 3 and widget.configuration <> null) {
+                    widget.configuration.showDialog();
                 }
             }
             onMouseDragged: function(e:MouseEvent):Void {
@@ -472,13 +419,13 @@ public class Sidebar extends Frame {
                                 else screenBounds.x + screenBounds.width - e.getScreenX().intValue();
                         width = if (width < MIN_WIDTH) then MIN_WIDTH else if (width > MAX_WIDTH) then MAX_WIDTH else width;
                         updateDockLocation();
-                        for (widget in widgets) {
-                            updateWidth(widget, false);
+                        for (instance in widgets) {
+                            updateWidth(instance.widget, false);
                         }
                     }
                     onMouseReleased: function(e) {
-                        for (widget in widgets where widget.onResize <> null) {
-                            widget.onResize(widget.stage.width, widget.stage.height);
+                        for (instance in widgets where instance.widget.onResize <> null) {
+                            instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                         }
                         resizing = false;
                     }
