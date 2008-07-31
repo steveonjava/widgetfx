@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.widgetfx;
+import org.widgetfx.config.Configuration;
 import javafx.application.Application;
 
 /**

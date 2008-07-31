@@ -125,7 +125,7 @@ Widget {
     resizable: true
     aspectRatio: 4.0/3.0
     configuration: Configuration {
-        configurationProperties: [
+        properties: [
             StringProperty {
                 name: "directoryName"
                 value: bind directoryName with inverse
