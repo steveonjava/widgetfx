@@ -11,7 +11,7 @@
         <all-permissions/>
     </security>
     <resources>
-        <j2se version="1.6+"/>
+        <j2se version="1.6+" max-heap-size="256m"/>
         <jar href="javafxrt.jar"      main="false"/>
         <jar href="javafxgui.jar"     main="false"/>
         <jar href="javafx-swing.jar"  main="false"/>
