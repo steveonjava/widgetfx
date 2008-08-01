@@ -83,7 +83,7 @@ public class WidgetFrame extends Frame {
     }
     
     private attribute doneResizing = function(e:MouseEvent):Void {
-        if (widget.onResize <> null) {
+        if (widget.onResize != null) {
             widget.onResize(widget.stage.width, widget.stage.height);
         }
         resizing = false;
@@ -122,11 +122,11 @@ public class WidgetFrame extends Frame {
         if (updateY) {
             y -= heightDelta;
         }
-//        if (widget.aspectRatio <> 0) {
+//        if (widget.aspectRatio != 0) {
 //            var aspectHeight = (newWidth / widget.aspectRatio).intValue();
 //            var aspectWidth = (newHeight * widget.aspectRatio).intValue();
-//            newWidth = if (aspectWidth > newWidth) then aspectWidth else newWidth;
-//            newHeight = if (aspectHeight > newHeight) then aspectHeight else newHeight;
+//            newWidth = if (aspectWidth > newWidth) aspectWidth else newWidth;
+//            newHeight = if (aspectHeight > newHeight) aspectHeight else newHeight;
 //        }
         widget.stage.width += widthDelta;
         widget.stage.height += heightDelta;
@@ -136,7 +136,7 @@ public class WidgetFrame extends Frame {
         var rolloverOpacity = 0.0;
         var rolloverTimeline = Timeline {
             autoReverse: true, toggle: true
-            keyFrames: KeyFrame {time: 1s, values: rolloverOpacity => (if (widget.resizable) then 0.8 else 0.0) tween Interpolator.EASEBOTH}
+            keyFrames: KeyFrame {time: 1s, values: rolloverOpacity => (if (widget.resizable) 0.8 else 0.0) tween Interpolator.EASEBOTH}
         }
         var dragRect:Group = Group {
             var transparent = Color.rgb(0, 0, 0, .01);
@@ -259,7 +259,7 @@ public class WidgetFrame extends Frame {
                     var screenX = e.getScreenX();
                     var screenY = e.getScreenY();
                     var targetBounds = sidebar.hover(widget, screenX, screenY);
-                    if (targetBounds <> null) {
+                    if (targetBounds != null) {
                         dock(targetBounds.x, targetBounds.y, screenX, screenY);
                     }
                 }
@@ -273,14 +273,14 @@ public class WidgetFrame extends Frame {
                     cache: true
                     translateX: BORDER, translateY: BORDER
                     content: Group {
-                        effect: bind if (resizing) then null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                        effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                         content: Group {
                             content: widget.stage.content
                             clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
                         }
                     }
                     onMouseClicked: function(e:MouseEvent):Void {
-                        if (e.getButton() == 3 and widget.configuration <> null) {
+                        if (e.getButton() == 3 and widget.configuration != null) {
                             widget.configuration.showDialog();
                         }
                     }

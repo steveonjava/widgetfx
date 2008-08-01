@@ -41,7 +41,12 @@ import javax.swing.JFileChooser;
  * @author Keith Combs
  */
 var home = System.getProperty("user.home");
-var directoryName = (new File(home, "My Documents\\My Pictures")).getAbsolutePath();
+var defaultDirectories:File[] = [
+    new File(home, "Pictures"),
+    new File(home, "My Documents\\My Pictures"),
+    new File(home)
+][d|d.exists()];
+var directoryName = (defaultDirectories[0]).getAbsolutePath();
 var directory:File;
 var status = "Loading Images...";
 var imageFiles:File[];
@@ -72,28 +77,27 @@ private function updateImage():Void {
         status = "Missing File: {currentFile}";
         return;
     }
-    if (worker <> null) {
+    if (worker != null) {
         worker.cancel();
     }
     worker = JavaFXWorker {
         inBackground: function() {
-            var image = Image {url: currentFile.toURL().toString(), height: imageHeight};
-            return image;
+            return Image {url: currentFile.toURL().toString(), height: imageHeight};
         }
         onDone: function(result) {
-            if (worker.result <> null) {
-                currentImage = worker.result as Image;
-                status = null;
-            }
+            currentImage = result as Image;
+            status = null;
         }
     }
 }
 
 private function loadDirectory(directoryName:String):File {
     var directory = new File(directoryName);
-    if (directory.exists()) {
+    if (not directory.exists()) {
+        status = "Directory Doesn't Exist";
+    } else {
         timeline.stop();
-        if (worker <> null) {
+        if (worker != null) {
             worker.cancel();
         }
         currentImage = null;
@@ -116,10 +120,10 @@ private function getImageFiles(directory:File):File[] {
     return for (file in files) {
         var name = file.getName();
         var index = name.lastIndexOf('.');
-        var extension = if (index == -1) then null else name.substring(index + 1);
+        var extension = if (index == -1) null else name.substring(index + 1);
         if (file.isDirectory()) {
             getImageFiles(file);
-        } else if (extension <> null and ImageIO.getImageReadersBySuffix(extension).hasNext()) {
+        } else if (extension != null and ImageIO.getImageReadersBySuffix(extension).hasNext()) {
             file
         } else {
             []
@@ -187,7 +191,7 @@ Widget {
                         fill: Color.WHITE;
                     }
                 ]
-                opacity: bind if (status == null) then 0 else 1;
+                opacity: bind if (status == null) 0 else 1;
             },
             ImageView {
                 image: bind currentImage
@@ -195,7 +199,7 @@ Widget {
         ]
     }
     onResize: function(width:Integer, height:Integer) {
-        if (imageHeight <> height) {
+        if (imageHeight != height) {
             imageHeight = height;
             if (status == null) {
                 updateImage();
