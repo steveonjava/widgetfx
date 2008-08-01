@@ -55,7 +55,7 @@ public class Configuration {
     
     public function load() {
         var propertyFile = getPropertyFile();
-        if (propertyFile.exists() and properties <> null) {
+        if (propertyFile.exists() and properties != null) {
             var savedProperties = Properties {};
             var reader = new FileReader(propertyFile);
             try {
@@ -69,14 +69,14 @@ public class Configuration {
                 }
             }
         }
-        if (onLoad <> null) {
+        if (onLoad != null) {
             onLoad();
         }
     }
     
     public function save() {
         var propertyFile = getPropertyFile();
-        if (properties <> null) {
+        if (properties != null) {
             var savedProperties = Properties {};
             for (property in properties) {
                 savedProperties.put(property.name, property.getStringValue());
@@ -90,13 +90,13 @@ public class Configuration {
                 writer.close();
             }
         }
-        if (onSave <> null) {
+        if (onSave != null) {
             onSave();
         }
     }
     
     public function cancel() {
-        if (onCancel <> null) {
+        if (onCancel != null) {
             onCancel();
         }
     }

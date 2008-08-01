@@ -72,10 +72,15 @@ private function updateFeed():Void {
 private function dateSince(date:Date):String {
     var offset:Number = System.currentTimeMillis() - date.getTime();
     var minutes = (offset / 60000).intValue();
-    var hours = (offset / 3600000).intValue();
-    return if (hours <= 0)
-        then "{minutes} min{if (minutes > 1) then 's' else ''} ago"
-        else "{hours} hr{if (hours > 1) then 's' else ''} ago";
+    var hours = minutes / 60;
+    var days = hours / 24;
+    return if (days > 0) {
+        "{days} day{if (days > 1) 's' else ''} ago"
+    } else if (hours > 0) {
+        "{hours} hr{if (hours > 1) 's' else ''} ago";
+    } else {
+        "{minutes} min{if (minutes > 1) 's' else ''} ago"
+    }
 }
 
 private function launchUri(uri:URI) {

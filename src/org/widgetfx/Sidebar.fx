@@ -47,8 +47,6 @@ public class Sidebar extends Frame {
     static attribute BORDER = 5;
     static attribute DS_RADIUS = 5;
     
-    private attribute left = new JRadioButtonMenuItem("Left");
-    private attribute right = new JRadioButtonMenuItem("Right");
     private attribute mainMenu = createMainMenu();
     private attribute logo:Node;
     private attribute widgetViews:Node[];
@@ -61,23 +59,25 @@ public class Sidebar extends Frame {
         updateDockLocation();
     }
     private attribute dockLeft:Boolean on replace {
+        dockRight = not dockLeft;
         updateDockLocation();
-        // todo - bind directly once JRadioButtonMenuItem support is added
-        left.setSelected(dockLeft);
-        right.setSelected(not dockLeft);
+    };
+    private attribute dockRight:Boolean on replace {
+        dockLeft = not dockRight;
+        updateDockLocation();
     };
     private attribute resizing:Boolean;
     private attribute dragging:Boolean;
     
     private function updateDockLocation() {
         height = screenBounds.height;
-        x = screenBounds.x + (if (dockLeft) then 0 else screenBounds.width - width);
+        x = screenBounds.x + (if (dockLeft) 0 else screenBounds.width - width);
         y = screenBounds.y;
     }
     
     public attribute preferredWidth = DEFAULT_WIDTH + BORDER * 2;
     
-    private attribute transparentBG = bind if (dockLeft) then leftBG else rightBG;
+    private attribute transparentBG = bind if (dockLeft) leftBG else rightBG;
     private attribute bgOpacity = 0.7;
     private attribute leftBG = bind LinearGradient {
         endY: 0
@@ -110,51 +110,50 @@ public class Sidebar extends Frame {
     }
     
     public function createMainMenu():JPopupMenu {
-        // todo - replace with javafx JPopupMenu equivalent when one exists
-        var menu = new JPopupMenu();
-        // todo - replace with javafx JCheckBoxMenuItem equivalent when one exists
-        var alwaysOnTop = new JCheckBoxMenuItem("Always on Top");
-        alwaysOnTop.addActionListener(ActionListener {
-            public function actionPerformed(e: ActionEvent): Void {
-                window.setAlwaysOnTop(alwaysOnTop.isSelected());
+        var menu = Menu {
+            var alwaysOnTop:CheckBoxMenuItem = CheckBoxMenuItem {
+                    text: "Always on Top"
+                    action: function() {
+                        window.setAlwaysOnTop(alwaysOnTop.selected);
+                    }
             }
-        });
-        menu.add(alwaysOnTop);
-        
-        // todo - replace with javafx Menu once JRadioButtonMenuItem support is added
-        var group = new ButtonGroup();
-        var dockSubmenu = new JMenu("Dock Sidebar");
-        group.add(left);
-        left.setSelected(dockLeft);
-        left.addActionListener(ActionListener {
-            public function actionPerformed(e: ActionEvent): Void {
-                dockLeft = left.isSelected();
-            }
-        });
-        dockSubmenu.add(left);
-        group.add(right);
-        right.setSelected(not dockLeft);
-        right.addActionListener(ActionListener {
-            public function actionPerformed(e: ActionEvent): Void {
-                dockLeft = not right.isSelected();
-            }
-        });
-        dockSubmenu.add(right);
-        menu.add(dockSubmenu);
-        menu.addSeparator();
-        menu.add(MenuItem {
-            text: "Hide"
-            action: function() {
-                hide();
-            }
-        }.getJMenuItem());
-        menu.add(MenuItem {
-            text: "Exit"
-            action: function() {
-                System.exit(0);
-            }
-        }.getJMenuItem());
-        return menu;
+            items: [
+                alwaysOnTop,
+                Menu {
+                    var group = ToggleGroup {}
+                    text: "Dock Sidebar"
+                    items: [
+                        RadioButtonMenuItem {
+                            text: "Left"
+                            toggleGroup: group
+                            selected: bind dockLeft with inverse
+                        },
+                        RadioButtonMenuItem {
+                            text: "Right"
+                            toggleGroup: group
+                            selected: bind dockRight with inverse
+                        }
+                    ]
+
+                },
+                MenuItem {
+                    text: "Hide"
+                    action: function() {
+                        hide();
+                    }
+                },
+                MenuItem {
+                    text: "Exit"
+                    action: function() {
+                        System.exit(0);
+                    }
+                }
+            ]
+        }
+        // todo - replace with javafx Separator when one exists
+        menu.getJMenu().insertSeparator(2);
+        // todo - create a javafx PopupMenu directly when one exists
+        return menu.getJMenu().getPopupMenu();
     }
     
     public function hide() {
@@ -206,7 +205,7 @@ public class Sidebar extends Frame {
     }
     
     public function clearHover():Void {
-        if (hoverPlaceholder <> null) {
+        if (hoverPlaceholder != null) {
             Timeline {
                 keyFrames: KeyFrame {time: 300ms, values: hoverPlaceholder.height => 1 tween Interpolator.EASEBOTH
                     action: function() {
@@ -232,14 +231,14 @@ public class Sidebar extends Frame {
     }
     
     private function createWidgetView(widget:Widget):Group {
-        if (widget.onStart <> null) widget.onStart();
+        if (widget.onStart != null) widget.onStart();
         var group:Group = Group {
             cache: true
             horizontalAlignment: HorizontalAlignment.CENTER
             translateX: bind width / 2 - BORDER + DS_RADIUS + 1
             content: Group {
                 // todo - standard size with and without DropShadow when docked
-                effect: bind if (resizing) then null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                 content: Group {
                     content: widget.stage.content
                     clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
@@ -256,7 +255,7 @@ public class Sidebar extends Frame {
                 lastScreenPosY = e.getStageY().intValue();
             }
             onMouseClicked: function(e:MouseEvent):Void {
-                if (e.getButton() == 3 and widget.configuration <> null) {
+                if (e.getButton() == 3 and widget.configuration != null) {
                     widget.configuration.showDialog();
                 }
             }
@@ -290,7 +289,7 @@ public class Sidebar extends Frame {
                     var screenX = e.getScreenX();
                     var screenY = e.getScreenY();
                     var targetBounds = hover(widget, screenX, screenY, false);
-                    if (targetBounds <> null) {
+                    if (targetBounds != null) {
                         docking = true;
                         widgetFrame.dock(targetBounds.x, targetBounds.y, screenX, screenY);
                     }
@@ -308,10 +307,10 @@ public class Sidebar extends Frame {
     private function updateWidth(widget:Widget, notifyResize:Boolean):Void {
         if (widget.resizable) {
             widget.stage.width = width - BORDER * 2;
-            if (widget.aspectRatio <> 0) {
+            if (widget.aspectRatio != 0) {
                 widget.stage.height = (widget.stage.width / widget.aspectRatio).intValue();
             }
-            if (notifyResize and widget.onResize <> null) {
+            if (notifyResize and widget.onResize != null) {
                 widget.onResize(widget.stage.width, widget.stage.height);
             }
         }
@@ -411,21 +410,21 @@ public class Sidebar extends Frame {
                         Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity, translateX: 1},
                         Line {endY: bind height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity / 3, translateX: 2}
                     ]
-                    horizontalAlignment: bind if (dockLeft) then HorizontalAlignment.TRAILING else HorizontalAlignment.LEADING
-                    translateX: bind if (dockLeft) then width else 0
+                    horizontalAlignment: bind if (dockLeft) HorizontalAlignment.TRAILING else HorizontalAlignment.LEADING
+                    translateX: bind if (dockLeft) width else 0
                     cursor: Cursor.H_RESIZE
                     onMouseDragged: function(e:MouseEvent) {
                         resizing = true;
-                        width = if (dockLeft) then e.getScreenX().intValue() - screenBounds.x
+                        width = if (dockLeft) e.getScreenX().intValue() - screenBounds.x
                                 else screenBounds.x + screenBounds.width - e.getScreenX().intValue();
-                        width = if (width < MIN_WIDTH) then MIN_WIDTH else if (width > MAX_WIDTH) then MAX_WIDTH else width;
+                        width = if (width < MIN_WIDTH) MIN_WIDTH else if (width > MAX_WIDTH) MAX_WIDTH else width;
                         updateDockLocation();
                         for (instance in widgets) {
                             updateWidth(instance.widget, false);
                         }
                     }
                     onMouseReleased: function(e) {
-                        for (instance in widgets where instance.widget.onResize <> null) {
+                        for (instance in widgets where instance.widget.onResize != null) {
                             instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                         }
                         resizing = false;
@@ -467,7 +466,7 @@ public class Sidebar extends Frame {
                     }
                 }
             }
-            dockLeft = location.x < screenBounds.width / 2 + screenBounds.x;
+            dockRight = not (dockLeft = location.x < screenBounds.width / 2 + screenBounds.x);
         }
     }
 }

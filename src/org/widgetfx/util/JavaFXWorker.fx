@@ -32,18 +32,16 @@ public class JavaFXWorker extends AbstractAsyncOperation {
     
     public attribute inBackground: function():Object;
     
+    public attribute onDone: function(result:Object):Void;
+    
     public attribute result: Object;
     
     public function cancel():Void {
         if (worker.cancel(true)) {
-            listener.onCancel();
+            onCancel();
         }
     }
     
-    function onCompletion(value: Object) {
-        result = value;
-    }
-
     function start():Void {
         worker = ObjectSwingWorker {
             public function doInBackground():Object {
@@ -52,13 +50,15 @@ public class JavaFXWorker extends AbstractAsyncOperation {
             
             public function done():Void {
                 try {
-                    listener.onCompletion(get());
+                    result = get();
+                    onCompletion(result);
+                    onDone(result);
                 } catch (e1:InterruptedException) {
-                    listener.onCancel();
+                    onCancel();
                 } catch (e3:CancellationException) {
-                    listener.onCancel();
+                    onCancel();
                 } catch (e2:ExecutionException) {
-                    listener.onException(e2);
+                    onException(e2);
                 }
             }
         };

@@ -39,13 +39,14 @@ public class WidgetManager {
             WidgetInstance{className: "org.widgetfx.widget.SlideShow", id: 1},
             WidgetInstance{className: "org.widgetfx.widget.WebFeed", id: 2}
         ];
-        for (instance in widgets where instance.widget.configuration <> null) {
+        for (instance in widgets where instance.widget.configuration != null) {
             instance.widget.configuration.load();
         }
     }
     
     public function getIdForConfig(config:Configuration):Integer {
-        return widgets[w|w.widget.configuration == config][0].id;
+        var match = widgets[w|w.widget.configuration == config];
+        return match[0].id;
     }
 
 }
