@@ -17,7 +17,9 @@
  */
 package org.widgetfx;
 
+import javax.jnlp.*;
 import org.widgetfx.config.Configuration;
+import java.net.URL;
 
 /**
  * @author Stephen Chin
@@ -34,6 +36,26 @@ public class WidgetManager {
     }
 
     public function loadWidgets():Void {
+        var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService; 
+        // determine if a particular resource is cached
+        var url = new URL("file:/C:/prog/WidgetFXWeb/trunk/widgets/SlideShow/dist/SlideShow.jar"); 
+        // reload the resource into the cache 
+//        var dsl = ds.getDefaultProgressWindow(); 
+        ds.loadResource(url, null, DownloadServiceListener {
+                function downloadFailed(url, version) {
+                    java.lang.System.out.println("download failed");
+                }
+                function progress(url, version, readSoFar, total, overallPercent) {
+                    java.lang.System.out.println("progress: {overallPercent}");
+                }
+                function upgradingArchive(url, version, patchPercent, overallPercent) {
+                    java.lang.System.out.println("upgradingArchive");
+                }
+                function validating(url, version, entry, total, overallPercent) {
+                    java.lang.System.out.println("validating");
+                }
+        }); 
+
         widgets = [
             WidgetInstance{className: "org.widgetfx.widget.Clock", id: 0},
             WidgetInstance{className: "org.widgetfx.widget.SlideShow", id: 1},
