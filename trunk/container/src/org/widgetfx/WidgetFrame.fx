@@ -280,8 +280,8 @@ public class WidgetFrame extends Frame {
                         }
                     }
                     onMouseClicked: function(e:MouseEvent):Void {
-                        if (e.getButton() == 3 and widget.configuration != null) {
-                            widget.configuration.showDialog(widget.name);
+                        if (e.getButton() == 3) {
+                            WidgetManager.getInstance().showConfigDialog(widget);
                         }
                     }
                 }
