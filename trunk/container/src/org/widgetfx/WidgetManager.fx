@@ -25,6 +25,7 @@ import java.net.URL;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathConstants;
+import javafx.lang.Sequences;
 
 /**
  * @author Stephen Chin
@@ -39,6 +40,8 @@ public class WidgetManager {
     private static attribute instance = WidgetManager {}
     
     public attribute widgets:WidgetInstance[] = [];
+    
+    private static attribute loadedResources:URL[] = [];
     
     private attribute idCount = 0;
     
@@ -66,14 +69,18 @@ public class WidgetManager {
         for (i in [0..widgetNodes.getLength()-1]) {
             var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
             if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
-                ds.loadResource(new URL(codeBase, jarUrl), null, dsl);
+                var url = new URL(codeBase, jarUrl);
+                if (Sequences.indexOf(loadedResources, url) == -1) {
+                    ds.loadResource(url, null, dsl);
+                    insert url into loadedResources;
+                }
             }
         }
         var mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
         var instance = WidgetInstance{mainClass: mainClass, id: idCount++};
         if (instance != null) {
             insert instance into widgets;
-            instance.load;
+            instance.load();
         }
         return instance
     }

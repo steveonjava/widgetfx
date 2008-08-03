@@ -18,34 +18,41 @@
 package org.widgetfx.ui;
 
 import org.widgetfx.*;
+import java.io.File;
 import javafx.application.*;
 import javafx.scene.HorizontalAlignment;
 import javafx.ext.swing.*;
 import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 
 /**
  * @author Stephen Chin
  */
 public class AddWidgetDialog {
     
-    public attribute jarUrl:String;
-    public attribute className:String;
+    public attribute jnlpUrl:String;
 
     public function showDialog() {
-        var jarField = TextField {text: bind jarUrl with inverse, hmin: 300, hmax: 300};
-        var jarLabel = Label {text: "Jar URL:", labelFor: jarField};
+        var jarField = TextField {text: bind jnlpUrl with inverse, hmin: 300, hmax: 300};
+        var jarLabel = Label {text: "JNLP URL:", labelFor: jarField};
         var browsebutton:Button = Button {
             text: "Browse...";
             action: function() {
-                var chooser:JFileChooser = new JFileChooser(jarUrl);
+                var chooser = new JFileChooser(jnlpUrl);
+                chooser.setFileFilter(FileFilter {
+                    public function accept(f:File):Boolean {
+                        return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp");
+                    }
+                    public function getDescription():String {
+                        return "Java Network Launch Protocol (JNLP)"
+                    }
+                });
                 var returnVal = chooser.showOpenDialog(browsebutton.getJButton());
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    jarUrl = chooser.getSelectedFile().toURL().toString();
+                    jnlpUrl = chooser.getSelectedFile().toURL().toString();
                 }
             }
         }
-        var classField = TextField {text: bind className with inverse, hmin: 300, hmax: 400};
-        var classLabel = Label {text: "Class Name:", labelFor: classField};
 
         var dialog:Dialog = Dialog {
             title: "Add Widget"
@@ -64,28 +71,20 @@ public class AddWidgetDialog {
                                             browsebutton
                                         ]
                                     },
-                                    ParallelCluster {
-                                        content: [
-                                            classLabel,
-                                            classField
-                                        ]
-                                    }
                                 ]
                             }
                             hcluster: SequentialCluster {
                                 content: [
                                     ParallelCluster {
                                         content: [
-                                            jarLabel,
-                                            classLabel
+                                            jarLabel
                                         ]
                                     },
                                     ParallelCluster {
                                         content: [
                                             SequentialCluster {
                                                 content: [jarField, browsebutton]
-                                            },
-                                            classField
+                                            }
                                         ]
                                     }
                                 ]
@@ -97,7 +96,7 @@ public class AddWidgetDialog {
                                 Button {
                                     text: "Add"
                                     action: function() {
-                                        WidgetManager.getInstance().addWidget([jarUrl], className);
+                                        WidgetManager.getInstance().addWidget(jnlpUrl);
                                         dialog.close();
                                     }
                                 },
