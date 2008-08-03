@@ -53,9 +53,17 @@ public class WidgetManager {
         // todo - implement a widget security policy
         java.lang.System.setSecurityManager(null);
 
-        addWidget("../widgets/Clock/dist/launch.jnlp");
-        addWidget("../widgets/SlideShow/dist/launch.jnlp");
-        addWidget("../widgets/WebFeed/dist/launch.jnlp");
+        var bs = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+        var cb = bs.getCodeBase();
+        if (cb.getProtocol().equals("file")) {
+            addWidget("../widgets/Clock/dist/launch.jnlp");
+            addWidget("../widgets/SlideShow/dist/launch.jnlp");
+            addWidget("../widgets/WebFeed/dist/launch.jnlp");
+        } else {
+            addWidget((new URL(cb, "widgets/Clock/launch.jnlp")).toString());
+            addWidget((new URL(cb, "widgets/SlideShow/launch.jnlp")).toString());
+            addWidget((new URL(cb, "widgets/WebFeed/launch.jnlp")).toString());
+        }
     }
     
     public function addWidget(jnlpUrl:String):WidgetInstance {
@@ -70,6 +78,7 @@ public class WidgetManager {
             var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
             if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
                 var url = new URL(codeBase, jarUrl);
+                java.lang.System.out.println("codebase = {codeBase}, jarUrl = {jarUrl}, url = {url}");
                 if (Sequences.indexOf(loadedResources, url) == -1) {
                     ds.loadResource(url, null, dsl);
                     insert url into loadedResources;
