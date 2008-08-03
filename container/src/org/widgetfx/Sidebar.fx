@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.widgetfx;
-import org.widgetfx.widget.*;
 import org.widgetfx.ui.*;
 import javafx.scene.paint.*;
 import javafx.application.*;
@@ -268,8 +267,8 @@ public class Sidebar extends Frame {
                 lastScreenPosY = e.getStageY().intValue();
             }
             onMouseClicked: function(e:MouseEvent):Void {
-                if (e.getButton() == 3 and widget.configuration != null) {
-                    widget.configuration.showDialog(widget.name);
+                if (e.getButton() == 3) {
+                    WidgetManager.getInstance().showConfigDialog(widget);
                 }
             }
             onMouseDragged: function(e:MouseEvent):Void {

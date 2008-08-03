@@ -15,29 +15,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx.util;
+package org.widgetfx.config;
 
-import java.lang.*;
+import javafx.ext.swing.Component;
 
 /**
  * @author Stephen Chin
+ * @author kcombs
  */
-public class BackgroundTask {
-    public attribute action: function() : Void;
-
-    public attribute done : Boolean;
-
-    postinit {
-        var thread = new Thread (Runnable {
-                public function run():Void {
-                    try {
-                        action();
-                    } finally {
-                        done = true;
-                    }
-                }
-            }
-        );
-        thread.start();
-    }
+public class Configuration {
+    public attribute component:Component;
+    
+    public attribute properties:Property[];
+    
+    public attribute onLoad:function();
+    
+    public attribute onSave:function();
+    
+    public attribute onCancel:function();
 }
