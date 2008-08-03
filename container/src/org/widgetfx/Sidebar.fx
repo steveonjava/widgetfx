@@ -17,6 +17,7 @@
  */
 package org.widgetfx;
 import org.widgetfx.ui.*;
+import javafx.lang.*;
 import javafx.scene.paint.*;
 import javafx.application.*;
 import javafx.application.Frame;
@@ -49,11 +50,16 @@ public class Sidebar extends Frame {
     
     private attribute mainMenu = createMainMenu();
     private attribute logo:Node;
-    private attribute widgetViews:Node[] = [];
+    attribute widgetViews:Node[] = [];
     private attribute hoverPlaceholder;
     
-    // todo - handle delete widget
-    public attribute widgets = bind WidgetManager.getInstance().widgets on replace = instances {
+    public attribute widgets = bind WidgetManager.getInstance().widgets on replace oldInst[lo..hi]=instances {
+        var oldWidgets = for (inst in oldInst[lo..hi]) inst.widget;
+        for (view in widgetViews where view instanceof WidgetView) {
+            if (Sequences.indexOf(oldWidgets, (view as WidgetView).widget) != -1) {
+                delete view from widgetViews;
+            }
+        }
         for (instance in instances) {
             updateWidth(instance.widget);
             var view = createWidgetView(instance.widget);
@@ -73,8 +79,8 @@ public class Sidebar extends Frame {
         dockLeft = not dockRight;
         updateDockLocation();
     };
-    private attribute resizing:Boolean;
-    private attribute dragging:Boolean;
+    attribute resizing:Boolean;
+    attribute dragging:Boolean;
     
     private function updateDockLocation() {
         height = screenBounds.height;
@@ -242,74 +248,13 @@ public class Sidebar extends Frame {
         return false;
     }
     
-    private function createWidgetView(widget:Widget):Group {
-        if (widget.onStart != null) widget.onStart();
-        var group:Group = Group {
-            cache: true
+    private function createWidgetView(widget:Widget):WidgetView {
+        return WidgetView {
+            sidebar: this
+            widget: widget
             horizontalAlignment: HorizontalAlignment.CENTER
             translateX: bind width / 2 - BORDER + DS_RADIUS + 1
-            content: Group {
-                // todo - standard size with and without DropShadow when docked
-                effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
-                content: Group {
-                    content: widget.stage.content
-                    clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
-                }
-            }
-            var docked = true;
-            var docking = false;
-            var dockedParent : Group
-            var widgetFrame : WidgetFrame
-            var lastScreenPosX : Integer
-            var lastScreenPosY : Integer
-            onMousePressed: function(e:MouseEvent):Void {
-                lastScreenPosX = e.getStageX().intValue();
-                lastScreenPosY = e.getStageY().intValue();
-            }
-            onMouseClicked: function(e:MouseEvent):Void {
-                if (e.getButton() == 3) {
-                    WidgetManager.getInstance().showConfigDialog(widget);
-                }
-            }
-            onMouseDragged: function(e:MouseEvent):Void {
-                if (not docking) {
-                    if (docked) {
-                        dragging = true;
-                        var xPos = e.getStageX().intValue() + x - e.getX().intValue() - WidgetFrame.BORDER;
-                        var yPos = e.getStageY().intValue() + y - e.getY().intValue() - WidgetFrame.BORDER;
-                        delete group from widgetViews;
-                        widgetFrame = WidgetFrame {
-                            sidebar: this;
-                            widget: widget;
-                            x: xPos, y: yPos
-                            // todo - add opacity to configuration and save
-                            opacity: 0.8
-                        }
-                        docked = false;
-                        hover(widget, e.getScreenX(), e.getScreenY(), true);
-                    } else {
-                        widgetFrame.x += e.getStageX().intValue() - lastScreenPosX;
-                        widgetFrame.y += e.getStageY().intValue() - lastScreenPosY;
-                        lastScreenPosX = e.getStageX().intValue();
-                        lastScreenPosY = e.getStageY().intValue();
-                        hover(widget, e.getScreenX(), e.getScreenY(), false);
-                    }
-                }
-            }
-            onMouseReleased: function(e:MouseEvent):Void {
-                if (not docking and not docked) {
-                    var screenX = e.getScreenX();
-                    var screenY = e.getScreenY();
-                    var targetBounds = hover(widget, screenX, screenY, false);
-                    if (targetBounds != null) {
-                        docking = true;
-                        widgetFrame.dock(targetBounds.x, targetBounds.y, screenX, screenY);
-                    }
-                    dragging = false;
-                }
-            }
         }
-        return group;
     }
     
     private function updateWidth(widget:Widget):Void {

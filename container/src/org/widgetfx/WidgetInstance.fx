@@ -60,6 +60,7 @@ public class WidgetInstance {
     }
     
     public function load() {
+        if (widget.onStart != null) widget.onStart();
         if (widget.configuration != null) {
             var propertyFile = getPropertyFile();
             if (propertyFile.exists() and widget.configuration.properties != null) {
