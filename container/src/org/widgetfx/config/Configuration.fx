@@ -101,8 +101,9 @@ public class Configuration {
         }
     }
     
-    public function showDialog() {
+    public function showDialog(widgetName:String):Void {
         var configDialog:Dialog = Dialog {
+            title: "{widgetName} Configuration"
             stage: Stage {
                 content: [
                     ComponentView {
