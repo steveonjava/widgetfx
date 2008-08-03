@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase="http://widgetfx.googlecode.com/svn/site/webstart/widgets/SlideShow" href="launch.jnlp">
+<jnlp spec="1.0+" codebase="http://widgetfx.googlecode.com/svn/site/webstart/widgets/SlideShow/" href="launch.jnlp">
     <information>
         <title>Slide Show</title>
         <vendor>WidgetFX</vendor>
