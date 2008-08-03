@@ -13,20 +13,19 @@
     <resources>
         <property name="jnlp.packEnabled" value="true"/>
         <j2se version="1.6+" java-vm-args="-Xmx512m"/>
-        <jar href="WidgetFX.jar" main="true" download="eager"/>
+        <jar href="widgetfx.jar" main="true" download="eager"/>
         <jar href="lib/Decora-D3D.jar" download="eager"/>
         <jar href="lib/Decora-HW.jar" download="eager"/>
         <jar href="lib/Decora-OGL.jar" download="eager"/>
         <jar href="lib/Scenario.jar" download="eager"/>
         <jar href="lib/gluegen-rt.jar" download="eager"/>
         <jar href="lib/javafx-swing.jar" download="eager"/>
+        <jar href="lib/javafxdoc.jar" download="eager"/>
         <jar href="lib/javafxgui.jar" download="eager"/>
         <jar href="lib/javafxrt.jar" download="eager"/>
-        <jar href="lib/jdom-1.1.jar" download="eager"/>
         <jar href="lib/jmc.jar" download="eager"/>
-        <jar href="lib/jogl.jar" download="eager"/>
-        <jar href="lib/rome-0.9.jar" download="eager"/>
-        <jar href="lib/rome-fetcher-0.9.jar" download="eager"/>
+        <jar href="lib/jnlp.jar" download="eager"/>
+        <jar href="lib/widgetfx-api.jar" download="eager"/>
     </resources>
     <application-desc main-class="org.widgetfx.Main">
     </application-desc>

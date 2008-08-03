@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="http://widgetfx.googlecode.com/svn/site/webstart/widgets/WebFeed" href="launch.jnlp">
+    <information>
+        <title>Web Feed</title>
+        <vendor>WidgetFX</vendor>
+        <description>RSS and Atom web feed reader for WidgetFX</description>
+        <description kind="short">WebFeed</description>
+        <homepage href="http://code.google.com/p/widgetfx/"/>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <property name="jnlp.packEnabled" value="true"/>
+        <j2se version="1.6+"/>
+        <jar href="WebFeed.jar" main="true" download="eager"/>
+        <jar href="lib/jdom-1.1.jar" download="eager"/>
+        <jar href="lib/rome-0.9.jar" download="eager"/>
+        <jar href="lib/rome-fetcher-0.9.jar" download="eager"/>
+    </resources>
+    <application-desc main-class="org.widgetfx.widget.webfeed.WebFeed">
+    </application-desc>
+</jnlp>

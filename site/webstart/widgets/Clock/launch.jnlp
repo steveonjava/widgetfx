@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="http://widgetfx.googlecode.com/svn/site/webstart/widgets/Clock" href="launch.jnlp">
+    <information>
+        <title>Clock</title>
+        <vendor>WidgetFX</vendor>
+        <description>Analog clock for WidgetFX</description>
+        <description kind="short">Clock</description>
+        <homepage href="http://code.google.com/p/widgetfx/"/>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <property name="jnlp.packEnabled" value="true"/>
+        <j2se version="1.6+"/>
+        <jar href="Clock.jar" main="true" download="eager"/>
+    </resources>
+    <application-desc main-class="org.widgetfx.widget.clock.Clock">
+    </application-desc>
+</jnlp>
