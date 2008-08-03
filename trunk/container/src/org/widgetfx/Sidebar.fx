@@ -17,6 +17,7 @@
  */
 package org.widgetfx;
 import org.widgetfx.widget.*;
+import org.widgetfx.ui.*;
 import javafx.scene.paint.*;
 import javafx.application.*;
 import javafx.application.Frame;
@@ -49,10 +50,17 @@ public class Sidebar extends Frame {
     
     private attribute mainMenu = createMainMenu();
     private attribute logo:Node;
-    private attribute widgetViews:Node[];
+    private attribute widgetViews:Node[] = [];
     private attribute hoverPlaceholder;
     
-    public attribute widgets = bind WidgetManager.getInstance().widgets;
+    // todo - handle delete widget
+    public attribute widgets = bind WidgetManager.getInstance().widgets on replace = instances {
+        for (instance in instances) {
+            updateWidth(instance.widget);
+            var view = createWidgetView(instance.widget);
+            insert view into widgetViews;
+        }
+    };
     
     private attribute currentGraphics:java.awt.GraphicsConfiguration;
     private attribute screenBounds = bind currentGraphics.getBounds() on replace {
@@ -103,10 +111,10 @@ public class Sidebar extends Frame {
     postinit {
         loadContent();
         WidgetManager.getInstance().loadWidgets();
-        widgetViews = for (instance in widgets) {
-            updateWidth(instance.widget);
-            createWidgetView(instance.widget);
-        };
+    }
+    
+    public function addWidget():Void {
+        org.widgetfx.ui.AddWidgetDialog {}.showDialog();
     }
     
     public function createMainMenu():JPopupMenu {
@@ -118,6 +126,10 @@ public class Sidebar extends Frame {
                     }
             }
             items: [
+                MenuItem {
+                    text: "Add Widget..."
+                    action: addWidget
+                },
                 alwaysOnTop,
                 Menu {
                     var group = ToggleGroup {}
@@ -151,7 +163,8 @@ public class Sidebar extends Frame {
             ]
         }
         // todo - replace with javafx Separator when one exists
-        menu.getJMenu().insertSeparator(2);
+        menu.getJMenu().insertSeparator(1);
+        menu.getJMenu().insertSeparator(3);
         // todo - create a javafx PopupMenu directly when one exists
         return menu.getJMenu().getPopupMenu();
     }
@@ -256,7 +269,7 @@ public class Sidebar extends Frame {
             }
             onMouseClicked: function(e:MouseEvent):Void {
                 if (e.getButton() == 3 and widget.configuration != null) {
-                    widget.configuration.showDialog();
+                    widget.configuration.showDialog(widget.name);
                 }
             }
             onMouseDragged: function(e:MouseEvent):Void {
@@ -344,6 +357,38 @@ public class Sidebar extends Frame {
             spacing: 4
             horizontalAlignment: HorizontalAlignment.TRAILING
             content: [
+                Group {
+                    var color = Color.GRAY;
+                    translateY: 7
+                    content: [
+                        Circle {
+                            stroke: bind color
+                            fill: Color.rgb(0, 0, 0, 0.0);
+                            radius: 7
+                        },
+                        Line {
+                            stroke: bind color
+                            strokeWidth: 2
+                            startX: -3, startY: 0
+                            endX: 3, endY: 0
+                        },
+                        Line {
+                            stroke: bind color
+                            strokeWidth: 2
+                            startX: 0, startY: -3
+                            endX: 0, endY: 3
+                        }
+                    ]
+                    onMouseEntered: function(e) {
+                        color = Color.WHITE;
+                    }
+                    onMouseExited: function(e) {
+                        color = Color.GRAY;
+                    }
+                    onMouseClicked: function(e) {
+                        addWidget();
+                    }
+                },
                 Group {
                     var color = Color.GRAY;
                     translateY: 7
