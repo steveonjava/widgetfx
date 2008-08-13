@@ -62,31 +62,18 @@ public class AddWidgetDialog {
                 content: ComponentView {
                     component: BorderPanel {
                         center: ClusterPanel {
-                            vcluster: SequentialCluster {
+                            vcluster: ParallelCluster {
                                 content: [
-                                    ParallelCluster {
-                                        content: [
-                                            jarLabel,
-                                            jarField,
-                                            browsebutton
-                                        ]
-                                    },
+                                    jarLabel,
+                                    jarField,
+                                    browsebutton
                                 ]
-                            }
+                            },
                             hcluster: SequentialCluster {
                                 content: [
-                                    ParallelCluster {
-                                        content: [
-                                            jarLabel
-                                        ]
-                                    },
-                                    ParallelCluster {
-                                        content: [
-                                            SequentialCluster {
-                                                content: [jarField, browsebutton]
-                                            }
-                                        ]
-                                    }
+                                    jarLabel,
+                                    jarField,
+                                    browsebutton
                                 ]
                             }
                         }
