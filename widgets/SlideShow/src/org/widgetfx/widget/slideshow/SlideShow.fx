@@ -51,6 +51,9 @@ var directory:File;
 var status = "Loading Images...";
 var imageFiles:File[];
 var random = true;
+var usage : String;
+var keywordUsage:String;
+var keywords : String;
 var width = 150;
 var height = 100;
 var imageIndex = 0;
@@ -119,6 +122,13 @@ private function getImageFiles(directory:File):File[] {
     var files = Arrays.asList(directory.listFiles());
     return for (file in files) {
         var name = file.getName();
+        if (keywords != null and keywords.length() > 0) {
+            var containsKeywords = name.contains(keywords);
+            var excludes = keywordUsage.equalsIgnoreCase("exclude");
+            if (excludes and containsKeywords or not excludes and not containsKeywords) {
+                continue;
+            }
+        }
         var index = name.lastIndexOf('.');
         var extension = if (index == -1) null else name.substring(index + 1);
         if (file.isDirectory()) {
@@ -130,6 +140,39 @@ private function getImageFiles(directory:File):File[] {
         }
     }
 }
+
+var browseButton:Button = Button {
+    text: "Browse...";
+    action: function() {
+        var chooser:JFileChooser = new JFileChooser(directoryName);
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        var returnVal = chooser.showOpenDialog(browseButton.getJButton());
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            directoryName = chooser.getSelectedFile().getAbsolutePath();
+        }
+    }
+}
+
+var keywordUsageCombo : ComboBox = ComboBox {
+    editable : false;
+    text : bind keywordUsage with inverse;
+    items : [
+        ComboBoxItem {
+            text : "Include"
+            value : "include"
+        },
+        ComboBoxItem {
+            selected : true
+            text : "Exclude"
+            value : "exclude"
+        }
+    ]
+}
+
+var keywordLabel = Label {text: "Filter:"};
+var keywordEdit = TextField {text: bind keywords with inverse, hpref: 300};
+var directoryLabel = Label {text: "Directory:"};
+var directoryEdit = TextField {text: bind directoryName with inverse, hpref: 300};
 
 Widget {
     name: "Slide Show"
@@ -144,26 +187,72 @@ Widget {
             BooleanProperty {
                 name: "random"
                 value: bind random with inverse
+            },
+            StringProperty {
+                name : "keywords"
+                value : bind keywords with inverse
+            },
+            StringProperty {
+                name: "keywordUsage"
+                value: bind usage with inverse
             }
         ]
-        component: FlowPanel {
-            var browsebutton:Button = Button {
-                    text: "Browse...";
-                    action: function() {
-                        var chooser:JFileChooser = new JFileChooser(directoryName);
-                        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                        var returnVal = chooser.showOpenDialog(browsebutton.getJButton());
-                        if (returnVal == JFileChooser.APPROVE_OPTION) {
-                            directoryName = chooser.getSelectedFile().getAbsolutePath();
-                        }
+
+        component: ClusterPanel {
+            
+            vcluster: ParallelCluster {
+                content: [
+                    directoryLabel,
+                    directoryEdit,
+                    browseButton,
+                ]
+            },
+            hcluster: SequentialCluster {
+                content: [
+                    ParallelCluster {
+                        content:[
+                            directoryLabel,
+                            keywordLabel,
+                        ]
+                    },
+                    ParallelCluster {
+                        content:[
+                            SequentialCluster {
+                                content:[
+                                    directoryEdit,
+                                    browseButton
+                                ]
+                            },
+                            SequentialCluster {
+                                content:[
+                                    keywordUsageCombo,
+                                    keywordEdit
+                                ]
+                            }
+                        ]
                     }
-                }
-            content: [
-                Label {text: "Directory:"},
-                TextField {text: bind directoryName with inverse},
-                browsebutton
-            ]
+                ]
+            }
+            vcluster : SequentialCluster {
+                content:[
+                    ParallelCluster{
+                        content: [
+                            directoryLabel,
+                            directoryEdit,
+                            browseButton
+                        ]
+                    },
+                    ParallelCluster {
+                        content : [
+                            keywordLabel,
+                            keywordUsageCombo,
+                            keywordEdit
+                        ]
+                    }
+                ]
+            }
         }
+
         onLoad: function() {
             loadDirectory(directoryName);
         }

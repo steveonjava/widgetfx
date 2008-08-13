@@ -73,14 +73,27 @@ public class WidgetManager {
         var codeBase = new URL(xpath.evaluate("/jnlp/@codebase", document, XPathConstants.STRING) as String);
         var widgetNodes = xpath.evaluate("/jnlp/resources/jar", document, XPathConstants.NODESET) as NodeList;
         var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
-        var dsl = ds.getDefaultProgressWindow(); 
+//        var dsl = ds.getDefaultProgressWindow(); 
         for (i in [0..widgetNodes.getLength()-1]) {
             var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
             if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
                 var url = new URL(codeBase, jarUrl);
                 java.lang.System.out.println("codebase = {codeBase}, jarUrl = {jarUrl}, url = {url}");
                 if (Sequences.indexOf(loadedResources, url) == -1) {
-                    ds.loadResource(url, null, dsl);
+                    ds.loadResource(url, null, DownloadServiceListener {
+                            function downloadFailed(url, version) {
+                                java.lang.System.out.println("download failed");
+                            }
+                            function progress(url, version, readSoFar, total, overallPercent) {
+                                java.lang.System.out.println("progress: {overallPercent}");
+                            }
+                            function upgradingArchive(url, version, patchPercent, overallPercent) {
+                                java.lang.System.out.println("upgradingArchive");
+                            }
+                            function validating(url, version, entry, total, overallPercent) {
+                                java.lang.System.out.println("validating");
+                            }
+                    });
                     insert url into loadedResources;
                 }
             }
