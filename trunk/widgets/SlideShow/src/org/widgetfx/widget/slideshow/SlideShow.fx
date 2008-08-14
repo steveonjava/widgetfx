@@ -51,8 +51,6 @@ var directory:File;
 var status = "Loading Images...";
 var imageFiles:File[];
 var random = true;
-var usage : String;
-var keywordUsage:String;
 var keywords : String;
 var width = 150;
 var height = 100;
@@ -70,7 +68,7 @@ var timeline = Timeline {
                 updateImage();
             }
         },
-        KeyFrame {time: 15s}
+        KeyFrame {time: 10s}
     ]
 }
 
@@ -118,25 +116,32 @@ private function loadDirectory(directoryName:String):File {
     return directory;
 }
 
+private function excludesFile(name:String):Boolean {
+    if (keywords != null and keywords.length() > 0) {
+        if (name.toLowerCase().contains(keywords.toLowerCase())) {
+            return true;
+        }
+    }
+    return false;
+}
+
 private function getImageFiles(directory:File):File[] {
+    var emptyFile:File[] = [];
     var files = Arrays.asList(directory.listFiles());
     return for (file in files) {
         var name = file.getName();
-        if (keywords != null and keywords.length() > 0) {
-            var containsKeywords = name.contains(keywords);
-            var excludes = keywordUsage.equalsIgnoreCase("exclude");
-            if (excludes and containsKeywords or not excludes and not containsKeywords) {
-                continue;
-            }
-        }
-        var index = name.lastIndexOf('.');
-        var extension = if (index == -1) null else name.substring(index + 1);
-        if (file.isDirectory()) {
-            getImageFiles(file);
-        } else if (extension != null and ImageIO.getImageReadersBySuffix(extension).hasNext()) {
-            file
+        if (excludesFile(name)) {
+            emptyFile;
         } else {
-            []
+            var index = name.lastIndexOf('.');
+            var extension = if (index == -1) null else name.substring(index + 1);
+            if (file.isDirectory()) {
+                getImageFiles(file);
+            } else if (extension != null and ImageIO.getImageReadersBySuffix(extension).hasNext()) {
+                file;
+            } else {
+                emptyFile;
+            }
         }
     }
 }
@@ -151,22 +156,6 @@ var browseButton:Button = Button {
             directoryName = chooser.getSelectedFile().getAbsolutePath();
         }
     }
-}
-
-var keywordUsageCombo : ComboBox = ComboBox {
-    editable : false;
-    text : bind keywordUsage with inverse;
-    items : [
-        ComboBoxItem {
-            text : "Include"
-            value : "include"
-        },
-        ComboBoxItem {
-            selected : true
-            text : "Exclude"
-            value : "exclude"
-        }
-    ]
 }
 
 var keywordLabel = Label {text: "Filter:"};
@@ -191,10 +180,6 @@ Widget {
             StringProperty {
                 name : "keywords"
                 value : bind keywords with inverse
-            },
-            StringProperty {
-                name: "keywordUsage"
-                value: bind usage with inverse
             }
         ]
 
@@ -223,12 +208,7 @@ Widget {
                                     browseButton
                                 ]
                             },
-                            SequentialCluster {
-                                content:[
-                                    keywordUsageCombo,
-                                    keywordEdit
-                                ]
-                            }
+                            keywordEdit
                         ]
                     }
                 ]
@@ -245,7 +225,6 @@ Widget {
                     ParallelCluster {
                         content : [
                             keywordLabel,
-                            keywordUsageCombo,
                             keywordEdit
                         ]
                     }
