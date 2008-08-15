@@ -54,6 +54,7 @@ import com.sun.javafx.runtime.sequence.Sequences;
 var feedUrl = "http://www.animenewsnetwork.com/all/rss.xml";
 var feed:SyndFeed;
 var entrySequence:SyndEntryImpl[];
+var error:String;
 
 var border = 6;
 var width = 150;
@@ -64,9 +65,15 @@ var entryHeight = 25; // todo don't hardcode the height of the entries
 private function updateFeed():Void {
     var feedInfoCache = HashMapFeedInfoCache.getInstance();
     var feedFetcher:FeedFetcher = new HttpURLFeedFetcher(feedInfoCache);
-    feed = feedFetcher.retrieveFeed(new URL(feedUrl));
-    var entries = feed.getEntries();
-    entrySequence = Sequences.make(SyndEntryImpl.<<class>>, entries);
+    try {
+        feed = feedFetcher.retrieveFeed(new URL(feedUrl));
+        var entries = feed.getEntries();
+        entrySequence = Sequences.make(SyndEntryImpl.<<class>>, entries);
+        error = null;
+    } catch (e) {
+        entrySequence = null;
+        error = "Unable to Load Feed";
+    }
 }
 
 private function dateSince(date:Date):String {
@@ -203,6 +210,27 @@ Widget {
                     fill: Color.BLACK
                     arcHeight: 7, arcWidth: 7
                 }
+            },
+            VBox {
+                visible: bind error != null
+                translateY: bind height / 2
+                verticalAlignment: VerticalAlignment.CENTER
+                content: [
+                    Text {
+                        translateX: bind width / 2
+                        horizontalAlignment: HorizontalAlignment.CENTER
+                        content: bind error
+                        fill: Color.WHITE
+                    },
+                    Text {
+                        translateX: bind width / 2
+                        horizontalAlignment: HorizontalAlignment.CENTER
+                        content: bind feedUrl
+                        font: Font {size: 11}
+                        fill: Color.LIGHTSTEELBLUE
+                    }
+                ]
+
             },
             VBox {
                 translateX: border, translateY: border

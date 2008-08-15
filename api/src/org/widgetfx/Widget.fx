@@ -20,6 +20,8 @@ import org.widgetfx.config.Configuration;
 import javafx.application.Application;
 
 /**
+ * Base class for Widgets
+ *
  * @author Stephen Chin
  * @author Keith Combs
  */
