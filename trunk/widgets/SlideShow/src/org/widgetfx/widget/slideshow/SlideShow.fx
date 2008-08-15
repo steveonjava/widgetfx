@@ -255,8 +255,8 @@ Widget {
                         translateY: bind height / 2
                         translateX: bind width / 2
                         horizontalAlignment: HorizontalAlignment.CENTER
-                        content: bind status;
-                        fill: Color.WHITE;
+                        content: bind status
+                        fill: Color.WHITE
                     }
                 ]
                 opacity: bind if (status == null) 0 else 1;

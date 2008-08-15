@@ -67,20 +67,20 @@ public class WidgetManager {
     }
     
     public function addWidget(jnlpUrl:String):WidgetInstance {
-        var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        var document = builder.parse(jnlpUrl);
-        var xpath = XPathFactory.newInstance().newXPath();
-        var codeBase = new URL(xpath.evaluate("/jnlp/@codebase", document, XPathConstants.STRING) as String);
-        var widgetNodes = xpath.evaluate("/jnlp/resources/jar", document, XPathConstants.NODESET) as NodeList;
-        var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
+        try {
+            var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            var document = builder.parse(jnlpUrl);
+            var xpath = XPathFactory.newInstance().newXPath();
+            var codeBase = new URL(xpath.evaluate("/jnlp/@codebase", document, XPathConstants.STRING) as String);
+            var widgetNodes = xpath.evaluate("/jnlp/resources/jar", document, XPathConstants.NODESET) as NodeList;
+            var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
 //        var dsl = ds.getDefaultProgressWindow(); 
-        for (i in [0..widgetNodes.getLength()-1]) {
-            var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
-            if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
-                var url = new URL(codeBase, jarUrl);
-                java.lang.System.out.println("codebase = {codeBase}, jarUrl = {jarUrl}, url = {url}");
-                if (Sequences.indexOf(loadedResources, url) == -1) {
-                    ds.loadResource(url, null, DownloadServiceListener {
+            for (i in [0..widgetNodes.getLength()-1]) {
+                var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
+                if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
+                    var url = new URL(codeBase, jarUrl);
+                    if (Sequences.indexOf(loadedResources, url) == -1) {
+                        ds.loadResource(url, null, DownloadServiceListener {
                             function downloadFailed(url, version) {
                                 java.lang.System.out.println("download failed");
                             }
@@ -93,18 +93,23 @@ public class WidgetManager {
                             function validating(url, version, entry, total, overallPercent) {
                                 java.lang.System.out.println("validating");
                             }
-                    });
-                    insert url into loadedResources;
+                        });
+                        insert url into loadedResources;
+                    }
                 }
             }
+            var mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
+            var instance = WidgetInstance{mainClass: mainClass, id: idCount++};
+            if (instance != null) {
+                insert instance into widgets;
+                instance.load();
+            }
+            return instance
+        } catch (e) {
+            java.lang.System.out.println("Unable to load widget at location: {jnlpUrl}");
+            e.printStackTrace();
+            return null;
         }
-        var mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
-        var instance = WidgetInstance{mainClass: mainClass, id: idCount++};
-        if (instance != null) {
-            insert instance into widgets;
-            instance.load();
-        }
-        return instance
     }
     
     public function addWidget(jarPaths:String[], mainClass:String):WidgetInstance {
