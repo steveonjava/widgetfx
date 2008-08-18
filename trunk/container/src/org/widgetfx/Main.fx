@@ -24,3 +24,7 @@ Sidebar {
     title: "WidgetFX"
     visible: true
 }
+
+for (arg in __ARGS__ where arg.toLowerCase().endsWith("jnlp")) {
+    WidgetManager.getInstance().addWidget(arg);
+}

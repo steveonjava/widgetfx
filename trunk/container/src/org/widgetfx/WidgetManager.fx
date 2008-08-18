@@ -49,22 +49,11 @@ public class WidgetManager {
         return instance;
     }
 
-    public function loadWidgets():Void {
+    init {
         // todo - implement a widget security policy
         java.lang.System.setSecurityManager(null);
-
-        var bs = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
-        var cb = bs.getCodeBase();
-        if (cb.getProtocol().equals("file")) {
-            addWidget("../widgets/Clock/dist/launch.jnlp");
-            addWidget("../widgets/SlideShow/dist/launch.jnlp");
-            addWidget("../widgets/WebFeed/dist/launch.jnlp");
-        } else {
-            addWidget((new URL(cb, "widgets/Clock/launch.jnlp")).toString());
-            addWidget((new URL(cb, "widgets/SlideShow/launch.jnlp")).toString());
-            addWidget((new URL(cb, "widgets/WebFeed/launch.jnlp")).toString());
-        }
     }
+
     
     public function addWidget(jnlpUrl:String):WidgetInstance {
         try {
@@ -74,7 +63,6 @@ public class WidgetManager {
             var codeBase = new URL(xpath.evaluate("/jnlp/@codebase", document, XPathConstants.STRING) as String);
             var widgetNodes = xpath.evaluate("/jnlp/resources/jar", document, XPathConstants.NODESET) as NodeList;
             var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
-//        var dsl = ds.getDefaultProgressWindow(); 
             for (i in [0..widgetNodes.getLength()-1]) {
                 var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
                 if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
