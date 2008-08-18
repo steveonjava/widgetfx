@@ -115,7 +115,6 @@ public class Sidebar extends Frame {
 
     postinit {
         loadContent();
-        WidgetManager.getInstance().loadWidgets();
     }
     
     public function addWidget():Void {
@@ -296,98 +295,103 @@ public class Sidebar extends Frame {
                 }
             ]
         }
+        var addWidgetButton = Group {
+            var color = Color.GRAY;
+            translateY: 7
+            content: [
+                Circle {
+                    stroke: bind color
+                    fill: Color.rgb(0, 0, 0, 0.0);
+                    radius: 7
+                },
+                Line {
+                    stroke: bind color
+                    strokeWidth: 2
+                    startX: -3, startY: 0
+                    endX: 3, endY: 0
+                },
+                Line {
+                    stroke: bind color
+                    strokeWidth: 2
+                    startX: 0, startY: -3
+                    endX: 0, endY: 3
+                }
+            ]
+            onMouseEntered: function(e) {
+                color = Color.WHITE;
+            }
+            onMouseExited: function(e) {
+                color = Color.GRAY;
+            }
+            onMouseClicked: function(e) {
+                addWidget();
+            }
+        }
+        var mainMenuButton:Group = Group {
+            var color = Color.GRAY;
+            translateY: 7
+            content: [
+                Circle {
+                    stroke: bind color
+                    fill: Color.rgb(0, 0, 0, 0.0);
+                    radius: 7
+                },
+                Polygon {
+                    stroke: bind color
+                    fill: bind color
+                    points: [
+                        -3.0,-1.0, 
+                        3.0,-1.0,
+                        0.0,3.0
+                    ]
+                }
+            ]
+            onMouseEntered: function(e) {
+                color = Color.WHITE;
+            }
+            onMouseExited: function(e) {
+                color = Color.GRAY;
+            }
+            onMouseReleased: function(e) {
+                if (mainMenuButton.contains(e.getX(), e.getY())) {
+                    mainMenu.show(window, e.getStageX(), e.getStageY());
+                }
+            }
+        }
+        var hideButton = Group {
+            var color = Color.GRAY;
+            translateY: 7
+            content: [
+                Circle {
+                    stroke: bind color
+                    fill: Color.rgb(0, 0, 0, 0.0);
+                    radius: 7
+                },
+                Line {
+                    stroke: bind color
+                    strokeWidth: 2
+                    startX: -3, startY: 2
+                    endX: 3, endY: 2
+                }
+            ]
+            onMouseEntered: function(e) {
+                color = Color.WHITE;
+            }
+            onMouseExited: function(e) {
+                color = Color.GRAY;
+            }
+            onMouseClicked: function(e) {
+                hide();
+            }
+        }
         var menus = HBox { // Menu Buttons
             translateX: bind width, translateY: 4
             spacing: 4
             horizontalAlignment: HorizontalAlignment.TRAILING
             content: [
-                Group {
-                    var color = Color.GRAY;
-                    translateY: 7
-                    content: [
-                        Circle {
-                            stroke: bind color
-                            fill: Color.rgb(0, 0, 0, 0.0);
-                            radius: 7
-                        },
-                        Line {
-                            stroke: bind color
-                            strokeWidth: 2
-                            startX: -3, startY: 0
-                            endX: 3, endY: 0
-                        },
-                        Line {
-                            stroke: bind color
-                            strokeWidth: 2
-                            startX: 0, startY: -3
-                            endX: 0, endY: 3
-                        }
-                    ]
-                    onMouseEntered: function(e) {
-                        color = Color.WHITE;
-                    }
-                    onMouseExited: function(e) {
-                        color = Color.GRAY;
-                    }
-                    onMouseClicked: function(e) {
-                        addWidget();
-                    }
-                },
-                Group {
-                    var color = Color.GRAY;
-                    translateY: 7
-                    content: [
-                        Circle {
-                            stroke: bind color
-                            fill: Color.rgb(0, 0, 0, 0.0);
-                            radius: 7
-                        },
-                        Polygon {
-                            stroke: bind color
-                            fill: bind color
-                            points: [
-                                -3.0,-1.0, 
-                                3.0,-1.0,
-                                0.0,3.0
-                            ]
-                        }
-                    ]
-                    onMouseEntered: function(e) {
-                        color = Color.WHITE;
-                    }
-                    onMouseExited: function(e) {
-                        color = Color.GRAY;
-                    }
-                    onMouseReleased: function(e) {
-                        mainMenu.show(window, e.getStageX(), e.getStageY());
-                    }
-                },
-                Group {
-                    var color = Color.GRAY;
-                    translateY: 7
-                    content: [
-                        Circle {
-                            stroke: bind color
-                            fill: Color.rgb(0, 0, 0, 0.0);
-                            radius: 7
-                        },
-                        Line {
-                            stroke: bind color
-                            strokeWidth: 2
-                            startX: -3, startY: 2
-                            endX: 3, endY: 2
-                        }
-                    ]
-                    onMouseEntered: function(e) {
-                        color = Color.WHITE;
-                    }
-                    onMouseExited: function(e) {
-                        color = Color.GRAY;
-                    }
-                    onMouseClicked: function(e) {
-                        hide();
-                    }
-                }
+                addWidgetButton,
+                mainMenuButton,
+                hideButton
             ]
 
         }
