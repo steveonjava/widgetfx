@@ -34,7 +34,7 @@ import javax.imageio.*;
 import java.io.*;
 import java.util.*;
 import java.lang.*;
-import javax.swing.JFileChooser;
+import javax.swing.*;
 
 /**
  * @author Stephen Chin
@@ -163,6 +163,92 @@ var keywordEdit = TextField {text: bind keywords with inverse, hpref: 300};
 var directoryLabel = Label {text: "Directory:"};
 var directoryEdit = TextField {text: bind directoryName with inverse, hpref: 300};
 
+var shuffleCheckBox = CheckBox {text: "Shuffle"};
+var durationLabel = Label {text: "Duration"};
+
+// todo - replace with javafx spinner when one exists
+var durationSpinner = new JSpinner();
+var durationSpinnerComponent = Component.fromJComponent(durationSpinner);
+durationSpinnerComponent.hmax = 52;
+
+var displayTab = ClusterPanel {
+    hcluster: ParallelCluster {
+        content: [
+            shuffleCheckBox,
+            SequentialCluster {
+                content: [
+                    durationLabel,
+                    durationSpinnerComponent
+                ]
+            }
+        ]
+    }
+    vcluster: SequentialCluster {
+        content: [
+            shuffleCheckBox,
+            ParallelCluster {
+                content: [
+                    durationLabel,
+                    durationSpinnerComponent
+                ]
+            }
+        ]
+    }
+}
+
+var contentTab = ClusterPanel {
+    vcluster: ParallelCluster {
+        content: [
+            directoryLabel,
+            directoryEdit,
+            browseButton,
+        ]
+    },
+    hcluster: SequentialCluster {
+        content: [
+            ParallelCluster {
+                content:[
+                    directoryLabel,
+                    keywordLabel,
+                ]
+            },
+            ParallelCluster {
+                content:[
+                    SequentialCluster {
+                        content:[
+                            directoryEdit,
+                            browseButton
+                        ]
+                    },
+                    keywordEdit
+                ]
+            }
+        ]
+    }
+    vcluster : SequentialCluster {
+        content:[
+            ParallelCluster{
+                content: [
+                    directoryLabel,
+                    directoryEdit,
+                    browseButton
+                ]
+            },
+            ParallelCluster {
+                content : [
+                    keywordLabel,
+                    keywordEdit
+                ]
+            }
+        ]
+    }
+}
+
+// todo - replace with a javafx component when one is available
+var tabbedPane = new JTabbedPane();
+tabbedPane.add("display", displayTab.getJPanel());
+tabbedPane.add("content", contentTab.getJPanel());
+
 Widget {
     name: "Slide Show"
     resizable: true
@@ -183,54 +269,7 @@ Widget {
             }
         ]
 
-        component: ClusterPanel {
-            
-            vcluster: ParallelCluster {
-                content: [
-                    directoryLabel,
-                    directoryEdit,
-                    browseButton,
-                ]
-            },
-            hcluster: SequentialCluster {
-                content: [
-                    ParallelCluster {
-                        content:[
-                            directoryLabel,
-                            keywordLabel,
-                        ]
-                    },
-                    ParallelCluster {
-                        content:[
-                            SequentialCluster {
-                                content:[
-                                    directoryEdit,
-                                    browseButton
-                                ]
-                            },
-                            keywordEdit
-                        ]
-                    }
-                ]
-            }
-            vcluster : SequentialCluster {
-                content:[
-                    ParallelCluster{
-                        content: [
-                            directoryLabel,
-                            directoryEdit,
-                            browseButton
-                        ]
-                    },
-                    ParallelCluster {
-                        content : [
-                            keywordLabel,
-                            keywordEdit
-                        ]
-                    }
-                ]
-            }
-        }
+        component: Component.fromJComponent(tabbedPane)
 
         onLoad: function() {
             loadDirectory(directoryName);
