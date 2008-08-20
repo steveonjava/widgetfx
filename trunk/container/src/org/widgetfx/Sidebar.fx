@@ -17,6 +17,7 @@
  */
 package org.widgetfx;
 import org.widgetfx.ui.*;
+import org.widgetfx.install.InstallUtil;
 import javafx.lang.*;
 import javafx.scene.paint.*;
 import javafx.application.*;
@@ -36,6 +37,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.awt.Point;
+import java.io.*;
 import java.lang.System;
 
 /**
@@ -107,6 +109,15 @@ public class Sidebar extends Frame {
         ]
     }
     
+    // todo - add this to config file
+    private attribute launchOnStartup:Boolean on replace {
+        if (launchOnStartup) {
+            InstallUtil.copyStartupFile();
+        } else {
+            InstallUtil.deleteStartupFile();
+        }
+    }
+    
     init {
         windowStyle = WindowStyle.TRANSPARENT;
         width = preferredWidth;
@@ -114,6 +125,8 @@ public class Sidebar extends Frame {
     }
 
     postinit {
+        // todo - this should only happen on first invocation (maybe with a dialog)
+        launchOnStartup = true;
         loadContent();
     }
     
@@ -135,6 +148,10 @@ public class Sidebar extends Frame {
                     action: addWidget
                 },
                 alwaysOnTop,
+                CheckBoxMenuItem {
+                    text: "Launch on Startup"
+                    selected: bind launchOnStartup with inverse
+                },
                 Menu {
                     var group = ToggleGroup {}
                     text: "Dock Sidebar"
@@ -168,7 +185,7 @@ public class Sidebar extends Frame {
         }
         // todo - replace with javafx Separator when one exists
         menu.getJMenu().insertSeparator(1);
-        menu.getJMenu().insertSeparator(3);
+        menu.getJMenu().insertSeparator(4);
         // todo - create a javafx PopupMenu directly when one exists
         return menu.getJMenu().getPopupMenu();
     }
@@ -273,6 +290,7 @@ public class Sidebar extends Frame {
     }
     
     private function loadContent():Void {
+        closeAction = function() {System.exit(0);};
         var rolloverOpacity = 0.01;
         var rolloverTimeline = Timeline {
             autoReverse: true, toggle: true
@@ -352,10 +370,8 @@ public class Sidebar extends Frame {
             onMouseExited: function(e) {
                 color = Color.GRAY;
             }
-            onMouseReleased: function(e) {
-                if (mainMenuButton.contains(e.getX(), e.getY())) {
-                    mainMenu.show(window, e.getStageX(), e.getStageY());
-                }
+            onMouseReleased: function(e:MouseEvent) {
+                mainMenu.show(window, e.getStageX(), e.getStageY());
             }
         }
         var hideButton = Group {
