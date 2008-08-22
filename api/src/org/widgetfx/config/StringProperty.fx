@@ -22,7 +22,9 @@ package org.widgetfx.config;
  * @author kcombs
  */
 public class StringProperty extends Property {
-    public attribute value:String;
+    public attribute value:String on replace {
+        fireOnChange();
+    }
     
     public function getStringValue():String {
         return value;

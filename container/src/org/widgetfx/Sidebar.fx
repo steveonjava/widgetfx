@@ -17,6 +17,7 @@
  */
 package org.widgetfx;
 import org.widgetfx.ui.*;
+import org.widgetfx.config.*;
 import org.widgetfx.install.InstallUtil;
 import javafx.lang.*;
 import javafx.scene.paint.*;
@@ -50,6 +51,17 @@ public class Sidebar extends Frame {
     static attribute BORDER = 5;
     static attribute DS_RADIUS = 5;
     
+    private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
+        BooleanProperty {
+            name: "dockLeft"
+            value: bind dockLeft with inverse;
+        },
+        IntegerProperty {
+            name: "width"
+            value: bind width with inverse;
+        }
+    ]);
+    
     private attribute mainMenu = createMainMenu();
     private attribute logo:Node;
     attribute widgetViews:Node[] = [];
@@ -81,6 +93,9 @@ public class Sidebar extends Frame {
         dockLeft = not dockRight;
         updateDockLocation();
     };
+    private attribute widthTrigger = bind width on replace {
+        updateDockLocation();
+    }
     attribute resizing:Boolean;
     attribute dragging:Boolean;
     
@@ -89,8 +104,6 @@ public class Sidebar extends Frame {
         x = screenBounds.x + (if (dockLeft) 0 else screenBounds.width - width);
         y = screenBounds.y;
     }
-    
-    public attribute preferredWidth = DEFAULT_WIDTH + BORDER * 2;
     
     private attribute transparentBG = bind if (dockLeft) leftBG else rightBG;
     private attribute bgOpacity = 0.7;
@@ -120,11 +133,12 @@ public class Sidebar extends Frame {
     
     init {
         windowStyle = WindowStyle.TRANSPARENT;
-        width = preferredWidth;
+        width = DEFAULT_WIDTH + BORDER * 2;
         currentGraphics = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
     }
 
     postinit {
+        configuration.load();
         // todo - this should only happen on first invocation (maybe with a dialog)
         launchOnStartup = true;
         loadContent();
@@ -424,10 +438,9 @@ public class Sidebar extends Frame {
                     cursor: Cursor.H_RESIZE
                     onMouseDragged: function(e:MouseEvent) {
                         resizing = true;
-                        width = if (dockLeft) e.getScreenX().intValue() - screenBounds.x
+                        var draggedWidth = if (dockLeft) e.getScreenX().intValue() - screenBounds.x
                                 else screenBounds.x + screenBounds.width - e.getScreenX().intValue();
-                        width = if (width < MIN_WIDTH) MIN_WIDTH else if (width > MAX_WIDTH) MAX_WIDTH else width;
-                        updateDockLocation();
+                        width = if (draggedWidth < MIN_WIDTH) MIN_WIDTH else if (draggedWidth > MAX_WIDTH) MAX_WIDTH else draggedWidth;
                         for (instance in widgets) {
                             updateWidth(instance.widget, false);
                         }

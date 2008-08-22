@@ -24,7 +24,9 @@ import java.math.BigInteger;
  * @author kcombs
  */
 public class IntegerProperty extends Property {
-    public attribute value:Integer;
+    public attribute value:Integer on replace {
+        fireOnChange();
+    }
     
     public function getStringValue():String {
         return value.toString();

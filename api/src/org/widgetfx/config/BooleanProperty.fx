@@ -24,7 +24,9 @@ import java.math.BigInteger;
  * @author kcombs
  */
 public class BooleanProperty extends Property {
-    public attribute value:Boolean;
+    public attribute value:Boolean on replace {
+        fireOnChange();
+    }
     
     public function getStringValue():String {
         return value.toString();

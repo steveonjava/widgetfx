@@ -24,7 +24,9 @@ import java.math.BigDecimal;
  * @author kcombs
  */
 public class NumberProperty extends Property {
-    public attribute value:Number;
+    public attribute value:Number on replace {
+        fireOnChange();
+    }
     
     public function getStringValue():String {
         return value.toString();
