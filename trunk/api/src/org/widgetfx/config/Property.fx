@@ -27,4 +27,12 @@ public abstract class Property {
     public abstract function getStringValue():String;
     
     public abstract function setStringValue(value:String):Void;
+    
+    attribute onChange:function(changedProperty:Property):Void;
+    
+    private function fireOnChange() {
+        if (onChange != null) {
+            onChange(this);
+        }
+    }
 }

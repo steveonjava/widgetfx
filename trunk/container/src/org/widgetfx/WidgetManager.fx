@@ -39,21 +39,22 @@ public class WidgetManager {
     
     private static attribute instance = WidgetManager {}
     
-    public attribute widgets:WidgetInstance[] = [];
-    
-    private static attribute loadedResources:URL[] = [];
-    
-    private attribute idCount = 0;
-    
     public static function getInstance() {
         return instance;
     }
-
+    
+    public attribute widgets:WidgetInstance[] = [];
+    
+    private attribute loadedResources:URL[] = [];
+    
+    private attribute configuration = WidgetFXConfiguration.getInstance();
+    
+    private attribute idCount = 0;
+    
     init {
         // todo - implement a widget security policy
         java.lang.System.setSecurityManager(null);
     }
-
     
     public function addWidget(jnlpUrl:String):WidgetInstance {
         try {
