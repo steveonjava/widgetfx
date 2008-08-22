@@ -59,6 +59,14 @@ public class Sidebar extends Frame {
         IntegerProperty {
             name: "width"
             value: bind width with inverse;
+        },
+        BooleanProperty {
+            name: "alwaysOnTop"
+            value: bind alwaysOnTop with inverse;
+        },
+        BooleanProperty {
+            name: "launchOnStartup"
+            value: bind launchOnStartup with inverse;
         }
     ]);
     
@@ -93,9 +101,15 @@ public class Sidebar extends Frame {
         dockLeft = not dockRight;
         updateDockLocation();
     };
+
     private attribute widthTrigger = bind width on replace {
         updateDockLocation();
     }
+
+    private attribute alwaysOnTop:Boolean on replace {
+        window.setAlwaysOnTop(alwaysOnTop);
+    }
+    
     attribute resizing:Boolean;
     attribute dragging:Boolean;
     
@@ -122,8 +136,7 @@ public class Sidebar extends Frame {
         ]
     }
     
-    // todo - add this to config file
-    private attribute launchOnStartup:Boolean on replace {
+    private attribute launchOnStartup:Boolean = true on replace {
         if (launchOnStartup) {
             InstallUtil.copyStartupFile();
         } else {
@@ -139,8 +152,6 @@ public class Sidebar extends Frame {
 
     postinit {
         configuration.load();
-        // todo - this should only happen on first invocation (maybe with a dialog)
-        launchOnStartup = true;
         loadContent();
     }
     
@@ -150,18 +161,15 @@ public class Sidebar extends Frame {
     
     public function createMainMenu():JPopupMenu {
         var menu = Menu {
-            var alwaysOnTop:CheckBoxMenuItem = CheckBoxMenuItem {
-                    text: "Always on Top"
-                    action: function() {
-                        window.setAlwaysOnTop(alwaysOnTop.selected);
-                    }
-            }
             items: [
                 MenuItem {
                     text: "Add Widget..."
                     action: addWidget
                 },
-                alwaysOnTop,
+                CheckBoxMenuItem {
+                    text: "Always on Top"
+                    selected: bind alwaysOnTop with inverse;
+                },
                 CheckBoxMenuItem {
                     text: "Launch on Startup"
                     selected: bind launchOnStartup with inverse
