@@ -18,7 +18,7 @@
 package org.widgetfx;
 
 import java.lang.Class;
-import org.widgetfx.config.ConfigPersister;
+import org.widgetfx.config.*;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
 import com.sun.javafx.runtime.Entry;
@@ -49,10 +49,59 @@ public class WidgetInstance {
     };
 
     public attribute id:Integer;
-    
+    public attribute opacity:Number;
+    public attribute docked:Boolean;
+    public attribute dockedWidth:Integer;
+    public attribute dockedHeight:Integer;
+    public attribute undockedX:Integer;
+    public attribute undockedY:Integer;
+    public attribute undockedWidth:Integer;
+    public attribute undockedHeight:Integer;
     public attribute widget:Widget;
     
-    private function getPropertyFile():File {
+    // todo - possibly prevent widgets from loading if they define user properties that start with "widget."
+    private attribute properties = [
+        StringProperty {
+            name: "widget.mainClass"
+            value: bind mainClass with inverse;
+        },
+        NumberProperty {
+            name: "widget.opacity"
+            value: bind opacity with inverse;
+        },
+        BooleanProperty {
+            name: "widget.docked"
+            value: bind docked with inverse;
+        },
+        IntegerProperty {
+            name: "widget.dockedWidth"
+            value: bind dockedWidth with inverse;
+        },
+        IntegerProperty {
+            name: "widget.dockedHeight"
+            value: bind dockedHeight with inverse;
+        },
+        IntegerProperty {
+            name: "widget.undockedX"
+            value: bind undockedX with inverse;
+        },
+        IntegerProperty {
+            name: "widget.undockedY"
+            value: bind undockedY with inverse;
+        },
+        IntegerProperty {
+            name: "widget.undockedWidth"
+            value: bind undockedWidth with inverse;
+        },
+        IntegerProperty {
+            name: "widget.undockedHeight"
+            value: bind undockedHeight with inverse;
+        }
+    ];
+    
+    private attribute persister = ConfigPersister {properties: bind [properties, widget.configuration.properties], file: bind getPropertyFile()}
+    
+    private bound function getPropertyFile():File {
         var home = System.getProperty("user.home");
         return new File(home, ".WidgetFX/widgets/{id}.config");
     }
@@ -60,15 +109,19 @@ public class WidgetInstance {
     public function load() {
         if (widget.onStart != null) widget.onStart();
         if (widget.configuration != null) {
-            var persister = ConfigPersister {configuration: widget.configuration, file: getPropertyFile()}
             persister.load();
+            if (widget.configuration.onLoad != null) {
+                widget.configuration.onLoad();
+            }
         }
     }
     
     public function save() {
         if (widget.configuration != null) {
-            var persister = ConfigPersister {configuration: widget.configuration, file: getPropertyFile()}
             persister.save();
+            if (widget.configuration.onSave != null) {
+                widget.configuration.onSave();
+            }
         }
     }
     

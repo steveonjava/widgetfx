@@ -27,7 +27,11 @@ import java.util.Properties;
  * @author Keith Combs
  */
 public class ConfigPersister {
-    public attribute configuration:Configuration;
+    public attribute properties:Property[] on replace [i..j]=newProperties {
+        for (property in newProperties) {
+            property.onChange = changeListener;
+        }
+    }
     
     public attribute file:File;
     
@@ -39,17 +43,11 @@ public class ConfigPersister {
         }
     }
     
-    public attribute properties = bind if (configuration == null) null else configuration.properties on replace [i..j]=newProperties {
-        for (property in newProperties) {
-            property.onChange = changeListener;
-        }
-    }
-    
     public function load() {
         var previousAutoSave = autoSave;
         autoSave = false;
         try {
-            if (file.exists() and configuration.properties != null) {
+            if (file.exists() and properties != null) {
                 var savedProperties = Properties {};
                 var reader = new FileReader(file);
                 try {
@@ -57,7 +55,7 @@ public class ConfigPersister {
                 } finally {
                     reader.close();
                 }
-                for (property in configuration.properties) {
+                for (property in properties) {
                     if (savedProperties.containsKey(property.name)) {
                         property.setStringValue(savedProperties.get(property.name) as String);
                     }
@@ -66,15 +64,12 @@ public class ConfigPersister {
         } finally {
             autoSave = previousAutoSave;
         }
-        if (configuration.onLoad != null) {
-            configuration.onLoad();
-        }
     }
     
     public function save() {
-        if (configuration.properties != null) {
+        if (properties != null) {
             var savedProperties = Properties {};
-            for (property in configuration.properties) {
+            for (property in properties) {
                 savedProperties.put(property.name, property.getStringValue());
             }
             file.getParentFile().mkdirs();
@@ -85,9 +80,6 @@ public class ConfigPersister {
             } finally {
                 writer.close();
             }
-        }
-        if (configuration.onSave != null) {
-            configuration.onSave();
         }
     }
 }

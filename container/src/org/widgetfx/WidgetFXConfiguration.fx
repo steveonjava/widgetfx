@@ -33,12 +33,10 @@ public class WidgetFXConfiguration {
         return instance;
     }
     
-    public attribute configuration = Configuration {
-        properties: []
-    }
+    public attribute properties:Property[] = [];
 
     public static function getInstanceWithProperties(properties:Property[]) {
-        insert properties into instance.configuration.properties;
+        insert properties into instance.properties;
         return instance;
     }
     
@@ -49,7 +47,7 @@ public class WidgetFXConfiguration {
     
     private attribute persister = ConfigPersister {
         file: getPropertyFile();
-        configuration: configuration
+        properties: properties
     }
     
     public function load() {
