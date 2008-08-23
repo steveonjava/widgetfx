@@ -72,8 +72,10 @@ public class Sidebar extends Frame {
     
     private attribute mainMenu = createMainMenu();
     private attribute logo:Node;
+    private attribute headerHeight = bind BORDER * 2 + logo.getHeight();
     attribute widgetViews:Node[] = [];
-    private attribute hoverPlaceholder;
+    private attribute gapIndex:Integer;
+    private attribute gapSize:Integer;
     
     public attribute widgets = bind WidgetManager.getInstance().widgets on replace oldInst[lo..hi]=instances {
         var oldWidgets = for (inst in oldInst[lo..hi]) inst.widget;
@@ -222,38 +224,30 @@ public class Sidebar extends Frame {
     
     public function hover(widget:Widget, screenX:Integer, screenY:Integer, immediate:Boolean):java.awt.Rectangle {
         if (screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
-            if (hoverPlaceholder == null) {
-                hoverPlaceholder = Rectangle {
-                    x: 0, y: 0, width: widget.stage.width + DS_RADIUS * 2 + 2, height: 1
-                    fill: Color.rgb(0, 0, 0, 0.0);
-                    horizontalAlignment: HorizontalAlignment.CENTER
-                    translateX: bind width / 2 - BORDER + DS_RADIUS + 1
-                };
+            if (gapSize == 0) {
                 if (immediate) {
-                    hoverPlaceholder.height = widget.stage.height + DS_RADIUS * 2 + 2;
+                    gapSize = widget.stage.height + DS_RADIUS * 2 + 2;
                 } else {
                     Timeline {
-                        keyFrames: KeyFrame {time: 300ms, values: hoverPlaceholder.height => widget.stage.height + DS_RADIUS * 2 + 2 tween Interpolator.EASEBOTH}
+                        keyFrames: KeyFrame {time: 300ms, values: gapSize => widget.stage.height + DS_RADIUS * 2 + 2 tween Interpolator.EASEBOTH}
                     }.start();
                 }
-            } else {
-                delete hoverPlaceholder from widgetViews;
             }
-            var inserted;
+            var inserted = false;
             var localY = screenY - y;
             for (view in widgetViews) {
-                var viewY = view.getBoundsY() + view.getParent().getBoundsY();
+                var viewY = view.getBoundsY() + headerHeight;
                 var viewHeight = view.getBoundsHeight();
                 if (localY < viewY + viewHeight / 2) {
+                    gapIndex = indexof view;
                     inserted = true;
-                    insert hoverPlaceholder before widgetViews[indexof view];
                     break;
                 }
             }
             if (not inserted) {
-                insert hoverPlaceholder into widgetViews;
+                gapIndex = widgetViews.size();
             }
-            return new java.awt.Rectangle(x + hoverPlaceholder.getBoundsX(), y + hoverPlaceholder.getBoundsY() + hoverPlaceholder.getParent().getBoundsY(), widget.stage.width, widget.stage.height);
+            return new java.awt.Rectangle(x, y, widget.stage.width, widget.stage.height);
         } else {
             clearHover();
             return null;
@@ -261,26 +255,18 @@ public class Sidebar extends Frame {
     }
     
     public function clearHover():Void {
-        if (hoverPlaceholder != null) {
+        if (gapSize > 0) {
             Timeline {
-                keyFrames: KeyFrame {time: 300ms, values: hoverPlaceholder.height => 1 tween Interpolator.EASEBOTH
-                    action: function() {
-                        delete hoverPlaceholder from widgetViews;
-                        hoverPlaceholder = null;
-                    }
-                }
+                keyFrames: KeyFrame {time: 300ms, values: gapSize => 0 tween Interpolator.EASEBOTH}
             }.start();
         }
     }
     
     public function dock(widget:Widget, screenX:Integer, screenY:Integer):Boolean {
         if (screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
-            for (view in widgetViews where view == hoverPlaceholder) {
-                insert createWidgetView(widget) before widgetViews[indexof view];
-            }
+            insert createWidgetView(widget) before widgetViews[gapIndex];
             updateWidth(widget);
-            delete hoverPlaceholder from widgetViews;
-            hoverPlaceholder = null;
+            gapSize = 0;
             return true;
         }
         return false;
@@ -462,10 +448,12 @@ public class Sidebar extends Frame {
                 },
                 logo,
                 menus,
-                VBox { // Content Area
-                    translateX: BORDER, translateY: bind BORDER * 2 + logo.getHeight();
+                GapVBox { // Content Area
+                    translateX: BORDER, translateY: bind headerHeight;
                     spacing: BORDER
                     content: bind widgetViews
+                    gapIndex: bind gapIndex
+                    gapSize: bind gapSize
                 }
             ],
             fill: bind transparentBG;
