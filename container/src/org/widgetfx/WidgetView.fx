@@ -73,13 +73,13 @@ public class WidgetView extends Group {
                         opacity: 0.8
                     }
                     docked = false;
-                    sidebar.hover(widget, e.getScreenX(), e.getScreenY(), true);
+                    sidebar.hover(widget, e.getScreenX(), e.getScreenY(), false);
                 } else {
                     widgetFrame.x += e.getStageX().intValue() - lastScreenPosX;
                     widgetFrame.y += e.getStageY().intValue() - lastScreenPosY;
                     lastScreenPosX = e.getStageX().intValue();
                     lastScreenPosY = e.getStageY().intValue();
-                    sidebar.hover(widget, e.getScreenX(), e.getScreenY(), false);
+                    sidebar.hover(widget, e.getScreenX(), e.getScreenY(), true);
                 }
             }
         };
@@ -87,7 +87,7 @@ public class WidgetView extends Group {
             if (not docking and not docked) {
                 var screenX = e.getScreenX();
                 var screenY = e.getScreenY();
-                var targetBounds = sidebar.hover(widget, screenX, screenY, false);
+                var targetBounds = sidebar.hover(widget, screenX, screenY, true);
                 if (targetBounds != null) {
                     docking = true;
                     widgetFrame.dock(targetBounds.x, targetBounds.y, screenX, screenY);

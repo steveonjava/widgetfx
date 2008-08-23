@@ -72,10 +72,9 @@ public class Sidebar extends Frame {
     
     private attribute mainMenu = createMainMenu();
     private attribute logo:Node;
+    private attribute content:GapVBox;
     private attribute headerHeight = bind BORDER * 2 + logo.getHeight();
     attribute widgetViews:Node[] = [];
-    private attribute gapIndex:Integer;
-    private attribute gapSize:Integer;
     
     public attribute widgets = bind WidgetManager.getInstance().widgets on replace oldInst[lo..hi]=instances {
         var oldWidgets = for (inst in oldInst[lo..hi]) inst.widget;
@@ -219,54 +218,39 @@ public class Sidebar extends Frame {
     }
     
     public function hover(widget:Widget, screenX:Integer, screenY:Integer):java.awt.Rectangle {
-        return hover(widget, screenX, screenY, false);
+        return hover(widget, screenX, screenY, true);
     }
     
-    public function hover(widget:Widget, screenX:Integer, screenY:Integer, immediate:Boolean):java.awt.Rectangle {
+    public function hover(widget:Widget, screenX:Integer, screenY:Integer, animate:Boolean):java.awt.Rectangle {
         if (screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
-            if (gapSize == 0) {
-                if (immediate) {
-                    gapSize = widget.stage.height + DS_RADIUS * 2 + 2;
-                } else {
-                    Timeline {
-                        keyFrames: KeyFrame {time: 300ms, values: gapSize => widget.stage.height + DS_RADIUS * 2 + 2 tween Interpolator.EASEBOTH}
-                    }.start();
-                }
-            }
-            var inserted = false;
+            var index = widgetViews.size();
             var localY = screenY - y;
             for (view in widgetViews) {
                 var viewY = view.getBoundsY() + headerHeight;
                 var viewHeight = view.getBoundsHeight();
                 if (localY < viewY + viewHeight / 2) {
-                    gapIndex = indexof view;
-                    inserted = true;
+                    index = indexof view;
                     break;
                 }
             }
-            if (not inserted) {
-                gapIndex = widgetViews.size();
-            }
-            return new java.awt.Rectangle(x, y, widget.stage.width, widget.stage.height);
+            content.setGap(index, widget.stage.height + DS_RADIUS * 2 + 2, animate);
+            return new java.awt.Rectangle(
+                x + (width - widget.stage.width) / 2 - BORDER,
+                y + content.getGapLocation() + headerHeight,
+                widget.stage.width,
+                widget.stage.height
+            );
         } else {
-            clearHover();
+            content.clearGap(animate);
             return null;
-        }
-    }
-    
-    public function clearHover():Void {
-        if (gapSize > 0) {
-            Timeline {
-                keyFrames: KeyFrame {time: 300ms, values: gapSize => 0 tween Interpolator.EASEBOTH}
-            }.start();
         }
     }
     
     public function dock(widget:Widget, screenX:Integer, screenY:Integer):Boolean {
         if (screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
-            insert createWidgetView(widget) before widgetViews[gapIndex];
+            insert createWidgetView(widget) before widgetViews[content.getGapIndex()];
+            content.clearGap(false);
             updateWidth(widget);
-            gapSize = 0;
             return true;
         }
         return false;
@@ -419,6 +403,11 @@ public class Sidebar extends Frame {
             ]
 
         }
+        content = GapVBox {
+            translateX: BORDER, translateY: bind headerHeight;
+            spacing: BORDER
+            content: bind widgetViews
+        }
         stage = Stage {
             content: [
                 Group { // Drag Bar
@@ -448,13 +437,7 @@ public class Sidebar extends Frame {
                 },
                 logo,
                 menus,
-                GapVBox { // Content Area
-                    translateX: BORDER, translateY: bind headerHeight;
-                    spacing: BORDER
-                    content: bind widgetViews
-                    gapIndex: bind gapIndex
-                    gapSize: bind gapSize
-                }
+                content
             ],
             fill: bind transparentBG;
         };
