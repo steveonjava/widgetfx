@@ -20,11 +20,11 @@ package org.widgetfx;
 /**
  * @author Stephen Chin
  */
-Sidebar {
+var sidebar = Sidebar {
     title: "WidgetFX"
     visible: true
 }
 
 for (arg in __ARGS__ where arg.toLowerCase().endsWith("jnlp")) {
-    WidgetManager.getInstance().addWidget(arg);
+    WidgetManager.getInstance().addWidget(arg, sidebar);
 }

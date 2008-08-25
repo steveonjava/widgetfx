@@ -28,9 +28,9 @@ public class WidgetView extends Group {
 
     public attribute sidebar:Sidebar;
     
-    public attribute widget:Widget;
+    public attribute instance:WidgetInstance;
     
-    public attribute docked = true;
+    private attribute widget = bind instance.widget;
     
     public attribute docking = false;
     
@@ -60,39 +60,37 @@ public class WidgetView extends Group {
         };
         onMouseDragged = function(e:MouseEvent):Void {
             if (not docking) {
-                if (docked) {
+                if (instance.docked) {
                     sidebar.dragging = true;
                     var xPos = e.getStageX().intValue() + sidebar.x - e.getX().intValue() - WidgetFrame.BORDER;
                     var yPos = e.getStageY().intValue() + sidebar.y - e.getY().intValue() - WidgetFrame.BORDER;
-                    delete this from sidebar.widgetViews;
                     widgetFrame = WidgetFrame {
-                        sidebar: sidebar;
-                        widget: widget;
+                        sidebar: sidebar
+                        instance: instance
                         x: xPos, y: yPos
                         // todo - add opacity to configuration and save
-                        opacity: 0.8
+                        opacity: instance.opacity
                     }
-                    docked = false;
-                    sidebar.hover(widget, e.getScreenX(), e.getScreenY(), false);
+                    sidebar.hover(instance, xPos, yPos, false);
+                    instance.docked = false;
                 } else {
                     widgetFrame.x += e.getStageX().intValue() - lastScreenPosX;
                     widgetFrame.y += e.getStageY().intValue() - lastScreenPosY;
                     lastScreenPosX = e.getStageX().intValue();
                     lastScreenPosY = e.getStageY().intValue();
-                    sidebar.hover(widget, e.getScreenX(), e.getScreenY(), true);
+                    sidebar.hover(instance, e.getScreenX(), e.getScreenY(), true);
                 }
             }
         };
         onMouseReleased = function(e:MouseEvent):Void {
-            if (not docking and not docked) {
-                var screenX = e.getScreenX();
-                var screenY = e.getScreenY();
-                var targetBounds = sidebar.hover(widget, screenX, screenY, true);
+            if (not docking and not instance.docked) {
+                var targetBounds = sidebar.finishHover(instance, e.getScreenX(), e.getScreenY());
                 if (targetBounds != null) {
                     docking = true;
-                    widgetFrame.dock(targetBounds.x, targetBounds.y, screenX, screenY);
+                    widgetFrame.dock(targetBounds.x, targetBounds.y);
                 }
                 sidebar.dragging = false;
+                instance.saveWithoutNotification();
             }
         };
     }

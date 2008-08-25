@@ -56,7 +56,7 @@ public class WidgetManager {
         java.lang.System.setSecurityManager(null);
     }
     
-    public function addWidget(jnlpUrl:String):WidgetInstance {
+    public function addWidget(jnlpUrl:String, sidebar:Sidebar):WidgetInstance {
         try {
             var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             var document = builder.parse(jnlpUrl);
@@ -88,7 +88,7 @@ public class WidgetManager {
                 }
             }
             var mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
-            var instance = WidgetInstance{mainClass: mainClass, id: idCount++};
+            var instance = WidgetInstance{sidebar: sidebar, mainClass: mainClass, id: idCount++};
             if (instance != null) {
                 insert instance into widgets;
                 instance.load();

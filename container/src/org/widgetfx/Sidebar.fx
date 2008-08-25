@@ -74,21 +74,8 @@ public class Sidebar extends Frame {
     private attribute logo:Node;
     private attribute content:GapVBox;
     private attribute headerHeight = bind BORDER * 2 + logo.getHeight();
-    attribute widgetViews:Node[] = [];
-    
-    public attribute widgets = bind WidgetManager.getInstance().widgets on replace oldInst[lo..hi]=instances {
-        var oldWidgets = for (inst in oldInst[lo..hi]) inst.widget;
-        for (view in widgetViews where view instanceof WidgetView) {
-            if (Sequences.indexOf(oldWidgets, (view as WidgetView).widget) != -1) {
-                delete view from widgetViews;
-            }
-        }
-        for (instance in instances) {
-            updateWidth(instance.widget);
-            var view = createWidgetView(instance.widget);
-            insert view into widgetViews;
-        }
-    };
+    private attribute dockedWidgets = bind WidgetManager.getInstance().widgets[w|w.docked];
+    attribute widgetViews:Node[] = bind for (instance in dockedWidgets) createWidgetView(instance);
     
     private attribute currentGraphics:java.awt.GraphicsConfiguration;
     private attribute screenBounds = bind currentGraphics.getBounds() on replace {
@@ -217,11 +204,43 @@ public class Sidebar extends Frame {
         (window as java.awt.Frame).setExtendedState(java.awt.Frame.ICONIFIED);
     }
     
-    public function hover(widget:Widget, screenX:Integer, screenY:Integer):java.awt.Rectangle {
-        return hover(widget, screenX, screenY, true);
+    private attribute animateHover:Timeline;
+    private attribute animateDocked:Boolean;
+    private attribute saveUndockedWidth:Integer;
+    private attribute saveUndockedHeight:Integer;
+    
+    public function setupHoverAnimation(instance:WidgetInstance) {
+        if (animateHover == null) {
+            saveUndockedWidth = instance.undockedWidth;
+            saveUndockedHeight = instance.undockedHeight;
+            var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
+            var newHeight = if (instance.docked) instance.undockedHeight else instance.dockedHeight;
+            if (newWidth > 0 or newHeight > 0) {
+                animateHover = Timeline {
+                    autoReverse: true, toggle: true
+                    keyFrames: KeyFrame {
+                        time: 300ms
+                        values: [
+                            if (newWidth > 0) {
+                                [instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH]
+                            } else {
+                                []
+                            },
+                            if (newHeight > 0) {
+                                [instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH]
+                            } else {
+                                []
+                            }
+                        ]
+                    }
+                }
+            }
+            animateDocked = instance.docked;
+        }
     }
     
-    public function hover(widget:Widget, screenX:Integer, screenY:Integer, animate:Boolean):java.awt.Rectangle {
+    public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, animate:Boolean) {
+        setupHoverAnimation(instance);
         if (screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
             var index = widgetViews.size();
             var localY = screenY - y;
@@ -233,50 +252,72 @@ public class Sidebar extends Frame {
                     break;
                 }
             }
-            content.setGap(index, widget.stage.height + DS_RADIUS * 2 + 2, animate);
-            return new java.awt.Rectangle(
-                x + (width - widget.stage.width) / 2 - BORDER,
-                y + content.getGapLocation() + headerHeight,
-                widget.stage.width,
-                widget.stage.height
-            );
+            var dockedHeight = if (instance.dockedHeight == 0) instance.widget.stage.height else instance.dockedHeight;
+            content.setGap(index, dockedHeight + DS_RADIUS * 2 + 2, animate);
+            if (animateHover != null and not animateDocked) {
+                animateDocked = true;
+                animateHover.start();
+            }
         } else {
             content.clearGap(animate);
-            return null;
+            if (animateHover != null and animateDocked) {
+                animateDocked = false;
+                animateHover.start();
+            }
         }
     }
     
-    public function dock(widget:Widget, screenX:Integer, screenY:Integer):Boolean {
+    public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):java.awt.Rectangle {
         if (screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
-            insert createWidgetView(widget) before widgetViews[content.getGapIndex()];
-            content.clearGap(false);
-            updateWidth(widget);
-            return true;
+            animateHover.stop();
+            animateHover = null;
+            instance.undockedWidth = saveUndockedWidth;
+            instance.undockedHeight = saveUndockedHeight;
+            return new java.awt.Rectangle(
+                x + (width - instance.widget.stage.width) / 2 - BORDER,
+                y + content.getGapLocation() + headerHeight,
+                instance.widget.stage.width,
+                instance.widget.stage.height
+            );
+        } else {
+            animateHover = null;
+            return null;        
         }
-        return false;
     }
     
-    private function createWidgetView(widget:Widget):WidgetView {
+    public function dock(instance:WidgetInstance) {
+        delete instance from WidgetManager.getInstance().widgets;
+        instance.docked = true;
+        if (content.getGapIndex() >= dockedWidgets.size()) {
+            insert instance into WidgetManager.getInstance().widgets;
+        } else {
+            var index = Sequences.indexOf(WidgetManager.getInstance().widgets, dockedWidgets[content.getGapIndex()]);
+            insert instance before WidgetManager.getInstance().widgets[index];
+        }
+        content.clearGap(false);
+    }
+    
+    private function createWidgetView(instance:WidgetInstance):WidgetView {
+        updateWidth(instance, false);
         return WidgetView {
             sidebar: this
-            widget: widget
+            instance: instance
             horizontalAlignment: HorizontalAlignment.CENTER
             translateX: bind width / 2 - BORDER + DS_RADIUS + 1
         }
     }
     
-    private function updateWidth(widget:Widget):Void {
-        updateWidth(widget, true);
-    }
-    
-    private function updateWidth(widget:Widget, notifyResize:Boolean):Void {
-        if (widget.resizable) {
-            widget.stage.width = width - BORDER * 2;
-            if (widget.aspectRatio != 0) {
-                widget.stage.height = (widget.stage.width / widget.aspectRatio).intValue();
+    private function updateWidth(instance:WidgetInstance, notifyResize:Boolean):Void {
+        if (instance.widget.resizable) {
+            instance.widget.stage.width = width - BORDER * 2;
+            if (instance.widget.aspectRatio != 0) {
+                instance.widget.stage.height = (instance.widget.stage.width / instance.widget.aspectRatio).intValue();
             }
-            if (notifyResize and widget.onResize != null) {
-                widget.onResize(widget.stage.width, widget.stage.height);
+            if (notifyResize) {
+                if (instance.widget.onResize != null) {
+                    instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                }
+                instance.saveWithoutNotification();
             }
         }
     }
@@ -424,13 +465,13 @@ public class Sidebar extends Frame {
                         var draggedWidth = if (dockLeft) e.getScreenX().intValue() - screenBounds.x
                                 else screenBounds.x + screenBounds.width - e.getScreenX().intValue();
                         width = if (draggedWidth < MIN_WIDTH) MIN_WIDTH else if (draggedWidth > MAX_WIDTH) MAX_WIDTH else draggedWidth;
-                        for (instance in widgets) {
-                            updateWidth(instance.widget, false);
+                        for (instance in dockedWidgets) {
+                            updateWidth(instance, false);
                         }
                     }
                     onMouseReleased: function(e) {
-                        for (instance in widgets where instance.widget.onResize != null) {
-                            instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                        for (instance in dockedWidgets) {
+                            updateWidth(instance, true);
                         }
                         resizing = false;
                     }

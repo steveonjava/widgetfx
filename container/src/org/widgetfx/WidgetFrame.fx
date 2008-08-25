@@ -43,10 +43,20 @@ public class WidgetFrame extends Frame {
 
     public attribute sidebar:Sidebar;
     
-    public attribute widget:Widget;
+    public attribute instance:WidgetInstance;
+    
+    private attribute widget = bind instance.widget;
     
     private attribute widgetTitle = bind widget.name on replace {
         title = widgetTitle;
+    }
+    
+    private attribute xSync = bind x on replace {
+        instance.undockedX = x;
+    }
+    
+    private attribute ySync = bind y on replace {
+        instance.undockedY = y;
     }
     
     private attribute widgetWidth = bind widget.stage.width + BORDER * 2 + 1 on replace {
@@ -86,6 +96,7 @@ public class WidgetFrame extends Frame {
         if (widget.onResize != null) {
             widget.onResize(widget.stage.width, widget.stage.height);
         }
+        instance.saveWithoutNotification();
         resizing = false;
     }    
     
@@ -93,7 +104,7 @@ public class WidgetFrame extends Frame {
         windowStyle = WindowStyle.TRANSPARENT;
     }
     
-    public function dock(dockX:Integer, dockY:Integer, screenX:Integer, screenY:Integer):Void {
+    public function dock(dockX:Integer, dockY:Integer):Void {
         docking = true;
         Timeline {
             keyFrames: KeyFrame {time: 300ms,
@@ -102,7 +113,7 @@ public class WidgetFrame extends Frame {
                     y => dockY tween Interpolator.EASEIN
                 ],
                 action: function() {
-                    sidebar.dock(widget, screenX, screenY);
+                    sidebar.dock(instance);
                     close();
                 }
             }
@@ -250,18 +261,17 @@ public class WidgetFrame extends Frame {
                         x += xDelta;
                         y += yDelta;
                     })(e);
-                    sidebar.hover(widget, e.getScreenX(), e.getScreenY());
+                    sidebar.hover(instance, e.getScreenX(), e.getScreenY(), true);
                 }
             }
             onMouseReleased: function(e) {
                 if (not docking) {
                     dragging = false;
-                    var screenX = e.getScreenX();
-                    var screenY = e.getScreenY();
-                    var targetBounds = sidebar.hover(widget, screenX, screenY);
+                    var targetBounds = sidebar.finishHover(instance, e.getScreenX(), e.getScreenY());
                     if (targetBounds != null) {
-                        dock(targetBounds.x, targetBounds.y, screenX, screenY);
+                        dock(targetBounds.x, targetBounds.y);
                     }
+                    instance.saveWithoutNotification();
                 }
             }
             opacity: bind rolloverOpacity;
