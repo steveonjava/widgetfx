@@ -37,6 +37,7 @@ import javafx.ext.swing.FlowPanel;
  * @author Keith Combs
  */
 public class WidgetInstance {
+    public attribute sidebar:Sidebar;
     public attribute mainClass:String on replace {
         try {
             var widgetClass:Class = Class.forName(mainClass);
@@ -49,45 +50,68 @@ public class WidgetInstance {
     };
 
     public attribute id:Integer;
-    public attribute opacity:Number;
-    public attribute docked:Boolean;
+    public attribute opacity:Number = 0.8;
+    public attribute docked:Boolean = true;
     public attribute dockedWidth:Integer;
     public attribute dockedHeight:Integer;
     public attribute undockedX:Integer;
     public attribute undockedY:Integer;
     public attribute undockedWidth:Integer;
     public attribute undockedHeight:Integer;
+    
     public attribute widget:Widget;
+    
+    private attribute stageWidth = bind widget.stage.width on replace {
+        if (widget.stage.width > 0) {
+            if (docked) {
+                dockedWidth = widget.stage.width;
+            } else {
+                undockedWidth = widget.stage.width;
+            }
+        }
+    }
+    
+    private attribute stageHeight = bind widget.stage.height on replace {
+        if (widget.stage.height > 0) {
+            if (docked) {
+                dockedHeight = widget.stage.height;
+            } else {
+                undockedHeight = widget.stage.height;
+            }
+        }
+    }
     
     // todo - possibly prevent widgets from loading if they define user properties that start with "widget."
     private attribute properties = [
         StringProperty {
             name: "widget.mainClass"
-            value: bind mainClass with inverse;
+            value: bind mainClass with inverse
+            autoSave: true
         },
         NumberProperty {
             name: "widget.opacity"
-            value: bind opacity with inverse;
+            value: bind opacity with inverse
         },
         BooleanProperty {
             name: "widget.docked"
-            value: bind docked with inverse;
+            value: bind docked with inverse
+            autoSave: true
         },
         IntegerProperty {
             name: "widget.dockedWidth"
-            value: bind dockedWidth with inverse;
+            value: bind dockedWidth with inverse
         },
         IntegerProperty {
             name: "widget.dockedHeight"
-            value: bind dockedHeight with inverse;
+            value: bind dockedHeight with inverse
         },
         IntegerProperty {
             name: "widget.undockedX"
-            value: bind undockedX with inverse;
+            value: bind undockedX with inverse
         },
         IntegerProperty {
             name: "widget.undockedY"
-            value: bind undockedY with inverse;
+            value: bind undockedY with inverse
         },
         IntegerProperty {
             name: "widget.undockedWidth"
@@ -106,30 +130,55 @@ public class WidgetInstance {
         return new File(home, ".WidgetFX/widgets/{id}.config");
     }
     
+    function saveWithoutNotification() {
+        persister.save();
+    }
+    
+    private function initializeDimensions() {
+        if (docked) {
+            if (dockedWidth > 0) {
+                widget.stage.width = dockedWidth;
+            }
+            if (dockedHeight > 0) {
+                widget.stage.height = dockedHeight;
+            }
+        } else {
+            if (undockedWidth > 0) {
+                widget.stage.width = undockedWidth;
+            }
+            if (undockedHeight > 0) {
+                widget.stage.height = undockedHeight;
+            }
+            WidgetFrame {
+                sidebar: sidebar
+                instance: this
+                x: undockedX
+                y: undockedY
+                // todo - add opacity to configuration and save
+                opacity: 0.8
+            }
+        }
+    }
+    
     public function load() {
         if (widget.onStart != null) widget.onStart();
-        if (widget.configuration != null) {
-            persister.load();
-            if (widget.configuration.onLoad != null) {
-                widget.configuration.onLoad();
-            }
+        persister.load();
+        initializeDimensions();
+        if (widget.configuration.onLoad != null) {
+            widget.configuration.onLoad();
         }
     }
     
     public function save() {
-        if (widget.configuration != null) {
-            persister.save();
-            if (widget.configuration.onSave != null) {
-                widget.configuration.onSave();
-            }
+        persister.save();
+        if (widget.configuration.onSave != null) {
+            widget.configuration.onSave();
         }
     }
     
     public function cancel() {
-        if (widget.configuration != null) {
-            if (widget.configuration.onCancel != null) {
-                widget.configuration.onCancel();
-            }
+        if (widget.configuration.onCancel != null) {
+            widget.configuration.onCancel();
         }
     }
     

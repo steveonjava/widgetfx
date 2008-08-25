@@ -19,10 +19,12 @@ package org.widgetfx.config;
 
 /**
  * @author Stephen Chin
- * @author kcombs
+ * @author Keith Combs
  */
 public abstract class Property {
     public attribute name:String;
+    
+    public attribute autoSave:Boolean;
     
     public abstract function getStringValue():String;
     

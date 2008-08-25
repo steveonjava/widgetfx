@@ -37,15 +37,16 @@ public class ConfigPersister {
     
     public attribute autoSave = false;
     
+    private attribute disableAutoSave = false;
+    
     private function changeListener(changedProperty:Property):Void {
-        if (autoSave) {
+        if (not disableAutoSave and (autoSave or changedProperty.autoSave)) {
             save();
         }
     }
     
     public function load() {
-        var previousAutoSave = autoSave;
-        autoSave = false;
+        disableAutoSave = true;
         try {
             if (file.exists() and properties != null) {
                 var savedProperties = Properties {};
@@ -62,7 +63,7 @@ public class ConfigPersister {
                 }
             }
         } finally {
-            autoSave = previousAutoSave;
+            disableAutoSave = false;
         }
     }
     
