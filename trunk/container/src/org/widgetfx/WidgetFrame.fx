@@ -114,6 +114,9 @@ public class WidgetFrame extends Frame {
                 ],
                 action: function() {
                     sidebar.dock(instance);
+                    if (instance.widget.onResize != null) {
+                        instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                    }
                     close();
                 }
             }

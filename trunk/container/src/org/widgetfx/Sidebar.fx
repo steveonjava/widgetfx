@@ -144,7 +144,7 @@ public class Sidebar extends Frame {
     }
     
     public function addWidget():Void {
-        org.widgetfx.ui.AddWidgetDialog {}.showDialog();
+        org.widgetfx.ui.AddWidgetDialog {sidebar: this}.showDialog();
     }
     
     public function createMainMenu():JPopupMenu {

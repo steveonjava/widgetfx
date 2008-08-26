@@ -15,22 +15,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx;
+package org.widgetfx.config;
 
-import javafx.lang.DeferredTask;
+import java.lang.StringBuilder;
+import java.util.Arrays;
 
 /**
  * @author Stephen Chin
+ * @author Keith Combs
  */
-var sidebar = Sidebar {
-    title: "WidgetFX"
-    visible: true
-}
-
-DeferredTask {
-    action: function() {
-        for (arg in __ARGS__ where arg.toLowerCase().endsWith("jnlp")) {
-            WidgetManager.getInstance().addWidget(arg, sidebar);
+public class StringSequenceProperty extends Property {
+    public attribute value:String[] on replace {
+        fireOnChange();
+    }
+    
+    public function getStringValue():String {
+        var sb = new StringBuilder();
+        for (s in value) {
+            if (indexof s > 0) {
+                sb.append(',');
+            }
+            sb.append(s);
         }
+        return sb.toString();
+    }
+    
+    public function setStringValue(value:String):Void {
+        this.value = for (s in Arrays.asList(value.split(","))) s;
     }
 }

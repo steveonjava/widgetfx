@@ -46,13 +46,15 @@ public class WidgetFXConfiguration {
     }
     
     private attribute persister = ConfigPersister {
-        file: getPropertyFile();
-        properties: properties
+        file: getPropertyFile()
+        properties: bind properties
+        autoSave: true
     }
     
     public function load() {
-        persister.load();
-        persister.autoSave = true;
+        if (not persister.load()) {
+            persister.save(); // initial save
+        }
     }
     
     public function save() {

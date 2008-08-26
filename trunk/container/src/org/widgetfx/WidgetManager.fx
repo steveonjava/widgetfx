@@ -17,14 +17,7 @@
  */
 package org.widgetfx;
 
-import javax.jnlp.*;
-import org.w3c.dom.Attr;
-import org.w3c.dom.NodeList;
-import org.widgetfx.config.Configuration;
-import java.net.URL;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPathFactory;
-import javax.xml.xpath.XPathConstants;
+import org.widgetfx.config.IntegerSequenceProperty;
 import javafx.lang.Sequences;
 
 /**
@@ -33,87 +26,67 @@ import javafx.lang.Sequences;
  */
 public class WidgetManager {
     
-    private static attribute JARS_TO_SKIP = ["widgetfx-api.jar", "widgetfx.jar",
-        "Scenario.jar", "gluegen-rt.jar", "javafx-swing.jar", "javafxc.jar",
-        "javafxdoc.jar", "javafxgui.jar", "javafxrt.jar", "jmc.jar", "jogl.jar"];
-    
     private static attribute instance = WidgetManager {}
     
     public static function getInstance() {
         return instance;
     }
     
-    public attribute widgets:WidgetInstance[] = [];
+    private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
+        IntegerSequenceProperty {
+            name: "widgets"
+            value: bind widgetIds with inverse
+        }
+    ]);
+
+    private attribute updating:Boolean;
+
+    private attribute widgetIds:Integer[] on replace [i..j]=newWidgetIds {
+        if (not updating) {
+            try {
+                updating = true;
+                widgets[i..j] = for (id in newWidgetIds) loadWidget(id);
+            } finally {
+                updating = false;
+            }
+        }
+    }
     
-    private attribute loadedResources:URL[] = [];
-    
-    private attribute configuration = WidgetFXConfiguration.getInstance();
-    
-    private attribute idCount = 0;
+    public attribute widgets:WidgetInstance[] = [] on replace [i..j]=newWidgets {
+        if (not updating) {
+            try {
+                updating = true;
+                widgetIds[i..j] = for (widget in newWidgets) widget.id;
+            } finally {
+                updating = false;
+            }
+        }
+    }
     
     init {
         // todo - implement a widget security policy
         java.lang.System.setSecurityManager(null);
     }
     
-    public function addWidget(jnlpUrl:String, sidebar:Sidebar):WidgetInstance {
-        try {
-            var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            var document = builder.parse(jnlpUrl);
-            var xpath = XPathFactory.newInstance().newXPath();
-            var codeBase = new URL(xpath.evaluate("/jnlp/@codebase", document, XPathConstants.STRING) as String);
-            var widgetNodes = xpath.evaluate("/jnlp/resources/jar", document, XPathConstants.NODESET) as NodeList;
-            var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
-            for (i in [0..widgetNodes.getLength()-1]) {
-                var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
-                if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
-                    var url = new URL(codeBase, jarUrl);
-                    if (Sequences.indexOf(loadedResources, url) == -1) {
-                        ds.loadResource(url, null, DownloadServiceListener {
-                            function downloadFailed(url, version) {
-                                java.lang.System.out.println("download failed");
-                            }
-                            function progress(url, version, readSoFar, total, overallPercent) {
-                                java.lang.System.out.println("progress: {overallPercent}");
-                            }
-                            function upgradingArchive(url, version, patchPercent, overallPercent) {
-                                java.lang.System.out.println("upgradingArchive");
-                            }
-                            function validating(url, version, entry, total, overallPercent) {
-                                java.lang.System.out.println("validating");
-                            }
-                        });
-                        insert url into loadedResources;
-                    }
-                }
-            }
-            var mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
-            var instance = WidgetInstance{sidebar: sidebar, mainClass: mainClass, id: idCount++};
-            if (instance != null) {
-                insert instance into widgets;
-                instance.load();
-            }
-            return instance
-        } catch (e) {
-            java.lang.System.out.println("Unable to load widget at location: {jnlpUrl}");
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-    public function addWidget(jarPaths:String[], mainClass:String):WidgetInstance {
-        var bs = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
-        var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
-        for (path in jarPaths) {
-            var url = new URL(bs.getCodeBase(), path); 
-            // reload the resource into the cache 
-            var dsl = ds.getDefaultProgressWindow(); 
-            ds.loadResource(url, null, dsl);
-        }
-        var instance = WidgetInstance{mainClass: mainClass, id: 1};
-        insert instance into widgets;
+    private function loadWidget(id:Integer):WidgetInstance {
+        // todo - get a sidebar reference
+        var instance = WidgetInstance{sidebar: null, id: id};
         instance.load();
         return instance;
+    }
+    
+    public function addWidget(jnlpUrl:String, sidebar:Sidebar):WidgetInstance {
+        for (widget in widgets) {
+            if (widget.jnlpUrl.equals(jnlpUrl)) {
+                // todo - notify the user that they tried to load a duplicate widget
+                return null;
+            }
+        }
+        var maxId = if (widgetIds.isEmpty()) 0 else (Sequences.max(widgetIds) as Integer).intValue();
+        var instance = WidgetInstance{sidebar: sidebar, jnlpUrl: jnlpUrl, id: maxId + 1};
+        insert instance into widgets;
+        instance.load();
+        return instance
     }
     
     public function getWidgetInstance(widget:Widget):WidgetInstance {
