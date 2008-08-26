@@ -88,6 +88,10 @@ public class WidgetView extends Group {
                 if (targetBounds != null) {
                     docking = true;
                     widgetFrame.dock(targetBounds.x, targetBounds.y);
+                } else {
+                    if (instance.widget.onResize != null) {
+                        instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                    }
                 }
                 sidebar.dragging = false;
                 instance.saveWithoutNotification();

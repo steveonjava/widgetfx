@@ -23,6 +23,10 @@ import java.io.FileWriter;
 import java.util.Properties;
 
 /**
+ * Persistence of javafx fields to Property Files.
+ *
+ * Note: autoSave is disabled until the first save or load attempt to prevent overwriting of previously saved values.
+ *
  * @author Stephen Chin
  * @author Keith Combs
  */
@@ -37,7 +41,7 @@ public class ConfigPersister {
     
     public attribute autoSave = false;
     
-    private attribute disableAutoSave = false;
+    private attribute disableAutoSave = true;
     
     private function changeListener(changedProperty:Property):Void {
         if (not disableAutoSave and (autoSave or changedProperty.autoSave)) {
@@ -45,7 +49,7 @@ public class ConfigPersister {
         }
     }
     
-    public function load() {
+    public function load():Boolean {
         disableAutoSave = true;
         try {
             if (file.exists() and properties != null) {
@@ -61,13 +65,16 @@ public class ConfigPersister {
                         property.setStringValue(savedProperties.get(property.name) as String);
                     }
                 }
+                return true;
             }
         } finally {
             disableAutoSave = false;
         }
+        return false;
     }
     
     public function save() {
+        disableAutoSave = false;
         if (properties != null) {
             var savedProperties = Properties {};
             for (property in properties) {

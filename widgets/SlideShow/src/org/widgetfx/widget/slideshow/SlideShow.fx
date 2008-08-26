@@ -55,7 +55,7 @@ var keywords : String;
 var width = 150;
 var height = 100;
 var imageIndex = 0;
-var imageHeight = height;
+var imageHeight:Integer;
 var currentFile:File;
 var currentImage:Image;
 var worker:JavaFXWorker;
@@ -272,6 +272,7 @@ Widget {
         component: Component.fromJComponent(tabbedPane)
 
         onLoad: function() {
+            imageHeight = height;
             loadDirectory(directoryName);
         }
         onSave: function() {
