@@ -17,7 +17,7 @@
  */
 package org.widgetfx;
 
-import javafx.application.Frame;
+import org.widgetfx.ui.BaseDialog;
 import javafx.application.WindowStyle;
 import javafx.application.Stage;
 import javafx.scene.Group;
@@ -36,7 +36,7 @@ import javax.swing.RootPaneContainer;
 /**
  * @author Stephen Chin
  */
-public class WidgetFrame extends Frame {
+public class WidgetFrame extends BaseDialog {
     public static attribute MIN_SIZE = 100;
     public static attribute BORDER = 5;
     public static attribute DS_RADIUS = 5;

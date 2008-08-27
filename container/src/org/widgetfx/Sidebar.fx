@@ -21,8 +21,8 @@ import org.widgetfx.config.*;
 import org.widgetfx.install.InstallUtil;
 import javafx.lang.*;
 import javafx.scene.paint.*;
-import javafx.application.*;
-import javafx.application.Frame;
+import javafx.application.Stage;
+import javafx.application.WindowStyle;
 import javafx.scene.*;
 import javafx.scene.geometry.*;
 import javafx.scene.effect.*;
@@ -44,7 +44,7 @@ import java.lang.System;
 /**
  * @author Stephen Chin
  */
-public class Sidebar extends Frame {
+public class Sidebar extends BaseDialog {
     static attribute DEFAULT_WIDTH = 180;
     static attribute MIN_WIDTH = 120;
     static attribute MAX_WIDTH = 400;
