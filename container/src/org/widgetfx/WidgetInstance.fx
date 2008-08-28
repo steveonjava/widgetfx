@@ -49,8 +49,6 @@ public class WidgetInstance {
         "javafxdoc.jar", "javafxgui.jar", "javafxrt.jar", "jmc.jar", "jogl.jar"];
     
     private static attribute loadedResources:URL[] = [];
-    
-    public attribute sidebar:Sidebar;
 
     public attribute id:Integer;
 
@@ -216,7 +214,6 @@ public class WidgetInstance {
                 widget.stage.height = undockedHeight;
             }
             WidgetFrame {
-                sidebar: sidebar
                 instance: this
                 x: undockedX
                 y: undockedY

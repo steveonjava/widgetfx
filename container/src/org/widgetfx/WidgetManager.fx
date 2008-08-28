@@ -69,13 +69,12 @@ public class WidgetManager {
     }
     
     private function loadWidget(id:Integer):WidgetInstance {
-        // todo - get a sidebar reference
-        var instance = WidgetInstance{sidebar: null, id: id};
+        var instance = WidgetInstance{id: id};
         instance.load();
         return instance;
     }
     
-    public function addWidget(jnlpUrl:String, sidebar:Sidebar):WidgetInstance {
+    public function addWidget(jnlpUrl:String):WidgetInstance {
         for (widget in widgets) {
             if (widget.jnlpUrl.equals(jnlpUrl)) {
                 // todo - notify the user that they tried to load a duplicate widget
@@ -83,7 +82,7 @@ public class WidgetManager {
             }
         }
         var maxId = if (widgetIds.isEmpty()) 0 else (Sequences.max(widgetIds) as Integer).intValue();
-        var instance = WidgetInstance{sidebar: sidebar, jnlpUrl: jnlpUrl, id: maxId + 1};
+        var instance = WidgetInstance{jnlpUrl: jnlpUrl, id: maxId + 1};
         insert instance into widgets;
         instance.load();
         return instance
