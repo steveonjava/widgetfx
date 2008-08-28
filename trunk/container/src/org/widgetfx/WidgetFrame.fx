@@ -40,8 +40,6 @@ public class WidgetFrame extends BaseDialog {
     public static attribute MIN_SIZE = 100;
     public static attribute BORDER = 5;
     public static attribute DS_RADIUS = 5;
-
-    public attribute sidebar:Sidebar;
     
     public attribute instance:WidgetInstance;
     
@@ -113,7 +111,7 @@ public class WidgetFrame extends BaseDialog {
                     y => dockY tween Interpolator.EASEIN
                 ],
                 action: function() {
-                    sidebar.dock(instance);
+                    Sidebar.getInstance().dock(instance);
                     if (instance.widget.onResize != null) {
                         instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                     }
@@ -264,13 +262,13 @@ public class WidgetFrame extends BaseDialog {
                         x += xDelta;
                         y += yDelta;
                     })(e);
-                    sidebar.hover(instance, e.getScreenX(), e.getScreenY(), true);
+                    Sidebar.getInstance().hover(instance, e.getScreenX(), e.getScreenY(), true);
                 }
             }
             onMouseReleased: function(e) {
                 if (not docking) {
                     dragging = false;
-                    var targetBounds = sidebar.finishHover(instance, e.getScreenX(), e.getScreenY());
+                    var targetBounds = Sidebar.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
                     if (targetBounds != null) {
                         dock(targetBounds.x, targetBounds.y);
                     }

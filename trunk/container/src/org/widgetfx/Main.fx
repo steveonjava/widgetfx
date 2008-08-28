@@ -22,15 +22,12 @@ import javafx.lang.DeferredTask;
 /**
  * @author Stephen Chin
  */
-var sidebar = Sidebar {
-    title: "WidgetFX"
-    visible: true
-}
+Sidebar.getInstance();
 
 DeferredTask {
     action: function() {
         for (arg in __ARGS__ where arg.toLowerCase().endsWith("jnlp")) {
-            WidgetManager.getInstance().addWidget(arg, sidebar);
+            WidgetManager.getInstance().addWidget(arg);
         }
     }
 }

@@ -32,12 +32,19 @@ import javafx.scene.text.*;
 import javafx.scene.layout.*;
 import javafx.ext.swing.*;
 import javafx.animation.*;
+import java.awt.AWTException;
+import java.awt.Image;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.SystemTray;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.GraphicsEnvironment;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
 import java.util.Arrays;
-import java.awt.Point;
 import java.io.*;
 import java.lang.System;
 
@@ -51,7 +58,17 @@ public class Sidebar extends BaseDialog {
     static attribute BORDER = 5;
     static attribute DS_RADIUS = 5;
     
+    private static attribute instance = Sidebar {}
+    
+    public static function getInstance() {
+        return instance;
+    }
+    
     private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
+        StringProperty {
+            name: "displayId"
+            value: bind displayId with inverse;
+        },
         BooleanProperty {
             name: "dockLeft"
             value: bind dockLeft with inverse;
@@ -67,6 +84,10 @@ public class Sidebar extends BaseDialog {
         BooleanProperty {
             name: "launchOnStartup"
             value: bind launchOnStartup with inverse;
+        },
+        BooleanProperty {
+            name: "visible"
+            value: bind visible with inverse;
         }
     ]);
     
@@ -80,6 +101,14 @@ public class Sidebar extends BaseDialog {
     private attribute currentGraphics:java.awt.GraphicsConfiguration;
     private attribute screenBounds = bind currentGraphics.getBounds() on replace {
         updateDockLocation();
+    }
+    private attribute displayId:String on replace {
+        var newGraphics = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) where gd.getIDstring().equals(displayId)) {
+            newGraphics = gd.getDefaultConfiguration();
+            break;
+        }
+        currentGraphics = newGraphics;
     }
     private attribute dockLeft:Boolean on replace {
         dockRight = not dockLeft;
@@ -133,18 +162,39 @@ public class Sidebar extends BaseDialog {
     }
     
     init {
+        title = "WidgetFX";
+        visible = true;
         windowStyle = WindowStyle.TRANSPARENT;
         width = DEFAULT_WIDTH + BORDER * 2;
-        currentGraphics = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
     }
 
     postinit {
         configuration.load();
         loadContent();
+        createTrayIcon();
+    }
+    
+    private function createTrayIcon() {
+        var tray:JXTrayIcon = new JXTrayIcon(createImage());
+        tray.setJPopupMenu(mainMenu);
+        try {
+            SystemTray.getSystemTray().add(tray);
+        } catch (e:AWTException) {
+            e.printStackTrace();
+        }
+    }
+    
+    static function createImage():Image {
+        var i = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
+        var g2 = i.getGraphics() as Graphics2D;
+        g2.setColor(java.awt.Color.RED);
+        g2.fill(new Ellipse2D.Float(0, 0, i.getWidth(), i.getHeight()));
+        g2.dispose();
+        return i;
     }
     
     public function addWidget():Void {
-        org.widgetfx.ui.AddWidgetDialog {sidebar: this}.showDialog();
+        org.widgetfx.ui.AddWidgetDialog {}.showDialog();
     }
     
     public function createMainMenu():JPopupMenu {
@@ -180,9 +230,9 @@ public class Sidebar extends BaseDialog {
 
                 },
                 MenuItem {
-                    text: "Hide"
+                    text: bind if (visible) "Hide" else "Show"
                     action: function() {
-                        hide();
+                        visible = not visible;
                     }
                 },
                 MenuItem {
@@ -198,10 +248,6 @@ public class Sidebar extends BaseDialog {
         menu.getJMenu().insertSeparator(4);
         // todo - create a javafx PopupMenu directly when one exists
         return menu.getJMenu().getPopupMenu();
-    }
-    
-    public function hide() {
-        (window as java.awt.Frame).setExtendedState(java.awt.Frame.ICONIFIED);
     }
     
     private attribute animateHover:Timeline;
@@ -300,7 +346,6 @@ public class Sidebar extends BaseDialog {
     private function createWidgetView(instance:WidgetInstance):WidgetView {
         updateWidth(instance, false);
         return WidgetView {
-            sidebar: this
             instance: instance
             horizontalAlignment: HorizontalAlignment.CENTER
             translateX: bind width / 2 - BORDER + DS_RADIUS + 1
@@ -430,7 +475,7 @@ public class Sidebar extends BaseDialog {
                 color = Color.GRAY;
             }
             onMouseClicked: function(e) {
-                hide();
+                visible = false;
             }
         }
         var menus = HBox { // Menu Buttons
@@ -501,14 +546,14 @@ public class Sidebar extends BaseDialog {
         if (not dragging and not resizing) {
             if (not screenBounds.contains(location)) {
                 for (gd in Arrays.asList(java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {
-                    for (gc in Arrays.asList(gd.getConfigurations())) {
-                        if (gc.getBounds().contains(location)) {
-                            currentGraphics = gc;
-                        }
+                    var gc = gd.getDefaultConfiguration();
+                    if (gc.getBounds().contains(location)) {
+                        displayId = gd.getIDstring();
+                        break;
                     }
                 }
             }
-            dockRight = not (dockLeft = location.x < screenBounds.width / 2 + screenBounds.x);
         }
+        dockRight = not (dockLeft = location.x < screenBounds.width / 2 + screenBounds.x);
     }
 }

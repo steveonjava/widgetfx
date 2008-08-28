@@ -25,8 +25,6 @@ import javafx.scene.geometry.*;
  * @author Stephen Chin
  */
 public class WidgetView extends Group {
-
-    public attribute sidebar:Sidebar;
     
     public attribute instance:WidgetInstance;
     
@@ -43,7 +41,7 @@ public class WidgetView extends Group {
         cache = true;
         content = [Group {
             // todo - standard size with and without DropShadow when docked
-            effect: bind if (sidebar.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Sidebar.DS_RADIUS}
+            effect: bind if (Sidebar.getInstance().resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Sidebar.DS_RADIUS}
             content: Group {
                 content: widget.stage.content
                 clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
@@ -59,13 +57,13 @@ public class WidgetView extends Group {
             }
         };
         onMouseDragged = function(e:MouseEvent):Void {
+            var sidebar = Sidebar.getInstance();
             if (not docking) {
                 if (instance.docked) {
                     sidebar.dragging = true;
                     var xPos = e.getStageX().intValue() + sidebar.x - e.getX().intValue() - WidgetFrame.BORDER;
                     var yPos = e.getStageY().intValue() + sidebar.y - e.getY().intValue() - WidgetFrame.BORDER;
                     widgetFrame = WidgetFrame {
-                        sidebar: sidebar
                         instance: instance
                         x: xPos, y: yPos
                         // todo - add opacity to configuration and save
@@ -84,7 +82,7 @@ public class WidgetView extends Group {
         };
         onMouseReleased = function(e:MouseEvent):Void {
             if (not docking and not instance.docked) {
-                var targetBounds = sidebar.finishHover(instance, e.getScreenX(), e.getScreenY());
+                var targetBounds = Sidebar.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
                 if (targetBounds != null) {
                     docking = true;
                     widgetFrame.dock(targetBounds.x, targetBounds.y);
@@ -93,7 +91,7 @@ public class WidgetView extends Group {
                         instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                     }
                 }
-                sidebar.dragging = false;
+                Sidebar.getInstance().dragging = false;
                 instance.saveWithoutNotification();
             }
         };

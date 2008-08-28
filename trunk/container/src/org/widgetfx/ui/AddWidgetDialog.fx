@@ -30,8 +30,6 @@ import javax.swing.filechooser.FileFilter;
  */
 public class AddWidgetDialog {
     
-    public attribute sidebar:Sidebar;
-    
     public attribute jnlpUrl:String;
 
     public function showDialog() {
@@ -85,7 +83,7 @@ public class AddWidgetDialog {
                                 Button {
                                     text: "Add"
                                     action: function() {
-                                        WidgetManager.getInstance().addWidget(jnlpUrl, sidebar);
+                                        WidgetManager.getInstance().addWidget(jnlpUrl);
                                         dialog.close();
                                     }
                                 },
