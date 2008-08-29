@@ -61,7 +61,7 @@ public class WidgetView extends Group {
                 if (instance.docked) {
                     sidebar.dragging = true;
                     var xPos = e.getStageX().intValue() + sidebar.x - e.getX().intValue() - WidgetFrame.BORDER;
-                    var yPos = e.getStageY().intValue() + sidebar.y - e.getY().intValue() - WidgetFrame.BORDER;
+                    var yPos = e.getStageY().intValue() + sidebar.y - e.getY().intValue() - WidgetFrame.BORDER - WidgetFrame.TOOLBAR_HEIGHT;
                     instance.frame = WidgetFrame {
                         instance: instance
                         x: xPos, y: yPos

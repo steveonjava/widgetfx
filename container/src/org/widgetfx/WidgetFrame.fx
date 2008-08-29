@@ -82,25 +82,33 @@ public class WidgetFrame extends BaseDialog {
     }
     private attribute docking:Boolean;
     
-    private attribute lastScreenPosX;
-    private attribute lastScreenPosY;
-    private attribute saveLastPos = function(e:MouseEvent):Void {
-        lastScreenPosX = e.getStageX().intValue() + x;
-        lastScreenPosY = e.getStageY().intValue() + y;
+    private attribute initialX:Integer;
+    private attribute initialY:Integer;
+    private attribute initialWidth:Integer;
+    private attribute initialHeight:Integer;
+    private attribute initialScreenX;
+    private attribute initialScreenY;
+        
+    private attribute saveInitialPos = function(e:MouseEvent):Void {
+        initialX = x;
+        initialY = y;
+        initialWidth = widget.stage.width;
+        initialHeight = widget.stage.height;
+        initialScreenX = e.getStageX().intValue() + x;
+        initialScreenY = e.getStageY().intValue() + y;
     }
     
     private function mouseDelta(deltaFunction:function(a:Integer, b:Integer):Void):function(c:MouseEvent):Void {
         return function (e:MouseEvent):Void {
-            var xDelta = e.getStageX().intValue() + x - lastScreenPosX;
-            var yDelta = e.getStageY().intValue() + y - lastScreenPosY;
-            saveLastPos(e);
+            var xDelta = e.getStageX().intValue() + x - initialScreenX;
+            var yDelta = e.getStageY().intValue() + y - initialScreenY;
             deltaFunction(xDelta, yDelta);
         }
     }
     
     private attribute startResizing = function(e:MouseEvent):Void {
         resizing = true;
-        saveLastPos(e);
+        saveInitialPos(e);
     }
     
     private attribute doneResizing = function(e:MouseEvent):Void {
@@ -109,7 +117,7 @@ public class WidgetFrame extends BaseDialog {
         }
         instance.saveWithoutNotification();
         resizing = false;
-    }    
+    }
     
     init {
         windowStyle = WindowStyle.TRANSPARENT;
@@ -120,8 +128,8 @@ public class WidgetFrame extends BaseDialog {
         Timeline {
             keyFrames: KeyFrame {time: 300ms,
                 values: [
-                    x => dockX tween Interpolator.EASEIN,
-                    y => dockY tween Interpolator.EASEIN
+                    x => dockX - BORDER tween Interpolator.EASEIN,
+                    y => dockY - BORDER - TOOLBAR_HEIGHT tween Interpolator.EASEIN
                 ],
                 action: function() {
                     Sidebar.getInstance().dock(instance);
@@ -135,27 +143,29 @@ public class WidgetFrame extends BaseDialog {
         }.start();
     }
     
-    private function resize(widthDelta:Integer, heightDelta:Integer, updateX:Boolean, updateY:Boolean) {
-        if (widget.stage.width + widthDelta < MIN_SIZE) {
-            widthDelta = MIN_SIZE - widget.stage.width;
+    private function resize(widthDelta:Integer, heightDelta:Integer, updateX:Boolean, updateY:Boolean, widthOnly:Boolean, heightOnly:Boolean) {
+        if (initialWidth + widthDelta < MIN_SIZE) {
+            widthDelta = MIN_SIZE - initialWidth;
         }
-        if (widget.stage.height < MIN_SIZE) {
-            heightDelta = MIN_SIZE - widget.stage.height;
+        if (initialHeight + heightDelta < MIN_SIZE) {
+            heightDelta = MIN_SIZE - initialHeight;
+        }
+        var newWidth = initialWidth + widthDelta;
+        var newHeight = initialHeight + heightDelta;
+        if (widget.aspectRatio != 0) {
+            var aspectHeight = (newWidth / widget.aspectRatio).intValue();
+            var aspectWidth = (newHeight * widget.aspectRatio).intValue();
+            newWidth = if (not widthOnly and (heightOnly or aspectWidth < newWidth)) aspectWidth else newWidth;
+            newHeight = if (not heightOnly and (widthOnly or aspectHeight < newHeight)) aspectHeight else newHeight;
         }
         if (updateX) {
-            x -= widthDelta;
+            x = initialX + initialWidth - newWidth;
         }
         if (updateY) {
-            y -= heightDelta;
+            y = initialY + initialHeight - newHeight;
         }
-//        if (widget.aspectRatio != 0) {
-//            var aspectHeight = (newWidth / widget.aspectRatio).intValue();
-//            var aspectWidth = (newHeight * widget.aspectRatio).intValue();
-//            newWidth = if (aspectWidth > newWidth) aspectWidth else newWidth;
-//            newHeight = if (aspectHeight > newHeight) aspectHeight else newHeight;
-//        }
-        widget.stage.width += widthDelta;
-        widget.stage.height += heightDelta;
+        widget.stage.width = newWidth;
+        widget.stage.height = newHeight;
     }
     
     private attribute rolloverOpacity = 0.0;
@@ -207,7 +217,7 @@ public class WidgetFrame extends BaseDialog {
                     blocksMouse: true
                     onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(-xDelta, -yDelta, true, true);
+                        resize(-xDelta, -yDelta, true, true, false, false);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -218,7 +228,7 @@ public class WidgetFrame extends BaseDialog {
                     blocksMouse: true
                     onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(0, -yDelta, false, true);
+                        resize(0, -yDelta, false, true, false, true);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -229,7 +239,7 @@ public class WidgetFrame extends BaseDialog {
                     blocksMouse: true
                     onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(xDelta, -yDelta, false, true);
+                        resize(xDelta, -yDelta, false, true, false, false);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -241,7 +251,7 @@ public class WidgetFrame extends BaseDialog {
                     blocksMouse: true
                     onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(xDelta, 0, false, false);
+                        resize(xDelta, 0, false, false, true, false);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -253,7 +263,7 @@ public class WidgetFrame extends BaseDialog {
                     blocksMouse: true
                     onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(xDelta, yDelta, false, false);
+                        resize(xDelta, yDelta, false, false, false, false);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -265,7 +275,7 @@ public class WidgetFrame extends BaseDialog {
                     blocksMouse: true
                     onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(0, yDelta, false, false);
+                        resize(0, yDelta, false, false, false, true);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -276,7 +286,7 @@ public class WidgetFrame extends BaseDialog {
                     blocksMouse: true
                     onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(-xDelta, yDelta, true, false);
+                        resize(-xDelta, yDelta, true, false, false, false);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -287,7 +297,7 @@ public class WidgetFrame extends BaseDialog {
                     blocksMouse: true
                     onMousePressed: startResizing
                     onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(-xDelta, 0, true, false);
+                        resize(-xDelta, 0, true, false, true, false);
                     })
                     onMouseReleased: doneResizing
                 },
@@ -301,13 +311,13 @@ public class WidgetFrame extends BaseDialog {
                     stroke: Color.WHITESMOKE
                 }
             ]
-            onMousePressed: saveLastPos;
+            onMousePressed: saveInitialPos;
             onMouseDragged: function(e) {
                 if (not docking) {
                     mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                         dragging = true;
-                        x += xDelta;
-                        y += yDelta;
+                        x = initialX + xDelta;
+                        y = initialY + yDelta;
                     })(e);
                     Sidebar.getInstance().hover(instance, e.getScreenX(), e.getScreenY(), true);
                 }
@@ -328,7 +338,7 @@ public class WidgetFrame extends BaseDialog {
             minimum: 20
             maximum: 100
             value: bind instance.opacity with inverse
-            preferredSize: bind [width * 2 / 5, 20]
+            preferredSize: bind [width * 2 / 5, 16]
         }
         stage = Stage {
             content: [
