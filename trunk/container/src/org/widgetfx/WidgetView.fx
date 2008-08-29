@@ -33,7 +33,6 @@ public class WidgetView extends Group {
     public attribute docking = false;
     
     private attribute dockedParent:Group;
-    private attribute widgetFrame:WidgetFrame;
     private attribute lastScreenPosX:Integer;
     private attribute lastScreenPosY:Integer;
     
@@ -63,17 +62,15 @@ public class WidgetView extends Group {
                     sidebar.dragging = true;
                     var xPos = e.getStageX().intValue() + sidebar.x - e.getX().intValue() - WidgetFrame.BORDER;
                     var yPos = e.getStageY().intValue() + sidebar.y - e.getY().intValue() - WidgetFrame.BORDER;
-                    widgetFrame = WidgetFrame {
+                    instance.frame = WidgetFrame {
                         instance: instance
                         x: xPos, y: yPos
-                        // todo - add opacity to configuration and save
-                        opacity: instance.opacity
                     }
                     sidebar.hover(instance, xPos, yPos, false);
                     instance.docked = false;
                 } else {
-                    widgetFrame.x += e.getStageX().intValue() - lastScreenPosX;
-                    widgetFrame.y += e.getStageY().intValue() - lastScreenPosY;
+                    instance.frame.x += e.getStageX().intValue() - lastScreenPosX;
+                    instance.frame.y += e.getStageY().intValue() - lastScreenPosY;
                     lastScreenPosX = e.getStageX().intValue();
                     lastScreenPosY = e.getStageY().intValue();
                     sidebar.hover(instance, e.getScreenX(), e.getScreenY(), true);
@@ -85,7 +82,7 @@ public class WidgetView extends Group {
                 var targetBounds = Sidebar.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
                 if (targetBounds != null) {
                     docking = true;
-                    widgetFrame.dock(targetBounds.x, targetBounds.y);
+                    instance.frame.dock(targetBounds.x, targetBounds.y);
                 } else {
                     if (instance.widget.onResize != null) {
                         instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
