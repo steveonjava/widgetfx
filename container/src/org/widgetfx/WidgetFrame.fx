@@ -26,7 +26,10 @@ import javafx.scene.paint.Color;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Interpolator;
+import javafx.ext.swing.ComponentView;
+import javafx.ext.swing.Slider;
 import javafx.input.MouseEvent;
+import javafx.lang.DeferredTask;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.geometry.Rectangle;
 import java.awt.event.MouseAdapter;
@@ -38,6 +41,7 @@ import javax.swing.RootPaneContainer;
  */
 public class WidgetFrame extends BaseDialog {
     public static attribute MIN_SIZE = 100;
+    public static attribute TOOLBAR_HEIGHT = 15;
     public static attribute BORDER = 5;
     public static attribute DS_RADIUS = 5;
     
@@ -61,12 +65,21 @@ public class WidgetFrame extends BaseDialog {
         width = widgetWidth;
     }
     
-    private attribute widgetHeight = bind widget.stage.height + BORDER * 2 + 1 on replace {
+    private attribute boxHeight = bind widget.stage.height + BORDER * 2 + 1;
+    
+    private attribute widgetHeight = bind boxHeight + TOOLBAR_HEIGHT on replace {
         height = widgetHeight;
     }
 
-    private attribute resizing:Boolean;
-    private attribute dragging:Boolean;
+    private attribute resizing:Boolean on replace {
+        updateFocus();
+    }
+    private attribute dragging:Boolean on replace {
+        updateFocus();
+    }
+    private attribute changingOpacity:Boolean on replace {
+        updateFocus();
+    }
     private attribute docking:Boolean;
     
     private attribute lastScreenPosX;
@@ -115,6 +128,7 @@ public class WidgetFrame extends BaseDialog {
                     if (instance.widget.onResize != null) {
                         instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                     }
+                    instance.frame = null;
                     close();
                 }
             }
@@ -144,27 +158,51 @@ public class WidgetFrame extends BaseDialog {
         widget.stage.height += heightDelta;
     }
     
-    postinit {
-        var rolloverOpacity = 0.0;
-        var rolloverTimeline = Timeline {
-            autoReverse: true, toggle: true
-            keyFrames: KeyFrame {time: 1s, values: rolloverOpacity => (if (widget.resizable) 0.8 else 0.0) tween Interpolator.EASEBOTH}
+    private attribute rolloverOpacity = 0.0;
+    private attribute rolloverTimeline = Timeline {
+        autoReverse: true, toggle: true
+        keyFrames: KeyFrame {time: 1s, values: rolloverOpacity => (if (widget.resizable) 0.8 else 0.0) tween Interpolator.EASEBOTH}
+    }
+    
+    private attribute firstRollover = true;
+        
+    private attribute hasFocus:Boolean on replace {
+        if (firstRollover) {
+            firstRollover = false;
+        } else {
+            rolloverTimeline.start();
         }
+    }
+    
+    private attribute needsFocus:Boolean;
+    
+    private function requestFocus(focus:Boolean):Void {
+        needsFocus = focus;
+        updateFocus();
+    }
+    
+    private function updateFocus():Void {
+        DeferredTask {
+            action: function() {
+                hasFocus = needsFocus or dragging or resizing or changingOpacity;
+            }
+        }
+    }
+    
+    postinit {
         var dragRect:Group = Group {
-            var transparent = Color.rgb(0, 0, 0, .01);
+            var backgroundColor = Color.rgb(0xF5, 0xF5, 0xF5, 0.6);
+            translateY: TOOLBAR_HEIGHT,
             content: [
-                Rectangle { // border
-                    width: bind width - 1, height: bind height - 1
-                    stroke: Color.BLACK
-                },
                 Rectangle { // background
-                    translateX: 1, translateY: 1
-                    width: bind width - 3, height: bind height - 3
-                    fill: Color.rgb(0xF5, 0xF5, 0xF5, 0.6), stroke: Color.WHITESMOKE
+                    translateX: BORDER, translateY: BORDER
+                    width: bind width - BORDER * 2, height: bind boxHeight - BORDER * 2
+                    fill: backgroundColor, stroke: null
+                    opacity: bind (instance.opacity as Number) / 100
                 },
                 Rectangle { // NW resize corner
                     width: BORDER, height: BORDER
-                    stroke: null, fill: transparent
+                    stroke: null, fill: backgroundColor
                     cursor: Cursor.NW_RESIZE
                     blocksMouse: true
                     onMousePressed: startResizing
@@ -175,7 +213,7 @@ public class WidgetFrame extends BaseDialog {
                 },
                 Rectangle { // N resize corner
                     translateX: BORDER, width: bind width - BORDER * 2, height: BORDER
-                    stroke: null, fill: transparent
+                    stroke: null, fill: backgroundColor
                     cursor: Cursor.N_RESIZE
                     blocksMouse: true
                     onMousePressed: startResizing
@@ -186,7 +224,7 @@ public class WidgetFrame extends BaseDialog {
                 },
                 Rectangle { // NE resize corner
                     translateX: bind width - BORDER, width: BORDER, height: BORDER
-                    stroke: null, fill: transparent
+                    stroke: null, fill: backgroundColor
                     cursor: Cursor.NE_RESIZE
                     blocksMouse: true
                     onMousePressed: startResizing
@@ -197,8 +235,8 @@ public class WidgetFrame extends BaseDialog {
                 },
                 Rectangle { // E resize corner
                     translateX: bind width - BORDER, translateY: BORDER
-                    width: BORDER, height: bind height - BORDER * 2
-                    stroke: null, fill: transparent
+                    width: BORDER, height: bind boxHeight - BORDER * 2
+                    stroke: null, fill: backgroundColor
                     cursor: Cursor.E_RESIZE
                     blocksMouse: true
                     onMousePressed: startResizing
@@ -208,9 +246,9 @@ public class WidgetFrame extends BaseDialog {
                     onMouseReleased: doneResizing
                 },
                 Rectangle { // SE resize corner
-                    translateX: bind width - BORDER, translateY: bind height - BORDER
+                    translateX: bind width - BORDER, translateY: bind boxHeight - BORDER
                     width: BORDER, height: BORDER
-                    stroke: null, fill: transparent
+                    stroke: null, fill: backgroundColor
                     cursor: Cursor.SE_RESIZE
                     blocksMouse: true
                     onMousePressed: startResizing
@@ -220,9 +258,9 @@ public class WidgetFrame extends BaseDialog {
                     onMouseReleased: doneResizing
                 },
                 Rectangle { // S resize corner
-                    translateX: BORDER, translateY: bind height - BORDER
+                    translateX: BORDER, translateY: bind boxHeight - BORDER
                     width: bind width - BORDER * 2, height: BORDER
-                    stroke: null, fill: transparent
+                    stroke: null, fill: backgroundColor
                     cursor: Cursor.S_RESIZE
                     blocksMouse: true
                     onMousePressed: startResizing
@@ -232,8 +270,8 @@ public class WidgetFrame extends BaseDialog {
                     onMouseReleased: doneResizing
                 },
                 Rectangle { // SW resize corner
-                    translateY: bind height - BORDER, width: BORDER, height: BORDER
-                    stroke: null, fill: transparent
+                    translateY: bind boxHeight - BORDER, width: BORDER, height: BORDER
+                    stroke: null, fill: backgroundColor
                     cursor: Cursor.SW_RESIZE
                     blocksMouse: true
                     onMousePressed: startResizing
@@ -243,8 +281,8 @@ public class WidgetFrame extends BaseDialog {
                     onMouseReleased: doneResizing
                 },
                 Rectangle { // W resize corner
-                    translateY: BORDER, width: BORDER, height: bind height - BORDER * 2
-                    stroke: null, fill: transparent
+                    translateY: BORDER, width: BORDER, height: bind boxHeight - BORDER * 2
+                    stroke: null, fill: backgroundColor
                     cursor: Cursor.W_RESIZE
                     blocksMouse: true
                     onMousePressed: startResizing
@@ -252,6 +290,15 @@ public class WidgetFrame extends BaseDialog {
                         resize(-xDelta, 0, true, false);
                     })
                     onMouseReleased: doneResizing
+                },
+                Rectangle { // outer border
+                    width: bind width - 1, height: bind boxHeight - 1
+                    stroke: Color.BLACK
+                },
+                Rectangle { // inner border
+                    translateX: 1, translateY: 1
+                    width: bind width - 3, height: bind boxHeight - 3
+                    stroke: Color.WHITESMOKE
                 }
             ]
             onMousePressed: saveLastPos;
@@ -277,12 +324,18 @@ public class WidgetFrame extends BaseDialog {
             }
             opacity: bind rolloverOpacity;
         }
+        var slider = Slider {
+            minimum: 20
+            maximum: 100
+            value: bind instance.opacity with inverse
+            preferredSize: bind [width * 2 / 5, 20]
+        }
         stage = Stage {
             content: [
                 dragRect,
                 Group {
                     cache: true
-                    translateX: BORDER, translateY: BORDER
+                    translateX: BORDER, translateY: BORDER + TOOLBAR_HEIGHT
                     content: Group {
                         effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                         content: Group {
@@ -295,16 +348,35 @@ public class WidgetFrame extends BaseDialog {
                             WidgetManager.getInstance().showConfigDialog(widget);
                         }
                     }
+                    opacity: bind (instance.opacity as Number) / 100
+                },
+                ComponentView {
+                    component: slider
+                    opacity: bind rolloverOpacity
                 }
             ]
             fill: null
         }
         (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
             public function mouseEntered(e) {
-                rolloverTimeline.start();
+                requestFocus(true);
             }
             public function mouseExited(e) {
-                rolloverTimeline.start();
+                requestFocus(false);
+            }
+        });
+        slider.getJSlider().addMouseListener(MouseAdapter {
+            public function mouseEntered(e) {
+                requestFocus(true);
+            }
+            public function mouseExited(e) {
+                requestFocus(false);
+            }
+            public function mousePressed(e) {
+                changingOpacity = true;
+            }
+            public function mouseReleased(e) {
+                changingOpacity = false;
             }
         });
         visible = true;

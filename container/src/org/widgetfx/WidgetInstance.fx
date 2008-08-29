@@ -69,7 +69,7 @@ public class WidgetInstance {
             value: bind mainClass with inverse
             autoSave: true
         },
-        NumberProperty {
+        IntegerProperty {
             name: "widget.opacity"
             value: bind opacity with inverse
         },
@@ -163,7 +163,7 @@ public class WidgetInstance {
         }
     }
 
-    public attribute opacity:Number = 0.8;
+    public attribute opacity:Integer = 80;
     public attribute docked:Boolean = true;
     public attribute dockedWidth:Integer;
     public attribute dockedHeight:Integer;
@@ -173,6 +173,7 @@ public class WidgetInstance {
     public attribute undockedHeight:Integer;
     
     public attribute widget:Widget;
+    public attribute frame:WidgetFrame;
     
     private attribute stageWidth = bind widget.stage.width on replace {
         if (widget.stage.width > 0) {
@@ -213,12 +214,9 @@ public class WidgetInstance {
             if (undockedHeight > 0) {
                 widget.stage.height = undockedHeight;
             }
-            WidgetFrame {
+            frame = WidgetFrame {
                 instance: this
-                x: undockedX
-                y: undockedY
-                // todo - add opacity to configuration and save
-                opacity: 0.8
+                x: undockedX, y: undockedY
             }
         }
     }

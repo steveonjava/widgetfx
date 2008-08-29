@@ -26,6 +26,7 @@ import javafx.application.WindowStyle;
 import javafx.scene.*;
 import javafx.scene.geometry.*;
 import javafx.scene.effect.*;
+import javafx.scene.image.*;
 import javafx.input.*;
 import javax.swing.*;
 import javafx.scene.text.*;
@@ -33,7 +34,6 @@ import javafx.scene.layout.*;
 import javafx.ext.swing.*;
 import javafx.animation.*;
 import java.awt.AWTException;
-import java.awt.Image;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.SystemTray;
@@ -57,6 +57,7 @@ public class Sidebar extends BaseDialog {
     static attribute MAX_WIDTH = 400;
     static attribute BORDER = 5;
     static attribute DS_RADIUS = 5;
+    static attribute BG_OPACITY = 0.7;
     
     private static attribute instance = Sidebar {}
     
@@ -136,8 +137,10 @@ public class Sidebar extends BaseDialog {
         y = screenBounds.y;
     }
     
+    //private attribute backgroundImage : Image = Image {url:getClass().getResource("Inovis_SidebarBackground1.jpg").toString(), height: 1200};
+    
     private attribute transparentBG = bind if (dockLeft) leftBG else rightBG;
-    private attribute bgOpacity = 0.7;
+    private attribute bgOpacity = BG_OPACITY;
     private attribute leftBG = bind LinearGradient {
         endY: 0
         stops: [
@@ -177,6 +180,15 @@ public class Sidebar extends BaseDialog {
     private function createTrayIcon() {
         var tray:JXTrayIcon = new JXTrayIcon(createImage());
         tray.setJPopupMenu(mainMenu);
+        tray.addActionListener(ActionListener {
+                public function actionPerformed(e) {
+                    visible = true;
+                    toFront();
+                    for (instance in WidgetManager.getInstance().widgets where instance.frame != null) {
+                        instance.frame.toFront();
+                    }
+                }
+        });
         try {
             SystemTray.getSystemTray().add(tray);
         } catch (e:AWTException) {
@@ -184,7 +196,7 @@ public class Sidebar extends BaseDialog {
         }
     }
     
-    static function createImage():Image {
+    static function createImage():java.awt.Image {
         var i = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
         var g2 = i.getGraphics() as Graphics2D;
         g2.setColor(java.awt.Color.RED);
@@ -268,12 +280,12 @@ public class Sidebar extends BaseDialog {
                         time: 300ms
                         values: [
                             if (newWidth > 0) {
-                                [instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH]
+                                instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH
                             } else {
                                 []
                             },
                             if (newHeight > 0) {
-                                [instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH]
+                                instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH
                             } else {
                                 []
                             }
@@ -372,7 +384,7 @@ public class Sidebar extends BaseDialog {
         var rolloverOpacity = 0.01;
         var rolloverTimeline = Timeline {
             autoReverse: true, toggle: true
-            keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => 0.8 tween Interpolator.EASEBOTH, bgOpacity => 0.8 tween Interpolator.EASEBOTH]}
+            keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY tween Interpolator.EASEBOTH]}
         }
         logo = HBox { // Logo Text
             translateX: BORDER, translateY: BORDER
@@ -496,6 +508,7 @@ public class Sidebar extends BaseDialog {
         }
         stage = Stage {
             content: [
+//                ImageView {image:backgroundImage, opacity: .9},      
                 Group { // Drag Bar
                     content: [
                         Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity / 4},
@@ -553,7 +566,7 @@ public class Sidebar extends BaseDialog {
                     }
                 }
             }
+            dockRight = not (dockLeft = location.x < screenBounds.width / 2 + screenBounds.x);
         }
-        dockRight = not (dockLeft = location.x < screenBounds.width / 2 + screenBounds.x);
     }
 }
