@@ -239,6 +239,10 @@ public class WidgetInstance {
         }
     }
     
+    function deleteConfig() {
+        getPropertyFile().<<delete>>();
+    }
+    
     public function cancel() {
         if (widget.configuration.onCancel != null) {
             widget.configuration.onCancel();

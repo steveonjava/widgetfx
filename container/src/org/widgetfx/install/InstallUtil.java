@@ -33,14 +33,14 @@ public class InstallUtil {
     
     private static final String home = System.getProperty("user.home");
     
-    private static final File windowsShortcut = new File(home, "/Start Menu/Programs/Startup/WidgetFX.url");
+    private static final File windowsShortcut = new File(home, "/Start Menu/Programs/Startup/WidgetFX.lnk");
     
     public static void copyStartupFile() {
         try {
             OutputStream destination = null;
             InputStream source = null;
             try {
-                source = InstallUtil.class.getResourceAsStream("WidgetFX.url");
+                source = InstallUtil.class.getResourceAsStream("WidgetFX.lnk");
                 destination = (new FileOutputStream(windowsShortcut));
                 byte[] buf = new byte[1024];
                 int i = 0;

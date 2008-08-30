@@ -31,7 +31,12 @@ import javafx.ext.swing.Slider;
 import javafx.input.MouseEvent;
 import javafx.lang.DeferredTask;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Glow;
+import javafx.scene.geometry.Circle;
+import javafx.scene.geometry.Line;
 import javafx.scene.geometry.Rectangle;
+import javafx.scene.paint.RadialGradient;
+import javafx.scene.paint.Stop;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import javax.swing.RootPaneContainer;
@@ -41,7 +46,7 @@ import javax.swing.RootPaneContainer;
  */
 public class WidgetFrame extends BaseDialog {
     public static attribute MIN_SIZE = 100;
-    public static attribute TOOLBAR_HEIGHT = 15;
+    public static attribute TOOLBAR_HEIGHT = 18;
     public static attribute BORDER = 5;
     public static attribute DS_RADIUS = 5;
     
@@ -171,7 +176,7 @@ public class WidgetFrame extends BaseDialog {
     private attribute rolloverOpacity = 0.0;
     private attribute rolloverTimeline = Timeline {
         autoReverse: true, toggle: true
-        keyFrames: KeyFrame {time: 1s, values: rolloverOpacity => (if (widget.resizable) 0.8 else 0.0) tween Interpolator.EASEBOTH}
+        keyFrames: KeyFrame {time: 1s, values: rolloverOpacity => 1.0 tween Interpolator.EASEBOTH}
     }
     
     private attribute firstRollover = true;
@@ -332,7 +337,7 @@ public class WidgetFrame extends BaseDialog {
                     instance.saveWithoutNotification();
                 }
             }
-            opacity: bind rolloverOpacity;
+            opacity: bind if (widget.resizable) rolloverOpacity * 0.8 else 0.0;
         }
         var slider = Slider {
             minimum: 20
@@ -340,6 +345,7 @@ public class WidgetFrame extends BaseDialog {
             value: bind instance.opacity with inverse
             preferredSize: bind [width * 2 / 5, 16]
         }
+        var toolbarBackground = Color.rgb(163, 184, 203);
         stage = Stage {
             content: [
                 dragRect,
@@ -360,8 +366,124 @@ public class WidgetFrame extends BaseDialog {
                     }
                     opacity: bind (instance.opacity as Number) / 100
                 },
-                ComponentView {
-                    component: slider
+                Group {
+                    content: [
+                        Rectangle {
+                            width: bind width * 2 / 5 + 2
+                            height: 16
+                            arcWidth: 16
+                            arcHeight: 16
+                            stroke: Color.BLACK
+                        },
+                        Rectangle {
+                            translateX: 1
+                            translateY: 1
+                            width: bind width * 2 / 5
+                            height: 14
+                            arcWidth: 14
+                            arcHeight: 14
+                            stroke: Color.WHITE
+                            fill: toolbarBackground
+                            opacity: 0.7
+                        },
+                        ComponentView {
+                            translateX: 1
+                            component: slider
+                        }
+                    ]
+                    opacity: bind rolloverOpacity
+                },
+                Group {
+                    var TOOLBAR_WIDTH = 30;
+                    translateX: bind width - TOOLBAR_WIDTH - 1
+                    content: [
+                        Rectangle {
+                            width: TOOLBAR_WIDTH
+                            height: 16
+                            arcWidth: 16
+                            arcHeight: 16
+                            stroke: Color.BLACK
+                        },
+                        Rectangle {
+                            translateX: 1
+                            translateY: 1
+                            width: TOOLBAR_WIDTH - 2
+                            height: 14
+                            arcWidth: 14
+                            arcHeight: 14
+                            stroke: Color.WHITE
+                            fill: toolbarBackground
+                            opacity: 0.7
+                        },
+                        Group {
+                            var pressedColor = Color.rgb(54, 101, 143);
+                            var dsColor = Color.BLACK;
+                            var dsTimeline = Timeline {
+                                toggle: true, autoReverse: true
+                                keyFrames: KeyFrame {
+                                    time: 300ms
+                                    values: [
+                                        dsColor => Color.WHITE tween Interpolator.EASEBOTH
+                                    ]
+                                }
+                            }
+                            var hover = false on replace {
+                                dsTimeline.start();
+                            }
+                            var pressed = false;
+                            var xColor = bind if (hover and pressed) pressedColor else Color.WHITE;
+                            translateX: TOOLBAR_WIDTH - 8;
+                            translateY: 8;
+                            effect: DropShadow {color: bind dsColor}
+                            content: [
+                                Rectangle {
+                                    x: -5, y: -5
+                                    width: 10, height: 10
+                                    fill: Color.rgb(0, 0, 0, 0.0)
+                                },
+                                Line {
+                                    stroke: bind Color.BLACK
+                                    strokeWidth: 3
+                                    startX: -3, startY: -3
+                                    endX: 3, endY: 3
+                                },
+                                Line {
+                                    stroke: bind Color.BLACK
+                                    strokeWidth: 3
+                                    startX: 3, startY: -3
+                                    endX: -3, endY: 3
+                                },
+                                Line {
+                                    stroke: bind xColor
+                                    strokeWidth: 2
+                                    startX: -3, startY: -3
+                                    endX: 3, endY: 3
+                                },
+                                Line {
+                                    stroke: bind xColor
+                                    strokeWidth: 2
+                                    startX: 3, startY: -3
+                                    endX: -3, endY: 3
+                                }
+                            ]
+                            onMouseEntered: function(e) {
+                                hover = true;
+                            }
+                            onMouseExited: function(e) {
+                                hover = false;
+                            }
+                            onMousePressed: function(e) {
+                                pressed = true;
+                            }
+                            onMouseReleased: function(e:MouseEvent) {
+                                pressed = false;
+                                if (hover) {
+                                    WidgetManager.getInstance().removeWidget(instance);
+                                    close();
+                                }
+                            }
+                        }
+                    ]
                     opacity: bind rolloverOpacity
                 }
             ]

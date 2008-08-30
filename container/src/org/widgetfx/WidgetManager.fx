@@ -26,6 +26,12 @@ import javafx.lang.Sequences;
  */
 public class WidgetManager {
     
+    private static attribute INITIAL_WIDGETS = [
+        "../widgets/Clock/dist/launch.jnlp",
+        "../widgets/SlideShow/dist/launch.jnlp",
+        "../widgets/WebFeed/dist/launch.jnlp"
+    ];
+    
     private static attribute instance = WidgetManager {}
     
     public static function getInstance() {
@@ -68,10 +74,21 @@ public class WidgetManager {
         java.lang.System.setSecurityManager(null);
     }
     
+    public function loadInitialWidgets() {
+        for (url in INITIAL_WIDGETS) {
+            addWidget(url);
+        }
+    }
+    
     private function loadWidget(id:Integer):WidgetInstance {
         var instance = WidgetInstance{id: id};
         instance.load();
         return instance;
+    }
+    
+    public function removeWidget(instance:WidgetInstance):Void {
+        instance.deleteConfig();
+        delete instance from widgets;
     }
     
     public function addWidget(jnlpUrl:String):WidgetInstance {
