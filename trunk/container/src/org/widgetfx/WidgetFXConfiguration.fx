@@ -17,6 +17,7 @@
  */
 package org.widgetfx;
 
+import org.widgetfx.WidgetManager;
 import org.widgetfx.config.*;
 import java.lang.System;
 import java.io.File;
@@ -53,6 +54,7 @@ public class WidgetFXConfiguration {
     
     public function load() {
         if (not persister.load()) {
+            WidgetManager.getInstance().loadInitialWidgets();
             persister.save(); // initial save
         }
     }
