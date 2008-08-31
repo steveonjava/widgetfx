@@ -20,16 +20,21 @@ import javafx.input.*;
 import javafx.scene.*;
 import javafx.scene.effect.*;
 import javafx.scene.geometry.*;
+import javafx.scene.layout.*;
+import javafx.scene.paint.*;
 
 /**
  * @author Stephen Chin
  */
 public class WidgetView extends Group {
+    public static attribute TOP_BORDER = 3;
+    public static attribute BOTTOM_BORDER = 7;
     
+    public attribute sidebar:Sidebar;
     public attribute instance:WidgetInstance;
-    
     private attribute widget = bind instance.widget;
     
+    private attribute resizing = false;
     public attribute docking = false;
     
     private attribute dockedParent:Group;
@@ -38,14 +43,68 @@ public class WidgetView extends Group {
     
     init {
         cache = true;
-        content = [Group {
-            // todo - standard size with and without DropShadow when docked
-            effect: bind if (Sidebar.getInstance().resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Sidebar.DS_RADIUS}
-            content: Group {
-                content: widget.stage.content
-                clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+        content = [
+            Rectangle {
+                height: bind widget.stage.height + TOP_BORDER + BOTTOM_BORDER
+                width: bind sidebar.width
+                fill: Color.rgb(0, 0, 0, 0.0)
+            },
+            Group {
+                translateY: TOP_BORDER
+                effect: bind if (resizing or sidebar.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Sidebar.DS_RADIUS}
+                content: Group {
+                    translateX: Sidebar.BORDER
+                    content: widget.stage.content
+                    clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                    horizontalAlignment: HorizontalAlignment.CENTER
+                    translateX: bind sidebar.width / 2
+                }
+            },
+            Group {
+                blocksMouse: true
+                translateX: Sidebar.BORDER
+                translateY: bind widget.stage.height + TOP_BORDER + BOTTOM_BORDER - 3
+                content: [
+                    Line {endX: bind sidebar.width - Sidebar.BORDER * 2, stroke: Color.BLACK, strokeWidth: 1, opacity: bind sidebar.rolloverOpacity / 4},
+                    Line {endX: bind sidebar.width - Sidebar.BORDER * 2, stroke: Color.BLACK, strokeWidth: 1, opacity: bind sidebar.rolloverOpacity, translateY: 1},
+                    Line {endX: bind sidebar.width - Sidebar.BORDER * 2, stroke: Color.WHITE, strokeWidth: 1, opacity: bind sidebar.rolloverOpacity / 3, translateY: 2}
+                ]
+                cursor: Cursor.V_RESIZE
+                var initialHeight;
+                var initialY;
+                onMousePressed: function(e:MouseEvent) {
+                    if (widget.resizable) {
+                        resizing = true;
+                        initialHeight = widget.stage.height;
+                        initialY = e.getStageY().intValue();
+                    }
+                }
+                onMouseDragged: function(e:MouseEvent) {
+                    if (resizing) {
+                        widget.stage.height = initialHeight + e.getStageY().intValue() - initialY;
+                        if (widget.stage.height < WidgetFrame.MIN_SIZE) {
+                            widget.stage.height = WidgetFrame.MIN_SIZE;
+                        }
+                        if (widget.aspectRatio != 0) {
+                            widget.stage.width = (widget.stage.height * widget.aspectRatio).intValue();
+                            if (widget.stage.width > sidebar.width - Sidebar.BORDER * 2) {
+                                widget.stage.width = sidebar.width - Sidebar.BORDER * 2;
+                                widget.stage.height = (widget.stage.width / widget.aspectRatio).intValue();
+                            }
+                        }
+                    }
+                }
+                onMouseReleased: function(e) {
+                    if (resizing) {
+                        if (widget.onResize != null) {
+                            widget.onResize(widget.stage.width, widget.stage.height);
+                        }
+                        instance.saveWithoutNotification();
+                        resizing = false;
+                    }
+                }
             }
-        }];
+        ];
         onMousePressed = function(e:MouseEvent):Void {
             lastScreenPosX = e.getStageX().intValue();
             lastScreenPosY = e.getStageY().intValue();
@@ -56,7 +115,6 @@ public class WidgetView extends Group {
             }
         };
         onMouseDragged = function(e:MouseEvent):Void {
-            var sidebar = Sidebar.getInstance();
             if (not docking) {
                 if (instance.docked) {
                     sidebar.dragging = true;

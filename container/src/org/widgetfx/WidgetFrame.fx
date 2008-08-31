@@ -54,10 +54,6 @@ public class WidgetFrame extends BaseDialog {
     
     private attribute widget = bind instance.widget;
     
-    private attribute widgetTitle = bind widget.name on replace {
-        title = widgetTitle;
-    }
-    
     private attribute xSync = bind x on replace {
         instance.undockedX = x;
     }
@@ -126,6 +122,7 @@ public class WidgetFrame extends BaseDialog {
     
     init {
         windowStyle = WindowStyle.TRANSPARENT;
+        title = instance.title;
     }
     
     public function dock(dockX:Integer, dockY:Integer):Void {

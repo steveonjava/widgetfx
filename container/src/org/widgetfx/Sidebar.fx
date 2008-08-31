@@ -58,6 +58,8 @@ public class Sidebar extends BaseDialog {
     static attribute BORDER = 5;
     static attribute DS_RADIUS = 5;
     static attribute BG_OPACITY = 0.7;
+    static attribute BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
+    static attribute BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
     
     private static attribute instance = Sidebar {}
     
@@ -177,13 +179,24 @@ public class Sidebar extends BaseDialog {
         createTrayIcon();
     }
     
+    private function hideDock() {
+        visible = false;
+    }
+    
+    private function showDock() {
+        visible = true;
+        DeferredTask { // workaround for defect where dock moves to center on show
+            action: function() {updateDockLocation();}
+        }
+        toFront();
+    }
+    
     private function createTrayIcon() {
         var tray:JXTrayIcon = new JXTrayIcon(createImage());
         tray.setJPopupMenu(mainMenu);
         tray.addActionListener(ActionListener {
                 public function actionPerformed(e) {
-                    visible = true;
-                    toFront();
+                    showDock();
                     for (instance in WidgetManager.getInstance().widgets where instance.frame != null) {
                         instance.frame.toFront();
                     }
@@ -244,7 +257,11 @@ public class Sidebar extends BaseDialog {
                 MenuItem {
                     text: bind if (visible) "Hide" else "Show"
                     action: function() {
-                        visible = not visible;
+                        if (visible) {
+                            hideDock;
+                        } else {
+                            showDock();
+                        }
                     }
                 },
                 MenuItem {
@@ -358,9 +375,8 @@ public class Sidebar extends BaseDialog {
     private function createWidgetView(instance:WidgetInstance):WidgetView {
         updateWidth(instance, false);
         return WidgetView {
+            sidebar: this
             instance: instance
-            horizontalAlignment: HorizontalAlignment.CENTER
-            translateX: bind width / 2 - BORDER + DS_RADIUS + 1
         }
     }
     
@@ -379,13 +395,14 @@ public class Sidebar extends BaseDialog {
         }
     }
     
+    attribute rolloverOpacity = 0.01;
+    attribute rolloverTimeline = Timeline {
+        autoReverse: true, toggle: true
+        keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY tween Interpolator.EASEBOTH]}
+    }
+    
     private function loadContent():Void {
         closeAction = function() {System.exit(0);};
-        var rolloverOpacity = 0.01;
-        var rolloverTimeline = Timeline {
-            autoReverse: true, toggle: true
-            keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY tween Interpolator.EASEBOTH]}
-        }
         logo = HBox { // Logo Text
             translateX: BORDER, translateY: BORDER
             content: [
@@ -404,12 +421,12 @@ public class Sidebar extends BaseDialog {
             ]
         }
         var addWidgetButton = Group {
-            var color = Color.GRAY;
+            var color = BUTTON_COLOR;
             translateY: 7
             content: [
                 Circle {
                     stroke: bind color
-                    fill: Color.rgb(0, 0, 0, 0.0);
+                    fill: BUTTON_BG_COLOR;
                     radius: 7
                 },
                 Line {
@@ -429,19 +446,19 @@ public class Sidebar extends BaseDialog {
                 color = Color.WHITE;
             }
             onMouseExited: function(e) {
-                color = Color.GRAY;
+                color = BUTTON_COLOR;
             }
             onMouseClicked: function(e) {
                 addWidget();
             }
         }
         var mainMenuButton:Group = Group {
-            var color = Color.GRAY;
+            var color = BUTTON_COLOR;
             translateY: 7
             content: [
                 Circle {
                     stroke: bind color
-                    fill: Color.rgb(0, 0, 0, 0.0);
+                    fill: BUTTON_BG_COLOR;
                     radius: 7
                 },
                 Polygon {
@@ -458,19 +475,19 @@ public class Sidebar extends BaseDialog {
                 color = Color.WHITE;
             }
             onMouseExited: function(e) {
-                color = Color.GRAY;
+                color = BUTTON_COLOR;
             }
             onMouseReleased: function(e:MouseEvent) {
                 mainMenu.show(window, e.getStageX(), e.getStageY());
             }
         }
         var hideButton = Group {
-            var color = Color.GRAY;
+            var color = BUTTON_COLOR;
             translateY: 7
             content: [
                 Circle {
                     stroke: bind color
-                    fill: Color.rgb(0, 0, 0, 0.0);
+                    fill: BUTTON_BG_COLOR;
                     radius: 7
                 },
                 Line {
@@ -484,10 +501,10 @@ public class Sidebar extends BaseDialog {
                 color = Color.WHITE;
             }
             onMouseExited: function(e) {
-                color = Color.GRAY;
+                color = BUTTON_COLOR;
             }
             onMouseClicked: function(e) {
-                visible = false;
+                hideDock();
             }
         }
         var menus = HBox { // Menu Buttons
@@ -502,14 +519,17 @@ public class Sidebar extends BaseDialog {
 
         }
         content = GapVBox {
-            translateX: BORDER, translateY: bind headerHeight;
-            spacing: BORDER
+            translateY: bind headerHeight
             content: bind widgetViews
         }
         stage = Stage {
             content: [
 //                ImageView {image:backgroundImage, opacity: .9},      
+                logo,
+                menus,
+                content,
                 Group { // Drag Bar
+                    blocksMouse: true
                     content: [
                         Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity / 4},
                         Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity, translateX: 1},
@@ -533,10 +553,7 @@ public class Sidebar extends BaseDialog {
                         }
                         resizing = false;
                     }
-                },
-                logo,
-                menus,
-                content
+                }
             ],
             fill: bind transparentBG;
         };

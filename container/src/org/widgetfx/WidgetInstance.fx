@@ -64,11 +64,6 @@ public class WidgetInstance {
             value: bind jnlpUrl with inverse
             autoSave: true
         },
-        StringProperty {
-            name: "widget.mainClass"
-            value: bind mainClass with inverse
-            autoSave: true
-        },
         IntegerProperty {
             name: "widget.opacity"
             value: bind opacity with inverse
@@ -141,6 +136,7 @@ public class WidgetInstance {
                     }
                 }
                 mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
+                title = xpath.evaluate("/jnlp/information/title", document, XPathConstants.STRING) as String;
             } catch (e) {
                 java.lang.System.out.println("Unable to load widget at location: {jnlpUrl}");
                 e.printStackTrace();
@@ -162,7 +158,7 @@ public class WidgetInstance {
             }
         }
     }
-
+    
     public attribute opacity:Integer = 80;
     public attribute docked:Boolean = true;
     public attribute dockedWidth:Integer;
@@ -173,6 +169,7 @@ public class WidgetInstance {
     public attribute undockedHeight:Integer;
     
     public attribute widget:Widget;
+    public attribute title:String;
     public attribute frame:WidgetFrame;
     
     private attribute stageWidth = bind widget.stage.width on replace {
@@ -252,7 +249,7 @@ public class WidgetInstance {
     public function showConfigDialog():Void {
         if (widget.configuration != null) {
             var configDialog:Dialog = Dialog {
-                title: "{widget.name} Configuration"
+                title: "{title} Configuration"
                 stage: Stage {
                     content: [
                         ComponentView {

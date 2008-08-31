@@ -171,7 +171,6 @@ Timeline {
 }.start();
 
 Widget {
-    name: "Web Feed"
     resizable: true
     configuration: Configuration {
         properties: [

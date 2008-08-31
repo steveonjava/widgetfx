@@ -250,7 +250,6 @@ tabbedPane.add("display", displayTab.getJPanel());
 tabbedPane.add("content", contentTab.getJPanel());
 
 Widget {
-    name: "Slide Show"
     resizable: true
     aspectRatio: 4.0/3.0
     configuration: Configuration {
