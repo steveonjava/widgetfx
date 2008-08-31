@@ -53,8 +53,6 @@ Widget {
             KeyFrame {time: 1s, values: bounce => false}]
     }
     
-    name: "Clock";
-    
     onStart: function():Void {
         timeline.start();
     }
