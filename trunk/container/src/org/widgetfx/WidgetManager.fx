@@ -22,7 +22,7 @@ import javafx.lang.Sequences;
 
 /**
  * @author Stephen Chin
- * @author kcombs
+ * @author Keith Combs
  */
 public class WidgetManager {
     

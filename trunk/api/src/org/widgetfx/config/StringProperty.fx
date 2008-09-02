@@ -18,18 +18,28 @@
 package org.widgetfx.config;
 
 /**
+ * Property subclass to persist String primitives.
+ *
  * @author Stephen Chin
- * @author kcombs
+ * @author Keith Combs
  */
 public class StringProperty extends Property {
+    /**
+     * String value to be persisted.  To allow bijection of this property
+     * bind it as follows:<blockquote><pre>
+     * value: bind someVar with inverse
+     * </blockquote></pre>
+     */
     public attribute value:String on replace {
         fireOnChange();
     }
     
+    /** {@inheritDoc} */
     public function getStringValue():String {
         return value;
     }
     
+    /** {@inheritDoc} */
     public function setStringValue(value:String):Void {
         this.value = value;
     }
