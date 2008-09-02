@@ -20,18 +20,28 @@ package org.widgetfx.config;
 import java.math.BigInteger;
 
 /**
+ * Property subclass to persist Boolean primitives.
+ *
  * @author Stephen Chin
- * @author kcombs
+ * @author Keith Combs
  */
 public class BooleanProperty extends Property {
+    /**
+     * Boolean value to be persisted.  To allow bijection of this property
+     * bind it as follows:<blockquote><pre>
+     * value: bind someVar with inverse
+     * </blockquote></pre>
+     */
     public attribute value:Boolean on replace {
         fireOnChange();
     }
     
+    /** {@inheritDoc} */
     public function getStringValue():String {
         return value.toString();
     }
     
+    /** {@inheritDoc} */
     public function setStringValue(value:String):Void {
         this.value = "true".equalsIgnoreCase(value);
     }

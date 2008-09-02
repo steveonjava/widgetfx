@@ -18,16 +18,42 @@
 package org.widgetfx.config;
 
 /**
+ * Properties are persistent entities that are persisted between program
+ * invocations.  There are Property subclasses for all the JavaFX basic types
+ * (excluding Duration) as well as Sequences of basic types.
+ * <p>
+ * By default properties bound to a {@link Configuration} are only persisted when the
+ * user clicks "Save" in the dialog.  However, if a Property has "autoSave"
+ * enabled it will be persisted any time its state changes, which allows
+ * application-driven state to be saved in addition to user state.
+ *
  * @author Stephen Chin
  * @author Keith Combs
  */
 public abstract class Property {
+    /**
+     * Name of the property as it will be saved to the configuration file.  This
+     * must be given a unique value.
+     */
     public attribute name:String;
     
+    /**
+     * If set to true, the state of this propery will be persisted whenever the
+     * value changes.  The default is false so that unnecessary state persistence
+     * is not performed.
+     */
     public attribute autoSave:Boolean;
-    
+
+    /**
+     * Implemented by subclasses to provide conversion of values to a common
+     * String representation.
+     */
     public abstract function getStringValue():String;
     
+    /**
+     * Implemented by subclasses to provide conversion of values from a common
+     * String representation.
+     */
     public abstract function setStringValue(value:String):Void;
     
     attribute onChange:function(changedProperty:Property):Void;

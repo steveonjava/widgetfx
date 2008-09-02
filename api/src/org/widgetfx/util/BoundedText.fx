@@ -21,11 +21,24 @@ import javafx.scene.text.Text;
 import java.awt.font.FontRenderContext;
 
 /**
+ * Extension of Text that will truncate the contained text to a fixed
+ * width and add ellipses (...) if there is additional content.
+ * <p>
+ * In order to cleanly intercept changes to the text, use the text attribute instead
+ * of the content attribute in the superclass.
+ *
  * @author Stephen Chin
  */
 public class BoundedText extends Text {
+    /**
+     * The desired width of the text.  If the text exceeds this width, it will be
+     * truncated to fit and ellipses (...) will be added.
+     */
     public attribute width on replace {resizeText()};
-    
+
+    /**
+     * Use this in place of the content attribute on the Text superclass.
+     */
     public attribute text:String on replace {resizeText()};
     
     private attribute frc = bind new FontRenderContext(null, smooth, false) on replace {resizeText()};

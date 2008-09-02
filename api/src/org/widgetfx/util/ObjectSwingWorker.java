@@ -20,8 +20,10 @@ package org.widgetfx.util;
 import javax.swing.SwingWorker;
 
 /**
+ * Helper class for JavaFXWorker to work around the lack of generics in JavaFX Script
+ * 
  * @author Stephen Chin
  */
-public abstract class ObjectSwingWorker extends SwingWorker<Object, Object> {
+abstract class ObjectSwingWorker extends SwingWorker<Object, Object> {
 
 }

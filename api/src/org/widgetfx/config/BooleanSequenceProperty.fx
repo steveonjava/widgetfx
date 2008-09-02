@@ -17,32 +17,40 @@
  */
 package org.widgetfx.config;
 
-import java.math.BigDecimal;
+import java.lang.StringBuilder;
+import java.util.Arrays;
 
 /**
- * Property subclass to persist Number primitives.
+ * Property subclass to persist Boolean sequences.
  *
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class NumberProperty extends Property {
+public class BooleanSequenceProperty extends Property {
     /**
-     * Number value to be persisted.  To allow bijection of this property
+     * Boolean sequence to be persisted.  To allow bijection of this property
      * bind it as follows:<blockquote><pre>
      * value: bind someVar with inverse
      * </blockquote></pre>
      */
-    public attribute value:Number on replace {
+    public attribute value:Boolean[] on replace {
         fireOnChange();
     }
     
     /** {@inheritDoc} */
     public function getStringValue():String {
-        return value.toString();
+        var sb = new StringBuilder();
+        for (s in value) {
+            if (indexof s > 0) {
+                sb.append(',');
+            }
+            sb.append(s);
+        }
+        return sb.toString();
     }
     
     /** {@inheritDoc} */
     public function setStringValue(value:String):Void {
-        this.value = (new BigDecimal(value)).doubleValue();
+        this.value = for (s in Arrays.asList(value.split(","))) "true".equalsIgnoreCase(value);
     }
 }

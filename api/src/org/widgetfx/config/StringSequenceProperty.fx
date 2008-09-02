@@ -21,14 +21,23 @@ import java.lang.StringBuilder;
 import java.util.Arrays;
 
 /**
+ * Property subclass to persist String sequences.
+ *
  * @author Stephen Chin
  * @author Keith Combs
  */
 public class StringSequenceProperty extends Property {
+    /**
+     * String sequence to be persisted.  To allow bijection of this property
+     * bind it as follows:<blockquote><pre>
+     * value: bind someVar with inverse
+     * </blockquote></pre>
+     */
     public attribute value:String[] on replace {
         fireOnChange();
     }
     
+    /** {@inheritDoc} */
     public function getStringValue():String {
         var sb = new StringBuilder();
         for (s in value) {
@@ -40,6 +49,7 @@ public class StringSequenceProperty extends Property {
         return sb.toString();
     }
     
+    /** {@inheritDoc} */
     public function setStringValue(value:String):Void {
         this.value = for (s in Arrays.asList(value.split(","))) s;
     }
