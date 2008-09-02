@@ -1,0 +1,183 @@
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="../master.css" rel="stylesheet">
+<style type="text/css"></style>
+<script src="../navigation.js"></script>
+</head>
+<body>
+<div id="nav">
+<h1 class="classname">
+<i class="modifiers">public</i>
+                class
+                <a class="classname"><strong>org.widgetfx.config.</strong><b>IntegerProperty</b></a>
+</h1>
+<h2>
+<a title="org.widgetfx.config.Property" href="../org.widgetfx.config/org.widgetfx.config.Property.html"><strong>org.widgetfx.config.</strong><b>Property</b></a>, </h2>
+<ul id="tabs">
+<li>
+<a href="#overview">overview</a>
+</li>
+<li>
+<a href="#fields-summary">attributes</a>
+</li>
+<li>
+<a href="#methods-summary">functions</a>
+</li>
+</ul>
+</div>
+<div id="content">
+<a id="overview">
+<h3>Overview</h3>
+</a>
+<div class="overview">
+<p class="comment">Property subclass to persist Integer primitives.</p>
+</div>
+<div id="toc">
+<a id="fields-summary">
+<h3>Attribute Summary</h3>
+</a>
+<table class="fields-summary fields">
+<tr>
+<th class="name">name</th><th class="type">type</th><th class="description">description</th>
+</tr>
+<tr>
+<th colspan="3" class="header">Public</th>
+</tr>
+<tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx.config/org.widgetfx.config.IntegerProperty.html#value"><b class="name">value</b></a></td><td class="type"><a><i class="type">Integer</i></a></td><td class="description">
+<p class="comment">Integer value to be persisted.</p>
+</td>
+</tr>
+<tr>
+<th colspan="3" class="header">Protected</th>
+</tr>
+</table>
+<h3>Inherited Attributes</h3>
+<h4>org.widgetfx.config.Property</h4>
+<table class="inherited-field fields">
+<tr>
+<th class="name">name</th><th class="type">type</th><th class="description">description</th>
+</tr>
+<tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx.config/org.widgetfx.config.Property.html#autoSave"><b class="name">autoSave</b></a></td><td class="type"><a><i class="type">Boolean</i></a></td><td class="description">
+<p class="comment">If set to true, the state of this propery will be persisted whenever the
+ value changes.</p>
+</td>
+</tr>
+<tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx.config/org.widgetfx.config.Property.html#name"><b class="name">name</b></a></td><td class="type"><a><i class="type">String</i></a></td><td class="description">
+<p class="comment">Name of the property as it will be saved to the configuration file.</p>
+</td>
+</tr>
+</table>
+<a id="methods-summary">
+<h3>Function Summary</h3>
+</a>
+<dl class="methods-summary">
+<dt class="method profile-">
+<i class="modifiers">public</i> <a href="../org.widgetfx.config/org.widgetfx.config.IntegerProperty.html#getStringValue()"><b>getStringValue</b></a>(<i class="parameters"></i>)
+            :
+            
+            <a><i>java.lang.String</i></a>
+</dt>
+<dd class="method profile-">
+<p>
+<p class="comment"></p>
+</p>
+</dd>
+<dt class="method profile-">
+<i class="modifiers">public</i> <a href="../org.widgetfx.config/org.widgetfx.config.IntegerProperty.html#setStringValue(value:java.lang.String,)"><b>setStringValue</b></a>(<i class="parameters"><b>value</b>:
+                    
+                    <a><i>java.lang.String</i></a></i>)
+            :
+            
+            <a><i>Void</i></a>
+</dt>
+<dd class="method profile-">
+<p>
+<p class="comment"></p>
+</p>
+</dd>
+</dl>
+<h3>Inherited Functions</h3>
+<h4>org.widgetfx.config.Property</h4>
+<dl class="inherited-method">
+<dt class="method profile-">
+<i class="modifiers">public abstract</i> <a href="../org.widgetfx.config/org.widgetfx.config.Property.html#getStringValue()"><b>getStringValue</b></a>(<i class="parameters"></i>)
+            :
+            
+            <a><i>java.lang.String</i></a>
+</dt>
+<dd class="method profile-">
+<p>
+<p class="comment">Implemented by subclasses to provide conversion of values to a common
+ String representation.</p>
+</p>
+</dd>
+<dt class="method profile-">
+<i class="modifiers">public abstract</i> <a href="../org.widgetfx.config/org.widgetfx.config.Property.html#setStringValue(value:java.lang.String,)"><b>setStringValue</b></a>(<i class="parameters"><b>value</b>:
+                    
+                    <a><i>java.lang.String</i></a></i>)
+            :
+            
+            <a><i>Void</i></a>
+</dt>
+<dd class="method profile-">
+<p>
+<p class="comment">Implemented by subclasses to provide conversion of values from a common
+ String representation.</p>
+</p>
+</dd>
+</dl>
+</div>
+<div id="attributes">
+<h3>Attributes</h3>
+<div class="attribute member profile-">
+<a>
+<h4 id="value">
+<i class="modifiers">public</i> <b class="name">value</b>: <a><i class="type">Integer</i></a>
+</h4>
+</a>
+<p class="comment">Integer value to be persisted.  To allow bijection of this property
+ bind it as follows:<blockquote><pre>
+ value: bind someVar with inverse
+ </blockquote></pre></p>
+</div>
+</div>
+<div id="functions">
+<h3>Functions</h3>
+<div class="method member profile-">
+<a id="getStringValue()">
+<h4>
+<i class="modifiers">public</i> <b>getStringValue</b>(<i class="parameters"></i>):<a><i>java.lang.String</i></a>
+</h4>
+</a>
+<p class="comment">Implemented by subclasses to provide conversion of values to a common
+ String representation.</p>
+<dl class="returns">
+                    Returns
+                    <dt>String</dt>
+<dd></dd>
+</dl>
+</div>
+<div class="method member profile-">
+<a id="setStringValue(value:java.lang.String,)">
+<h4>
+<i class="modifiers">public</i> <b>setStringValue</b>(<i class="parameters"><b>value</b>:
+                    
+                    <a><i>java.lang.String</i></a></i>):<a><i>Void</i></a>
+</h4>
+</a>
+<p class="comment">Implemented by subclasses to provide conversion of values from a common
+ String representation.</p>
+<dl class="parameters">
+                    Parameters
+                    <dt>value</dt>
+<dd></dd>
+</dl>
+</div>
+</div>
+</div>
+</body>
+</html>

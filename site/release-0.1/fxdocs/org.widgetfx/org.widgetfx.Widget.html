@@ -1,0 +1,214 @@
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="../master.css" rel="stylesheet">
+<style type="text/css"></style>
+<script src="../navigation.js"></script>
+</head>
+<body>
+<div id="nav">
+<h1 class="classname">
+<i class="modifiers">public</i>
+                class
+                <a class="classname"><strong>org.widgetfx.</strong><b>Widget</b></a>
+</h1>
+<h2>
+<a title="javafx.application.Application" href="../javafx.application/javafx.application.Application.html"><strong>javafx.application.</strong><b>Application</b></a>, </h2>
+<ul id="tabs">
+<li>
+<a href="#overview">overview</a>
+</li>
+<li>
+<a href="#fields-summary">attributes</a>
+</li>
+<li>
+<a href="#methods-summary">functions</a>
+</li>
+</ul>
+</div>
+<div id="content">
+<a id="overview">
+<h3>Overview</h3>
+</a>
+<div class="overview">
+<p class="comment">Instance class for Widgets that can be deployed in the WidgetFX container.
+ This class extends Application so that any valid Widget can also be easily
+ tested or deployed as an Applet.
+ <p>
+ In addition to the functionality provided by the Application base class,
+ this class also supports additional properties specific to widgets to
+ control resizing, aspectRatio, and configuration.  There are also event
+ handler callbacks for resize and dock operations.
+ <p>
+ To create a widget that can be deployed in the WidgetFX container, you
+ need to create an instance of this class in a JavaFX file, and create a
+ JNLP file that refers to the compiled JavaFX class.
+ <p>
+ Sample JavaFX file for an ellipse widget:
+ <blockquote><pre>
+ import org.widgetfx.Widget;
+ import javafx.application.Stage;
+ import javafx.scene.geometry.Ellipse;
+ import javafx.scene.paint.Color;
+ var width = 100;
+ var height = 100;
+ widget = Widget {
+     resizable: true
+     stage: Stage {
+         width: bind width with inverse;
+         height: bind height with inverse;
+         content: Ellipse {
+             centerX: bind width / 2
+             centerY: bind height / 2
+             radiusX: bind width / 2
+             radiusY: bind height / 2
+             fill: Color.RED
+         }
+     }
+ }</pre></blockquote>
+ <p>
+ Sample JNLP file for the above widget:
+ <blockquote><pre>
+ &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ &lt;jnlp spec="1.0+" codebase="file:/C:/SampleWidget/" href="launch.jnlp"&gt;
+     &lt;information&gt;
+         &lt;title&gt;SampleWidget&lt;/title&gt;
+     &lt;/information&gt;
+     &lt;resources&gt;
+         &lt;j2se version="1.6+"/&gt;
+         &lt;jar href="lib/widgetfx-api.jar" download="eager"/&gt;
+     &lt;/resources&gt;
+     &lt;application-desc main-class="WidgetSample"/&gt;
+ &lt;/jnlp&gt;</pre></blockquote>
+
+ For more information about creating widgets, please see the WidgetFX project page:<br>
+ <a href="http://code.google.com/p/widgetfx/">http://code.google.com/p/widgetfx/</a></p>
+</div>
+<div id="toc">
+<a id="fields-summary">
+<h3>Attribute Summary</h3>
+</a>
+<table class="fields-summary fields">
+<tr>
+<th class="name">name</th><th class="type">type</th><th class="description">description</th>
+</tr>
+<tr>
+<th colspan="3" class="header">Public</th>
+</tr>
+<tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx/org.widgetfx.Widget.html#aspectRatio"><b class="name">aspectRatio</b></a></td><td class="type"><a><i class="type">Number</i></a></td><td class="description">
+<p class="comment">Used to give widgets a fixed aspectRatio.</p>
+</td>
+</tr>
+<tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx/org.widgetfx.Widget.html#configuration"><b class="name">configuration</b></a></td><td class="type"><a href="../org.widgetfx.config/org.widgetfx.config.Configuration.html"><i class="type">Configuration</i></a></td><td class="description">
+<p class="comment">Configuration object for widgets.</p>
+</td>
+</tr>
+<tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx/org.widgetfx.Widget.html#onDock"><b class="name">onDock</b></a></td><td class="type"><a><i class="type">function():Void</i></a></td><td class="description">
+<p class="comment">Event handler called when a widget is docked.</p>
+</td>
+</tr>
+<tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx/org.widgetfx.Widget.html#onResize"><b class="name">onResize</b></a></td><td class="type"><a><i class="type">function(:int,:int):Void</i></a></td><td class="description">
+<p class="comment">Event handler called on resize of a widget.</p>
+</td>
+</tr>
+<tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx/org.widgetfx.Widget.html#onUndock"><b class="name">onUndock</b></a></td><td class="type"><a><i class="type">function():Void</i></a></td><td class="description">
+<p class="comment">Event handler called when a widget is undocked.</p>
+</td>
+</tr>
+<tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx/org.widgetfx.Widget.html#resizable"><b class="name">resizable</b></a></td><td class="type"><a><i class="type">Boolean</i></a></td><td class="description">
+<p class="comment">Whether or not this widget supports resizing.</p>
+</td>
+</tr>
+<tr>
+<th colspan="3" class="header">Protected</th>
+</tr>
+</table>
+<h3>Inherited Attributes</h3>
+<h3>Inherited Functions</h3>
+</div>
+<div id="attributes">
+<h3>Attributes</h3>
+<div class="attribute member profile-">
+<a>
+<h4 id="aspectRatio">
+<i class="modifiers">public</i> <b class="name">aspectRatio</b>: <a><i class="type">Number</i></a>
+</h4>
+</a>
+<p class="comment">Used to give widgets a fixed aspectRatio.  The default value of 0 allows
+ widgets to be resized without constraints.
+ <p>
+ Valid values to force an aspectRatio are any decimal values greater than 0.
+ Decimals greater than 1 will result in wide aspects and decimals between
+ 0 and 1 will result in tall aspects.  An easy way to set this is to use
+ a fraction as such:
+ <blockquote><pre>
+ aspectRatio: 4.0/3.0</pre></blockquote>
+ In this example, the width will be 4/3 greater than the height.</p>
+</div>
+<div class="attribute member profile-">
+<a>
+<h4 id="configuration">
+<i class="modifiers">public</i> <b class="name">configuration</b>: <a href="../org.widgetfx.config/org.widgetfx.config.Configuration.html"><i class="type">Configuration</i></a>
+</h4>
+</a>
+<p class="comment">Configuration object for widgets.  This must be set in order to persist
+ state between invocations of the widget container.  See the Configuration
+ class for more information.</p>
+</div>
+<div class="attribute member profile-">
+<a>
+<h4 id="onDock">
+<i class="modifiers">public</i> <b class="name">onDock</b>: <a><i class="type">function():Void</i></a>
+</h4>
+</a>
+<p class="comment">Event handler called when a widget is docked.  This can be used to change
+ the presentation of a widget to something more suitable to a space limited
+ dock.</p>
+</div>
+<div class="attribute member profile-">
+<a>
+<h4 id="onResize">
+<i class="modifiers">public</i> <b class="name">onResize</b>: <a><i class="type">function(:int,:int):Void</i></a>
+</h4>
+</a>
+<p class="comment">Event handler called on resize of a widget.  This method is always
+ called with the current value of stage.width and stage.height
+ as the parameters.
+ <p>
+ This is preferable to directly binding to stage.width and stage.height where
+ frequent updates would cause performance issues.  This method is guaranteed
+ to be called only once per resize operation regardless of the intermediate
+ values of stage.width and stage.height.</p>
+</div>
+<div class="attribute member profile-">
+<a>
+<h4 id="onUndock">
+<i class="modifiers">public</i> <b class="name">onUndock</b>: <a><i class="type">function():Void</i></a>
+</h4>
+</a>
+<p class="comment">Event handler called when a widget is undocked.  This can be used to change
+ the presentation of a widget to reflect the larger space available for
+ display.</p>
+</div>
+<div class="attribute member profile-">
+<a>
+<h4 id="resizable">
+<i class="modifiers">public</i> <b class="name">resizable</b>: <a><i class="type">Boolean</i></a>
+</h4>
+</a>
+<p class="comment">Whether or not this widget supports resizing.  Default is false to prevent
+ fixed size widgets from being resized.
+ <p>
+ To enable resizing of a widget, set this to true when instantiating your
+ widget instance.</p>
+</div>
+</div>
+</div>
+</body>
+</html>
