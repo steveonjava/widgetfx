@@ -35,6 +35,7 @@ import java.io.*;
 import java.util.*;
 import java.lang.*;
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
 
 /**
  * @author Stephen Chin
@@ -50,26 +51,34 @@ var directoryName = (defaultDirectories[0]).getAbsolutePath();
 var directory:File;
 var status = "Loading Images...";
 var imageFiles:File[];
-var random = true;
+var shuffle = true;
+var duration:Integer = 10;
 var keywords : String;
 var width = 150;
 var height = 100;
-var imageIndex = 0;
+var imageIndex:Integer;
 var imageHeight:Integer;
 var currentFile:File;
 var currentImage:Image;
+var nextImage:Image;
 var worker:JavaFXWorker;
-var timeline = Timeline {
-    repeatCount: Timeline.INDEFINITE
-    keyFrames: [
-        KeyFrame {time: 0s,
-            action: function() {
-                currentFile = imageFiles[imageIndex++ mod imageFiles.size()];
-                updateImage();
-            }
-        },
-        KeyFrame {time: 10s}
-    ]
+var timeline:Timeline;
+var tabbedPane:JTabbedPane;
+
+private function initTimeline() {
+    imageIndex = 0;
+    timeline = Timeline {
+        repeatCount: Timeline.INDEFINITE
+        keyFrames: [
+            KeyFrame {time: 0s,
+                action: function() {
+                    currentFile = imageFiles[imageIndex++ mod imageFiles.size()];
+                    updateImage();
+                }
+            },
+            KeyFrame {time: 1s * duration}
+        ]
+    }
 }
 
 private function updateImage():Void {
@@ -83,31 +92,42 @@ private function updateImage():Void {
     }
     worker = JavaFXWorker {
         inBackground: function() {
-            return Image {url: currentFile.toURL().toString(), height: imageHeight};
+            var image = Image {url: currentFile.toURL().toString(), height: imageHeight};
+            if (image.size == 0) {
+                throw new RuntimeException("Image has empty size: {currentFile}");
+            }
+            return image;
         }
         onDone: function(result) {
             currentImage = result as Image;
             status = null;
+        }
+        onFailure: function(e) {
+            currentImage = null;
+            status = "Error Loading Image: {currentFile}";
         }
     }
 }
 
 private function loadDirectory(directoryName:String):File {
     var directory = new File(directoryName);
+    currentImage = null;
     if (not directory.exists()) {
         status = "Directory Doesn't Exist";
+    } else if (not directory.isDirectory()) {
+        status = "Selected File is Not a Directory";
     } else {
         timeline.stop();
         if (worker != null) {
             worker.cancel();
         }
-        currentImage = null;
         status = "Loading Images...";
         imageFiles = getImageFiles(directory);
         if (imageFiles.size() > 0) {
-            if (random) {
+            if (shuffle) {
                 imageFiles = Sequences.shuffle(imageFiles) as File[];
             }
+            initTimeline();
             timeline.start();
         } else {
             status = "No Images Found"
@@ -158,96 +178,103 @@ var browseButton:Button = Button {
     }
 }
 
-var keywordLabel = Label {text: "Filter:"};
-var keywordEdit = TextField {text: bind keywords with inverse, hpref: 300};
-var directoryLabel = Label {text: "Directory:"};
-var directoryEdit = TextField {text: bind directoryName with inverse, hpref: 300};
+private function initTabbedPane() {
+    var keywordLabel = Label {text: "Filter:"};
+    var keywordEdit = TextField {text: bind keywords with inverse, hpref: 300};
+    var directoryLabel = Label {text: "Directory:"};
+    var directoryEdit = TextField {text: bind directoryName with inverse, hpref: 300};
 
-var shuffleCheckBox = CheckBox {text: "Shuffle"};
-var durationLabel = Label {text: "Duration"};
+    var shuffleCheckBox = CheckBox {text: "Shuffle", selected: bind shuffle with inverse};
+    var durationLabel = Label {text: "Duration"};
 
-// todo - replace with javafx spinner when one exists
-var durationSpinner = new JSpinner();
-var durationSpinnerComponent = Component.fromJComponent(durationSpinner);
-durationSpinnerComponent.hmax = 52;
+    // todo - replace with javafx spinner when one exists
+    var durationSpinner = new JSpinner(new SpinnerNumberModel(duration, 2, 60, 1));
+    durationSpinner.addChangeListener(ChangeListener {
+        function stateChanged(e):Void {
+            duration = durationSpinner.getValue() as Integer;
+        }
+    });
+    var durationSpinnerComponent = Component.fromJComponent(durationSpinner);
+    durationSpinnerComponent.hmax = 52;
 
-var displayTab = ClusterPanel {
-    hcluster: ParallelCluster {
-        content: [
-            shuffleCheckBox,
-            SequentialCluster {
-                content: [
-                    durationLabel,
-                    durationSpinnerComponent
-                ]
-            }
-        ]
+    var displayTab = ClusterPanel {
+        hcluster: ParallelCluster {
+            content: [
+                shuffleCheckBox,
+                SequentialCluster {
+                    content: [
+                        durationLabel,
+                        durationSpinnerComponent
+                    ]
+                }
+            ]
+        }
+        vcluster: SequentialCluster {
+            content: [
+                shuffleCheckBox,
+                ParallelCluster {
+                    content: [
+                        durationLabel,
+                        durationSpinnerComponent
+                    ]
+                }
+            ]
+        }
     }
-    vcluster: SequentialCluster {
-        content: [
-            shuffleCheckBox,
-            ParallelCluster {
-                content: [
-                    durationLabel,
-                    durationSpinnerComponent
-                ]
-            }
-        ]
+
+    var contentTab = ClusterPanel {
+        vcluster: ParallelCluster {
+            content: [
+                directoryLabel,
+                directoryEdit,
+                browseButton,
+            ]
+        },
+        hcluster: SequentialCluster {
+            content: [
+                ParallelCluster {
+                    content:[
+                        directoryLabel,
+                        keywordLabel,
+                    ]
+                },
+                ParallelCluster {
+                    content:[
+                        SequentialCluster {
+                            content:[
+                                directoryEdit,
+                                browseButton
+                            ]
+                        },
+                        keywordEdit
+                    ]
+                }
+            ]
+        }
+        vcluster : SequentialCluster {
+            content:[
+                ParallelCluster{
+                    content: [
+                        directoryLabel,
+                        directoryEdit,
+                        browseButton
+                    ]
+                },
+                ParallelCluster {
+                    content : [
+                        keywordLabel,
+                        keywordEdit
+                    ]
+                }
+            ]
+        }
     }
+
+    // todo - replace with a javafx component when one is available
+    tabbedPane = new JTabbedPane();
+    tabbedPane.add("display", displayTab.getJPanel());
+    tabbedPane.add("content", contentTab.getJPanel());
 }
-
-var contentTab = ClusterPanel {
-    vcluster: ParallelCluster {
-        content: [
-            directoryLabel,
-            directoryEdit,
-            browseButton,
-        ]
-    },
-    hcluster: SequentialCluster {
-        content: [
-            ParallelCluster {
-                content:[
-                    directoryLabel,
-                    keywordLabel,
-                ]
-            },
-            ParallelCluster {
-                content:[
-                    SequentialCluster {
-                        content:[
-                            directoryEdit,
-                            browseButton
-                        ]
-                    },
-                    keywordEdit
-                ]
-            }
-        ]
-    }
-    vcluster : SequentialCluster {
-        content:[
-            ParallelCluster{
-                content: [
-                    directoryLabel,
-                    directoryEdit,
-                    browseButton
-                ]
-            },
-            ParallelCluster {
-                content : [
-                    keywordLabel,
-                    keywordEdit
-                ]
-            }
-        ]
-    }
-}
-
-// todo - replace with a javafx component when one is available
-var tabbedPane = new JTabbedPane();
-tabbedPane.add("display", displayTab.getJPanel());
-tabbedPane.add("content", contentTab.getJPanel());
 
 Widget {
     resizable: true
@@ -259,8 +286,12 @@ Widget {
                 value: bind directoryName with inverse
             },
             BooleanProperty {
-                name: "random"
-                value: bind random with inverse
+                name: "shuffle"
+                value: bind shuffle with inverse
+            },
+            IntegerProperty {
+                name: "duration"
+                value: bind duration with inverse
             },
             StringProperty {
                 name : "keywords"
@@ -268,10 +299,11 @@ Widget {
             }
         ]
 
-        component: Component.fromJComponent(tabbedPane)
+        component: bind Component.fromJComponent(tabbedPane)
 
         onLoad: function() {
             imageHeight = height;
+            initTabbedPane();
             loadDirectory(directoryName);
         }
         onSave: function() {

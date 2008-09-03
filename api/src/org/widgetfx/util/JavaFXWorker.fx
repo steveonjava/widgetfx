@@ -76,6 +76,19 @@ public class JavaFXWorker extends AbstractAsyncOperation {
      * Failure to set this attribute will result in an NPE.
      */
     public attribute onDone: function(result:Object):Void;
+    
+    /**
+     * Function that will be called if inBackground fails due to an exception.  The
+     * exception is passed in as a parameter when this function is called, and the
+     * attributes failed and failureText will be set to 'true' and the message of the
+     * exception, respectively.
+     * <p>
+     * This function is guaranteed to be called on the Event Dispatch thread, and
+     * can safely make changes to the UI state.
+     * <p>
+     * This attribute may be left null if no special handling of exceptions is required.
+     */
+    public attribute onFailure: function(e:ExecutionException):Void;
 
     /**
      * This attribute gets set to the result returned by the inBackground method
@@ -110,6 +123,9 @@ public class JavaFXWorker extends AbstractAsyncOperation {
                     onCancel();
                 } catch (e2:ExecutionException) {
                     onException(e2);
+                    if (onFailure != null) {
+                        onFailure(e2);
+                    }
                 }
             }
         };
