@@ -60,7 +60,10 @@ public class ConfigPersister {
                 } finally {
                     reader.close();
                 }
-                for (property in properties) {
+                // uses a counter/while loop so properties appended to the sequence are loaded
+                var i = 0;
+                while (i < properties.size()) {
+                    var property = properties[i++];
                     if (savedProperties.containsKey(property.name)) {
                         property.setStringValue(savedProperties.get(property.name) as String);
                     }
