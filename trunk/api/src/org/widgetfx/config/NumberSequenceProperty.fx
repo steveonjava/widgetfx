@@ -52,6 +52,6 @@ public class NumberSequenceProperty extends Property {
     
     /** {@inheritDoc} */
     public function setStringValue(value:String):Void {
-        this.value = for (s in Arrays.asList(value.split(","))) (new BigDecimal(s)).intValue();
+        this.value = for (s in Arrays.asList(value.split(","))) (new BigDecimal(s)).doubleValue();
     }
 }
