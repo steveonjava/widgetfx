@@ -27,11 +27,10 @@ import com.sun.javafx.runtime.Entry;
 import java.io.File;
 import java.lang.System;
 import java.net.URL;
-import javafx.application.Dialog;
 import javafx.application.Stage;
-import javafx.ext.swing.ComponentView;
 import javafx.ext.swing.BorderPanel;
 import javafx.ext.swing.Button;
+import javafx.ext.swing.SwingDialog;
 import javafx.scene.HorizontalAlignment;
 import javafx.ext.swing.FlowPanel;
 import javax.jnlp.*;
@@ -248,35 +247,29 @@ public class WidgetInstance {
     
     public function showConfigDialog():Void {
         if (widget.configuration != null) {
-            var configDialog:Dialog = Dialog {
+            var configDialog:SwingDialog = SwingDialog {
                 title: "{title} Configuration"
-                stage: Stage {
-                    content: [
-                        ComponentView {
-                            component: BorderPanel {
-                                center: widget.configuration.component
-                                bottom: FlowPanel {
-                                    alignment: HorizontalAlignment.RIGHT
-                                    content: [
-                                        Button {
-                                            text: "Save"
-                                            action: function() {
-                                                save();
-                                                configDialog.close();
-                                            }
-                                        },
-                                        Button {
-                                            text: "Cancel"
-                                            action: function() {
-                                                cancel();
-                                                configDialog.close();
-                                            }
-                                        }
-                                    ]
+                content: BorderPanel {
+                    center: widget.configuration.component
+                    bottom: FlowPanel {
+                        alignment: HorizontalAlignment.RIGHT
+                        content: [
+                            Button {
+                                text: "Save"
+                                action: function() {
+                                    save();
+                                    configDialog.close();
+                                }
+                            },
+                            Button {
+                                text: "Cancel"
+                                action: function() {
+                                    cancel();
+                                    configDialog.close();
                                 }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
                 visible: true
             }
