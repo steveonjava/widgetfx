@@ -17,8 +17,8 @@
  */
 package org.widgetfx;
 
-import org.widgetfx.config.IntegerSequenceProperty;
 import javafx.lang.Sequences;
+import org.widgetfx.config.IntegerSequenceProperty;
 
 /**
  * @author Stephen Chin
@@ -27,9 +27,9 @@ import javafx.lang.Sequences;
 public class WidgetManager {
     
     private static attribute INITIAL_WIDGETS = [
-        "../widgets/Clock/dist/launch.jnlp",
-        "../widgets/SlideShow/dist/launch.jnlp",
-        "../widgets/WebFeed/dist/launch.jnlp"
+        "../../widgets/Clock/dist/launch.jnlp",
+        "../../widgets/SlideShow/dist/launch.jnlp",
+        "../../widgets/WebFeed/dist/launch.jnlp"
     ];
     
     private static attribute instance = WidgetManager {}

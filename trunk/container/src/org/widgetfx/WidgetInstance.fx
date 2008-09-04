@@ -100,13 +100,21 @@ public class WidgetInstance {
     
     private attribute persister = ConfigPersister {properties: bind [properties, widget.configuration.properties], file: bind getPropertyFile()}
     
+    private function resolve(url:String):String {
+        var bs = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+        java.lang.System.out.println("resolving {url} against {bs.getCodeBase()}");
+        var result = new URL(bs.getCodeBase(), url);
+        java.lang.System.out.println("resulted in {result}");
+        return result.toString();
+    }
+
     public attribute jnlpUrl:String on replace {
         if (jnlpUrl.length() == 0) {
             mainClass = "";
         } else {
             try {
                 var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                var document = builder.parse(jnlpUrl);
+                var document = builder.parse(resolve(jnlpUrl));
                 var xpath = XPathFactory.newInstance().newXPath();
                 var codeBase = new URL(xpath.evaluate("/jnlp/@codebase", document, XPathConstants.STRING) as String);
                 var widgetNodes = xpath.evaluate("/jnlp/resources/jar", document, XPathConstants.NODESET) as NodeList;
