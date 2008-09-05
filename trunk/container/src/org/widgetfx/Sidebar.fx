@@ -349,8 +349,8 @@ public class Sidebar extends BaseDialog {
             instance.undockedWidth = saveUndockedWidth;
             instance.undockedHeight = saveUndockedHeight;
             return new java.awt.Rectangle(
-                x + (width - instance.widget.stage.width) / 2 - BORDER,
-                y + content.getGapLocation() + headerHeight,
+                x + (width - instance.widget.stage.width) / 2,
+                y + content.getGapLocation() + headerHeight + WidgetView.TOP_BORDER,
                 instance.widget.stage.width,
                 instance.widget.stage.height
             );

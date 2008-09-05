@@ -30,6 +30,7 @@ import javafx.ext.swing.ComponentView;
 import javafx.ext.swing.Slider;
 import javafx.input.MouseEvent;
 import javafx.lang.DeferredTask;
+import javafx.scene.HorizontalAlignment;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Glow;
 import javafx.scene.geometry.Circle;
@@ -50,9 +51,12 @@ import javax.swing.RootPaneContainer;
  */
 public class WidgetFrame extends BaseDialog {
     public static attribute MIN_SIZE = 100;
-    public static attribute TOOLBAR_HEIGHT = 18;
     public static attribute BORDER = 5;
+    public static attribute RESIZABLE_TOOLBAR_HEIGHT = 18;
+    public static attribute NONRESIZABLE_TOOLBAR_HEIGHT = RESIZABLE_TOOLBAR_HEIGHT - BORDER;
     public static attribute DS_RADIUS = 5;
+    
+    private attribute toolbarHeight = bind if (instance.widget.configuration == null) NONRESIZABLE_TOOLBAR_HEIGHT else RESIZABLE_TOOLBAR_HEIGHT;
     
     public attribute instance:WidgetInstance;
     
@@ -72,7 +76,7 @@ public class WidgetFrame extends BaseDialog {
     
     private attribute boxHeight = bind widget.stage.height + BORDER * 2 + 1;
     
-    private attribute widgetHeight = bind boxHeight + TOOLBAR_HEIGHT on replace {
+    private attribute widgetHeight = bind boxHeight + toolbarHeight on replace {
         height = widgetHeight;
     }
 
@@ -135,7 +139,7 @@ public class WidgetFrame extends BaseDialog {
             keyFrames: KeyFrame {time: 300ms,
                 values: [
                     x => dockX - BORDER tween Interpolator.EASEIN,
-                    y => dockY - BORDER - TOOLBAR_HEIGHT tween Interpolator.EASEIN
+                    y => dockY - BORDER - toolbarHeight tween Interpolator.EASEIN
                 ],
                 action: function() {
                     Sidebar.getInstance().dock(instance);
@@ -192,6 +196,7 @@ public class WidgetFrame extends BaseDialog {
     
     private attribute needsFocus:Boolean;
     
+    // this is a workaround for the issue with toggle timelines that are stopped and started immediately triggering a full animation
     private function requestFocus(focus:Boolean):Void {
         needsFocus = focus;
         updateFocus();
@@ -208,7 +213,7 @@ public class WidgetFrame extends BaseDialog {
     postinit {
         var dragRect:Group = Group {
             var backgroundColor = Color.rgb(0xF5, 0xF5, 0xF5, 0.6);
-            translateY: TOOLBAR_HEIGHT,
+            translateY: toolbarHeight,
             content: [
                 Rectangle { // background
                     translateX: BORDER, translateY: BORDER
@@ -346,13 +351,12 @@ public class WidgetFrame extends BaseDialog {
             value: bind instance.opacity with inverse
             preferredSize: bind [width * 2 / 5, 16]
         }
-        var toolbarBackground = Color.rgb(163, 184, 203);
         stage = Stage {
             content: [
                 dragRect,
-                Group {
+                Group { // Widget Content
                     cache: true
-                    translateX: BORDER, translateY: BORDER + TOOLBAR_HEIGHT
+                    translateX: BORDER, translateY: BORDER + toolbarHeight
                     content: Group {
                         effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                         content: Group {
@@ -360,16 +364,11 @@ public class WidgetFrame extends BaseDialog {
                             clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
                         }
                     }
-                    onMouseClicked: function(e:MouseEvent):Void {
-                        if (e.getButton() == 3) {
-                            WidgetManager.getInstance().showConfigDialog(widget);
-                        }
-                    }
                     opacity: bind (instance.opacity as Number) / 100
                 },
                 Group { // Transparency Slider
                     content: [
-                        Rectangle { // Borer
+                        Rectangle { // Border
                             width: bind width * 2 / 5 + 2
                             height: 16
                             arcWidth: 16
@@ -384,7 +383,7 @@ public class WidgetFrame extends BaseDialog {
                             arcWidth: 14
                             arcHeight: 14
                             stroke: Color.WHITE
-                            fill: toolbarBackground
+                            fill: WidgetToolbar.BACKGROUND
                             opacity: 0.7
                         },
                         ComponentView { // Slider
@@ -394,165 +393,14 @@ public class WidgetFrame extends BaseDialog {
                     ]
                     opacity: bind rolloverOpacity
                 },
-                Group { // Toolbar
-                    var TOOLBAR_WIDTH = 32;
-                    translateX: bind width - TOOLBAR_WIDTH - 1
-                    content: [
-                        Rectangle { // Border
-                            width: TOOLBAR_WIDTH
-                            height: 16
-                            arcWidth: 16
-                            arcHeight: 16
-                            stroke: Color.BLACK
-                        },
-                        Rectangle { // Background
-                            translateX: 1
-                            translateY: 1
-                            width: TOOLBAR_WIDTH - 2
-                            height: 14
-                            arcWidth: 14
-                            arcHeight: 14
-                            stroke: Color.WHITE
-                            fill: toolbarBackground
-                            opacity: 0.7
-                        },
-                        Group { // Config Button
-                            var pressedColor = Color.rgb(54, 101, 143);
-                            var dsColor = Color.BLACK;
-                            var dsTimeline = Timeline {
-                                toggle: true, autoReverse: true
-                                keyFrames: KeyFrame {
-                                    time: 300ms
-                                    values: [
-                                        dsColor => Color.WHITE tween Interpolator.EASEBOTH
-                                    ]
-                                }
-                            }
-                            var hover = false on replace {
-                                dsTimeline.start();
-                            }
-                            var pressed = false;
-                            var xColor = bind if (hover and pressed) pressedColor else Color.WHITE;
-                            effect: DropShadow {color: bind dsColor}
-                            content: Group {
-                                translateX: 11, translateY: 8
-                                content: [
-                                    Rectangle { // Bounding Rect (for rollover)
-                                        x: -5, y: -5
-                                        width: 10, height: 10
-                                        fill: Color.rgb(0, 0, 0, 0.0)
-                                    },
-                                    Group {// Border
-                                        translateX: 0.4, translateY: -0.4
-                                        transform: [Rotate {angle: 45}, Scale {x: 0.48, y: 0.48}]
-                                        content: [
-                                            Line {startY: 10, endY: 12, stroke: Color.BLACK, strokeWidth: 9},
-                                            ShapeSubtract {
-                                                fill: Color.BLACK
-                                                a: Circle {radius: 10}
-                                                b: Rectangle {x: -5, y: -10, width: 10, height: 12}
-                                            }
-                                        ]
-                                    },
-                                    Group { // Config
-                                        transform: [Rotate {angle: 45}, Scale {x: 0.4, y: 0.4}]
-                                        content: [
-                                            Line {startY: 10, endY: 14, stroke: bind xColor, strokeWidth: 9},
-                                            ShapeSubtract {
-                                                fill: bind xColor
-                                                a: Circle {radius: 10}
-                                                b: Rectangle {x: -5, y: -10, width: 10, height: 12}
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                            onMouseEntered: function(e) {
-                                hover = true;
-                            }
-                            onMouseExited: function(e) {
-                                hover = false;
-                            }
-                            onMousePressed: function(e) {
-                                pressed = true;
-                            }
-                            onMouseReleased: function(e:MouseEvent) {
-                                pressed = false;
-                                if (hover) {
-                                    WidgetManager.getInstance().showConfigDialog(widget);    
-                                }
-                            }
-                        },
-                        Group { // Close Button
-                            var pressedColor = Color.rgb(54, 101, 143);
-                            var dsColor = Color.BLACK;
-                            var dsTimeline = Timeline {
-                                toggle: true, autoReverse: true
-                                keyFrames: KeyFrame {
-                                    time: 300ms
-                                    values: [
-                                        dsColor => Color.WHITE tween Interpolator.EASEBOTH
-                                    ]
-                                }
-                            }
-                            var hover = false on replace {
-                                dsTimeline.start();
-                            }
-                            var pressed = false;
-                            var xColor = bind if (hover and pressed) pressedColor else Color.WHITE;
-                            translateX: TOOLBAR_WIDTH - 8;
-                            translateY: 8;
-                            effect: DropShadow {color: bind dsColor}
-                            content: [
-                                Rectangle { // Bounding Rect (for rollover)
-                                    x: -5, y: -5
-                                    width: 10, height: 10
-                                    fill: Color.rgb(0, 0, 0, 0.0)
-                                },
-                                Line { // Border
-                                    stroke: bind Color.BLACK
-                                    strokeWidth: 3
-                                    startX: -3, startY: -3
-                                    endX: 3, endY: 3
-                                },
-                                Line { // Border
-                                    stroke: bind Color.BLACK
-                                    strokeWidth: 3
-                                    startX: 3, startY: -3
-                                    endX: -3, endY: 3
-                                },
-                                Line {// X Line
-                                    stroke: bind xColor
-                                    strokeWidth: 2
-                                    startX: -3, startY: -3
-                                    endX: 3, endY: 3
-                                },
-                                Line {// X Line
-                                    stroke: bind xColor
-                                    strokeWidth: 2
-                                    startX: 3, startY: -3
-                                    endX: -3, endY: 3
-                                }
-                            ]
-                            onMouseEntered: function(e) {
-                                hover = true;
-                            }
-                            onMouseExited: function(e) {
-                                hover = false;
-                            }
-                            onMousePressed: function(e) {
-                                pressed = true;
-                            }
-                            onMouseReleased: function(e:MouseEvent) {
-                                pressed = false;
-                                if (hover) {
-                                    WidgetManager.getInstance().removeWidget(instance);
-                                    close();
-                                }
-                            }
-                        }
-                    ]
+                WidgetToolbar {
+                    translateX: bind width
+                    horizontalAlignment: HorizontalAlignment.RIGHT
                     opacity: bind rolloverOpacity
+                    instance: instance
+                    onClose: function() {
+                        close();
+                    }
                 }
             ]
             fill: null

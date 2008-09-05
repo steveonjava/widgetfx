@@ -102,10 +102,7 @@ public class WidgetInstance {
     
     private function resolve(url:String):String {
         var bs = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
-        java.lang.System.out.println("resolving {url} against {bs.getCodeBase()}");
-        var result = new URL(bs.getCodeBase(), url);
-        java.lang.System.out.println("resulted in {result}");
-        return result.toString();
+        return (new URL(bs.getCodeBase(), url)).toString();
     }
 
     public attribute jnlpUrl:String on replace {

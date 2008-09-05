@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.widgetfx;
+import javafx.animation.*;
 import javafx.input.*;
+import javafx.lang.DeferredTask;
 import javafx.scene.*;
 import javafx.scene.effect.*;
 import javafx.scene.geometry.*;
@@ -41,15 +43,43 @@ public class WidgetView extends Group {
     private attribute lastScreenPosX:Integer;
     private attribute lastScreenPosY:Integer;
     
+    private attribute firstRollover = true;
+        
+    private attribute hasFocus:Boolean on replace {
+        if (firstRollover) {
+            firstRollover = false;
+        } else {
+            rolloverTimeline.start();
+        }
+    }
+    
+    private attribute needsFocus:Boolean;
+    
+    // this is a workaround for the issue with toggle timelines that are stopped and started immediately triggering a full animation
+    private function requestFocus(focus:Boolean):Void {
+        needsFocus = focus;
+        DeferredTask {
+            action: function() {
+                hasFocus = needsFocus;
+            }
+        }
+    }
+    
+    private attribute rolloverOpacity = 0.0;
+    private attribute rolloverTimeline = Timeline {
+        autoReverse: true, toggle: true
+        keyFrames: KeyFrame {time: 1s, values: rolloverOpacity => 1.0 tween Interpolator.EASEBOTH}
+    }
+    
     init {
         cache = true;
         content = [
-            Rectangle {
+            Rectangle { // Invisible Spacer
                 height: bind widget.stage.height + TOP_BORDER + BOTTOM_BORDER
                 width: bind sidebar.width
                 fill: Color.rgb(0, 0, 0, 0.0)
             },
-            Group {
+            Group { // Widget with DropShadow
                 translateY: TOP_BORDER
                 effect: bind if (resizing or sidebar.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Sidebar.DS_RADIUS}
                 content: Group {
@@ -60,7 +90,16 @@ public class WidgetView extends Group {
                     translateX: bind sidebar.width / 2
                 }
             },
-            Group {
+            WidgetToolbar {
+                blocksMouse: true
+                translateX: bind (sidebar.width + widget.stage.width) / 2
+                horizontalAlignment: HorizontalAlignment.RIGHT
+                opacity: bind rolloverOpacity
+                instance: instance
+                onMouseEntered: function(e) {requestFocus(true)}
+                onMouseExited: function(e) {requestFocus(false)}
+            },
+            Group { // Drag Bar
                 blocksMouse: true
                 translateX: Sidebar.BORDER
                 translateY: bind widget.stage.height + TOP_BORDER + BOTTOM_BORDER - 3
@@ -109,17 +148,17 @@ public class WidgetView extends Group {
             lastScreenPosX = e.getStageX().intValue();
             lastScreenPosY = e.getStageY().intValue();
         };
-        onMouseClicked = function(e:MouseEvent):Void {
-            if (e.getButton() == 3) {
-                WidgetManager.getInstance().showConfigDialog(widget);
-            }
-        };
         onMouseDragged = function(e:MouseEvent):Void {
             if (not docking) {
+                instance.frame.x += e.getStageX().intValue() - lastScreenPosX;
+                instance.frame.y += e.getStageY().intValue() - lastScreenPosY;
+                lastScreenPosX = e.getStageX().intValue();
+                lastScreenPosY = e.getStageY().intValue();
                 if (instance.docked) {
                     sidebar.dragging = true;
-                    var xPos = e.getStageX().intValue() + sidebar.x - e.getX().intValue() - WidgetFrame.BORDER;
-                    var yPos = e.getStageY().intValue() + sidebar.y - e.getY().intValue() - WidgetFrame.BORDER - WidgetFrame.TOOLBAR_HEIGHT;
+                    var xPos = sidebar.x + (sidebar.width - widget.stage.width) / 2 - WidgetFrame.BORDER;
+                    var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
+                    var yPos = sidebar.y + e.getStageY().intValue() - e.getY().intValue() + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight) - 1;
                     instance.frame = WidgetFrame {
                         instance: instance
                         x: xPos, y: yPos
@@ -127,10 +166,6 @@ public class WidgetView extends Group {
                     sidebar.hover(instance, xPos, yPos, false);
                     instance.docked = false;
                 } else {
-                    instance.frame.x += e.getStageX().intValue() - lastScreenPosX;
-                    instance.frame.y += e.getStageY().intValue() - lastScreenPosY;
-                    lastScreenPosX = e.getStageX().intValue();
-                    lastScreenPosY = e.getStageY().intValue();
                     sidebar.hover(instance, e.getScreenX(), e.getScreenY(), true);
                 }
             }
@@ -150,5 +185,7 @@ public class WidgetView extends Group {
                 instance.saveWithoutNotification();
             }
         };
+        onMouseEntered = function(e) {requestFocus(true)}
+        onMouseExited = function(e) {requestFocus(false)}
     }
 }
