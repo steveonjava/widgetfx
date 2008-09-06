@@ -290,7 +290,6 @@ public class Sidebar extends BaseDialog {
     private attribute yHoverOffset;
     
     public function setupHoverAnimation(instance:WidgetInstance, localX:Integer, localY:Integer) {
-        java.lang.System.out.println("localX: {localX}, localY: {localY}");
         if (animateHover == null) {
             xHoverOffset = 0;
             yHoverOffset = 0;
