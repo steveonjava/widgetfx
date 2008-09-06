@@ -24,7 +24,7 @@ Make sure to check back frequently and get the latest build.
 To install the JavaFX SDK:
   # Go to the JavaFX SDK Website: http://java.sun.com/javafx/downloads/
   # Find the download link for Netbeans IDE 6.1 with JavaFX (recommended)
-    * Alternatively, there is a download for the Java plug-in if you dig enough
+    * Alternatively, there is a download for the JavaFX plug-in if you dig deep enough
     * If you follow this path, make sure to update your existing Netbeans install to use Java SE Update 10
 
 Make sure to specify Java SE Update 10 as the JDK for Netbeans when you first start it.
