@@ -24,9 +24,11 @@ import org.widgetfx.config.*;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
 import com.sun.javafx.runtime.Entry;
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.lang.System;
 import java.net.URL;
+import java.util.Arrays;
 import javafx.application.Stage;
 import javafx.ext.swing.BorderPanel;
 import javafx.ext.swing.Button;
@@ -218,6 +220,27 @@ public class WidgetInstance {
             frame = WidgetFrame {
                 instance: this
                 x: undockedX, y: undockedY
+            }
+        }
+    }
+    
+    public function dock() {
+        frame.close();
+        frame = null;
+        docked = true;
+    }
+    
+    public function dockIfOffscreen() {
+        if (not docked) {
+            var found = false;
+            for (gd in Arrays.asList(java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {
+                var gc = gd.getDefaultConfiguration();
+                if (gc.getBounds().intersects(new java.awt.Rectangle(undockedX, undockedY, undockedWidth, undockedHeight))) {
+                    found = true;
+                }
+            }
+            if (not found) {
+                dock();
             }
         }
     }

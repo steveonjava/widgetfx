@@ -142,12 +142,11 @@ public class WidgetFrame extends BaseDialog {
                     y => dockY - BORDER - toolbarHeight tween Interpolator.EASEIN
                 ],
                 action: function() {
-                    Sidebar.getInstance().dock(instance);
+                    Sidebar.getInstance().dockAfterHover(instance);
                     if (instance.widget.onResize != null) {
                         instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                     }
-                    instance.frame = null;
-                    close();
+                    instance.dock();
                 }
             }
         }.start();
@@ -325,12 +324,12 @@ public class WidgetFrame extends BaseDialog {
             onMousePressed: saveInitialPos;
             onMouseDragged: function(e) {
                 if (not docking) {
+                    var hoverOffset = Sidebar.getInstance().hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
                     mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                         dragging = true;
-                        x = initialX + xDelta;
-                        y = initialY + yDelta;
+                        x = initialX + xDelta + hoverOffset[0];
+                        y = initialY + yDelta + hoverOffset[1];
                     })(e);
-                    Sidebar.getInstance().hover(instance, e.getScreenX(), e.getScreenY(), true);
                 }
             }
             onMouseReleased: function(e) {

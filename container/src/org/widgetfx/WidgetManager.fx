@@ -74,6 +74,12 @@ public class WidgetManager {
         java.lang.System.setSecurityManager(null);
     }
     
+    public function dockOffscreenWidgets() {
+        for (instance in widgets) {
+            instance.dockIfOffscreen();
+        }
+    }
+    
     public function loadInitialWidgets() {
         for (url in INITIAL_WIDGETS) {
             addWidget(url);

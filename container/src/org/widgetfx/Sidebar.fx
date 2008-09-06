@@ -35,6 +35,7 @@ import javafx.ext.swing.*;
 import javafx.animation.*;
 import java.awt.AWTException;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.SystemTray;
 import java.awt.event.MouseAdapter;
@@ -177,6 +178,7 @@ public class Sidebar extends BaseDialog {
         configuration.load();
         loadContent();
         createTrayIcon();
+        WidgetManager.getInstance().dockOffscreenWidgets();
     }
     
     private function hideDock() {
@@ -189,6 +191,7 @@ public class Sidebar extends BaseDialog {
             action: function() {updateDockLocation();}
         }
         toFront();
+        WidgetManager.getInstance().dockOffscreenWidgets();
     }
     
     private function createTrayIcon() {
@@ -283,9 +286,14 @@ public class Sidebar extends BaseDialog {
     private attribute animateDocked:Boolean;
     private attribute saveUndockedWidth:Integer;
     private attribute saveUndockedHeight:Integer;
+    private attribute xHoverOffset;
+    private attribute yHoverOffset;
     
-    public function setupHoverAnimation(instance:WidgetInstance) {
+    public function setupHoverAnimation(instance:WidgetInstance, localX:Integer, localY:Integer) {
+        java.lang.System.out.println("localX: {localX}, localY: {localY}");
         if (animateHover == null) {
+            xHoverOffset = 0;
+            yHoverOffset = 0;
             saveUndockedWidth = instance.undockedWidth;
             saveUndockedHeight = instance.undockedHeight;
             var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
@@ -296,14 +304,16 @@ public class Sidebar extends BaseDialog {
                     keyFrames: KeyFrame {
                         time: 300ms
                         values: [
-                            if (newWidth > 0) {
-                                instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH
-                            } else {
+                            if (newWidth > 0) {[
+                                instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH,
+                                xHoverOffset => localX - localX * newWidth / instance.widget.stage.width tween Interpolator.EASEBOTH
+                            ]} else {
                                 []
                             },
-                            if (newHeight > 0) {
-                                instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH
-                            } else {
+                            if (newHeight > 0) {[
+                                instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH,
+                                yHoverOffset => localY - localY * newHeight / instance.widget.stage.height tween Interpolator.EASEBOTH
+                            ]} else {
                                 []
                             }
                         ]
@@ -314,15 +324,14 @@ public class Sidebar extends BaseDialog {
         }
     }
     
-    public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, animate:Boolean) {
-        setupHoverAnimation(instance);
+    public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, localX:Integer, localY:Integer, animate:Boolean) {
+        setupHoverAnimation(instance, localX, localY);
         if (screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
             var index = widgetViews.size();
-            var localY = screenY - y;
             for (view in widgetViews) {
                 var viewY = view.getBoundsY() + headerHeight;
                 var viewHeight = view.getBoundsHeight();
-                if (localY < viewY + viewHeight / 2) {
+                if (screenY - y < viewY + viewHeight / 2) {
                     index = indexof view;
                     break;
                 }
@@ -340,6 +349,7 @@ public class Sidebar extends BaseDialog {
                 animateHover.start();
             }
         }
+        return [xHoverOffset, yHoverOffset];
     }
     
     public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):java.awt.Rectangle {
@@ -360,7 +370,7 @@ public class Sidebar extends BaseDialog {
         }
     }
     
-    public function dock(instance:WidgetInstance) {
+    public function dockAfterHover(instance:WidgetInstance) {
         delete instance from WidgetManager.getInstance().widgets;
         instance.docked = true;
         if (content.getGapIndex() >= dockedWidgets.size()) {
@@ -575,7 +585,7 @@ public class Sidebar extends BaseDialog {
     private function getGraphicsConfiguration(location:Point) {
         if (not dragging and not resizing) {
             if (not screenBounds.contains(location)) {
-                for (gd in Arrays.asList(java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {
+                for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {
                     var gc = gd.getDefaultConfiguration();
                     if (gc.getBounds().contains(location)) {
                         displayId = gd.getIDstring();

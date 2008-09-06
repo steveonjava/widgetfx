@@ -40,8 +40,8 @@ public class WidgetView extends Group {
     public attribute docking = false;
     
     private attribute dockedParent:Group;
-    private attribute lastScreenPosX:Integer;
-    private attribute lastScreenPosY:Integer;
+    private attribute initialScreenPosX:Integer;
+    private attribute initialScreenPosY:Integer;
     
     private attribute firstRollover = true;
         
@@ -145,29 +145,32 @@ public class WidgetView extends Group {
             }
         ];
         onMousePressed = function(e:MouseEvent):Void {
-            lastScreenPosX = e.getStageX().intValue();
-            lastScreenPosY = e.getStageY().intValue();
+            initialScreenPosX = -e.getStageX().intValue();
+            initialScreenPosY = -e.getStageY().intValue();
         };
         onMouseDragged = function(e:MouseEvent):Void {
             if (not docking) {
-                instance.frame.x += e.getStageX().intValue() - lastScreenPosX;
-                instance.frame.y += e.getStageY().intValue() - lastScreenPosY;
-                lastScreenPosX = e.getStageX().intValue();
-                lastScreenPosY = e.getStageY().intValue();
+                var xPos;
+                var yPos;
                 if (instance.docked) {
                     sidebar.dragging = true;
-                    var xPos = sidebar.x + (sidebar.width - widget.stage.width) / 2 - WidgetFrame.BORDER;
+                    xPos = sidebar.x + (sidebar.width - widget.stage.width) / 2 - WidgetFrame.BORDER;
                     var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
-                    var yPos = sidebar.y + e.getStageY().intValue() - e.getY().intValue() + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight) - 1;
+                    yPos = sidebar.y + e.getStageY().intValue() - e.getY().intValue() + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight) - 1;
                     instance.frame = WidgetFrame {
                         instance: instance
                         x: xPos, y: yPos
                     }
-                    sidebar.hover(instance, xPos, yPos, false);
-                    instance.docked = false;
+                    initialScreenPosX += xPos;
+                    initialScreenPosY += yPos;
                 } else {
-                    sidebar.hover(instance, e.getScreenX(), e.getScreenY(), true);
+                    xPos = e.getScreenX().intValue();
+                    yPos = e.getScreenY().intValue();
                 }
+                var hoverOffset = sidebar.hover(instance, xPos, yPos, e.getX(), e.getY(), not instance.docked);
+                instance.docked = false;
+                instance.frame.x = e.getStageX().intValue() + initialScreenPosX + hoverOffset[0];
+                instance.frame.y = e.getStageY().intValue() + initialScreenPosY + hoverOffset[1];
             }
         };
         onMouseReleased = function(e:MouseEvent):Void {
