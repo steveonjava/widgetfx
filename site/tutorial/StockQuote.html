@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Untitled Document</title>
+<style type="text/css">
+<!--
+.style1 {color: #0033FF}
+.style3 {color: #CC6600}
+-->
+</style>
+</head>
+
+<body>
+<h1>Stock Quote Widget Sample</h1>
+<p>For the purpose of this example we are going to use NetBeans as the IDE. This is not an endorsement of the NetBeans editor, and everything shown can be accomplished with command line tools or your editor of choice.</p>
+<h2>Setting Up Your Environment</h2>
+<p>You need the following technologies to get started developing WidgetFX </p>
+<ul>
+  <li>Java SE Update 10 JRE and JDK (for transparency, shaped windows, and performance) </li>
+  <li>JavaFX SDK with Netbeans 6.1</li>
+  <li>Latest WidgetFX SDK</li>
+</ul>
+<h3>Downloading Java SE Update 10</h3>
+<p>To install the Java SE Update 10, do the following: </p>
+<ol>
+  <li>Go to the Java SE 10 download page: <a href="http://download.java.net/jdk6/" rel="nofollow">http://download.java.net/jdk6/</a> </li>
+  <li>Download and install the <strong>JRE</strong> installer for your platform of choice </li>
+  <li>Also, download and install the <strong>JDK</strong> installer </li>
+</ol>
+<p>Make sure to check back frequently and get the latest build. </p>
+<h3>Getting the latest version of the JavaFX SDK</h3>
+<p>To install the JavaFX SDK: </p>
+<ol>
+  <li>Go to the JavaFX SDK Website: <a href="http://java.sun.com/javafx/downloads/" rel="nofollow">http://java.sun.com/javafx/downloads/</a> </li>
+  <li>Find the download link for Netbeans IDE 6.1 with JavaFX (recommended) </li>
+  <ul>
+    <li>Alternatively, there is a download for the JavaFX plug-in if you dig deep enough </li>
+    <li>If you follow this path, make sure to update your existing Netbeans install to use Java SE Update 10 </li>
+  </ul>
+</ol>
+<p>Make sure to specify Java SE Update 10 as the JDK for Netbeans when you first start it.</p>
+<h3>Downloading the WidgetFX SDK</h3>
+<p>To download the latest version of the WidgetFX SDK.</p>
+<ol>
+  <li>Go the WidgetFX project page: <a href="http://code.google.com/p/widgetfx/">http://code.google.com/p/widgetfx/</a></li>
+  <li>There should be a link to download the latest SDK on the home page</li>
+  <li>Extract the Zip file in your location of choice</li>
+</ol>
+<h2>Setting Up the Netbeans Project</h2>
+<p>To start with, create a new JavaFX project in NetBeans:</p>
+<p><img src="newproject.jpg" alt="New JavaFX Project" /></p>
+<p>On the second page of the wizard, choose a name for the project (StockQuote might be nice), and select options as shown in the picture:</p>
+<p><img src="newproject2.jpg" alt="Second Project Wizard Page" /></p>
+<p>We also need to add in  the widgetfx-api.jar file to the project for widget development. This can be found as part of the Widget SDK bundle.</p>
+<p>Open the Project Properties dialog by .... and add the jar as shown in the following screenshot:</p>
+<p><img src="projectproperties-addlibrary.jpg" alt="Project Properties Add Library" /></p>
+<h2>Coding the Stock Widget</h2>
+<p>First, add a new empty JavaFX file to the project. It should be named &quot;StockQuote&quot; and placed in the &quot;tutorial&quot; package.</p>
+<p><img src="createjavafxclass.jpg" alt="Create JavaFX Class" width="502" height="331" /></p>
+<p>You should have a simple file with just a package statement and comments. If NetBeans inserted a full class defnition, you can just delete that and continue on.</p>
+<p>Creating a new widget is as simple as importing the org.widgetfx package and creating a new Widget instance. Here is an empty widget:</p>
+<blockquote>
+  <pre><span class="style1">package</span> tutorial;</pre>
+  <pre><span class="style1">import</span> org.widgetfx.*;</pre>
+  <pre>Widget {
+}</pre>
+</blockquote>
+<p>This is not very interesting, so let's add in a stage with a rectangle for the background:</p>
+<blockquote>
+  <pre>Widget {<br />
+    stage: Stage {<br />        content: Text {<br />            translateX: 10<br />            translateY: 20<br />            content: <span class="style3">&quot;Stock Quote&quot;</span><br />        }<br />
+    }
+}</pre>
+</blockquote>
+<p>The Widget class extends the JavaFX Application class so you can run it in directly in the Applet Runner to get a quick preview. To see what it looks like so far, right click on the &quot;StockQuote.fx&quot; file and choose &quot;Run Applet&quot;:</p>
+<p><img src="firstrun.jpg" alt="First Program Execution" width="358" height="277" /></p>
+<p>This isn't very interesting so far, so let's hook it up to a Web Service to fetch realtime data.</p>
+<p>We are going to use the <a href="http://www.webservicex.net/stockquote.asmx?op=GetQuote">Web Service X StockQuote</a> service to retrieve information. It supports HTTP or SOAP interfaces, but for simplicity we will use the HTTP interface in this example.</p>
+</body>
+
+</html>
