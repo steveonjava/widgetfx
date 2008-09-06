@@ -34,10 +34,11 @@ Make sure to specify Java SE Update 10 as the JDK for Netbeans when you first st
 There are a total of 6 Netbeans projects.  One for the core API, one for the dock container, three others for each of the core widgets, and one for the web application.
 
 The dependencies are organized as follows:
-- Webapp
-  - Container
-    - Widgets (Clock, SlideShow, WebFeed)
-      - Widget API
+
+ * Webapp
+   * Container
+     * Widgets (Clock, SlideShow, WebFeed)
+       * Widget API
 
 Open the container and all its dependent projects in NetBeans (there is an option to automatically open dependent projects).  The project dependencies will automatically cause the api and widget projects to get recompiled whenever you build the container.  There is no need to load the webapp project unless you are deploying to the production instance.
 
