@@ -22,7 +22,7 @@ import javafx.lang.DeferredTask;
 /**
  * @author Stephen Chin
  */
-Sidebar.getInstance();
+Dock.getInstance();
 
 DeferredTask {
     action: function() {

@@ -32,7 +32,7 @@ public class WidgetView extends Group {
     public static attribute TOP_BORDER = 3;
     public static attribute BOTTOM_BORDER = 7;
     
-    public attribute sidebar:Sidebar;
+    public attribute dock:Dock;
     public attribute instance:WidgetInstance;
     private attribute widget = bind instance.widget;
     
@@ -76,23 +76,23 @@ public class WidgetView extends Group {
         content = [
             Rectangle { // Invisible Spacer
                 height: bind widget.stage.height + TOP_BORDER + BOTTOM_BORDER
-                width: bind sidebar.width
+                width: bind dock.width
                 fill: Color.rgb(0, 0, 0, 0.0)
             },
             Group { // Widget with DropShadow
                 translateY: TOP_BORDER
-                effect: bind if (resizing or sidebar.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Sidebar.DS_RADIUS}
+                effect: bind if (resizing or dock.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
                 content: Group {
-                    translateX: Sidebar.BORDER
+                    translateX: Dock.BORDER
                     content: widget.stage.content
                     clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
                     horizontalAlignment: HorizontalAlignment.CENTER
-                    translateX: bind sidebar.width / 2
+                    translateX: bind dock.width / 2
                 }
             },
             WidgetToolbar {
                 blocksMouse: true
-                translateX: bind (sidebar.width + widget.stage.width) / 2
+                translateX: bind (dock.width + widget.stage.width) / 2
                 horizontalAlignment: HorizontalAlignment.RIGHT
                 opacity: bind rolloverOpacity
                 instance: instance
@@ -101,12 +101,12 @@ public class WidgetView extends Group {
             },
             Group { // Drag Bar
                 blocksMouse: true
-                translateX: Sidebar.BORDER
+                translateX: Dock.BORDER
                 translateY: bind widget.stage.height + TOP_BORDER + BOTTOM_BORDER - 3
                 content: [
-                    Line {endX: bind sidebar.width - Sidebar.BORDER * 2, stroke: Color.BLACK, strokeWidth: 1, opacity: bind sidebar.rolloverOpacity / 4},
-                    Line {endX: bind sidebar.width - Sidebar.BORDER * 2, stroke: Color.BLACK, strokeWidth: 1, opacity: bind sidebar.rolloverOpacity, translateY: 1},
-                    Line {endX: bind sidebar.width - Sidebar.BORDER * 2, stroke: Color.WHITE, strokeWidth: 1, opacity: bind sidebar.rolloverOpacity / 3, translateY: 2}
+                    Line {endX: bind dock.width - Dock.BORDER * 2, stroke: Color.BLACK, strokeWidth: 1, opacity: bind dock.rolloverOpacity / 4},
+                    Line {endX: bind dock.width - Dock.BORDER * 2, stroke: Color.BLACK, strokeWidth: 1, opacity: bind dock.rolloverOpacity, translateY: 1},
+                    Line {endX: bind dock.width - Dock.BORDER * 2, stroke: Color.WHITE, strokeWidth: 1, opacity: bind dock.rolloverOpacity / 3, translateY: 2}
                 ]
                 cursor: Cursor.V_RESIZE
                 var initialHeight;
@@ -126,8 +126,8 @@ public class WidgetView extends Group {
                         }
                         if (widget.aspectRatio != 0) {
                             widget.stage.width = (widget.stage.height * widget.aspectRatio).intValue();
-                            if (widget.stage.width > sidebar.width - Sidebar.BORDER * 2) {
-                                widget.stage.width = sidebar.width - Sidebar.BORDER * 2;
+                            if (widget.stage.width > dock.width - Dock.BORDER * 2) {
+                                widget.stage.width = dock.width - Dock.BORDER * 2;
                                 widget.stage.height = (widget.stage.width / widget.aspectRatio).intValue();
                             }
                         }
@@ -153,10 +153,10 @@ public class WidgetView extends Group {
                 var xPos;
                 var yPos;
                 if (instance.docked) {
-                    sidebar.dragging = true;
-                    xPos = sidebar.x + (sidebar.width - widget.stage.width) / 2 - WidgetFrame.BORDER;
+                    dock.dragging = true;
+                    xPos = dock.x + (dock.width - widget.stage.width) / 2 - WidgetFrame.BORDER;
                     var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
-                    yPos = sidebar.y + e.getStageY().intValue() - e.getY().intValue() + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight) - 1;
+                    yPos = dock.y + e.getStageY().intValue() - e.getY().intValue() + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight) - 1;
                     instance.frame = WidgetFrame {
                         instance: instance
                         x: xPos, y: yPos
@@ -167,7 +167,7 @@ public class WidgetView extends Group {
                     xPos = e.getScreenX().intValue();
                     yPos = e.getScreenY().intValue();
                 }
-                var hoverOffset = sidebar.hover(instance, xPos, yPos, e.getX(), e.getY(), not instance.docked);
+                var hoverOffset = dock.hover(instance, xPos, yPos, e.getX(), e.getY(), not instance.docked);
                 instance.docked = false;
                 instance.frame.x = e.getStageX().intValue() + initialScreenPosX + hoverOffset[0];
                 instance.frame.y = e.getStageY().intValue() + initialScreenPosY + hoverOffset[1];
@@ -175,7 +175,7 @@ public class WidgetView extends Group {
         };
         onMouseReleased = function(e:MouseEvent):Void {
             if (not docking and not instance.docked) {
-                var targetBounds = Sidebar.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
+                var targetBounds = Dock.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
                 if (targetBounds != null) {
                     docking = true;
                     instance.frame.dock(targetBounds.x, targetBounds.y);
@@ -184,7 +184,7 @@ public class WidgetView extends Group {
                         instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                     }
                 }
-                Sidebar.getInstance().dragging = false;
+                Dock.getInstance().dragging = false;
                 instance.saveWithoutNotification();
             }
         };

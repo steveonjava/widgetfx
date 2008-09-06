@@ -46,10 +46,8 @@ public class WidgetToolbar extends Group {
 
     init {
         clip = Rectangle { // Clip
-            width: toolbarWidth
-            height: 16
-            arcWidth: 16
-            arcHeight: 16
+            width: toolbarWidth + 1
+            height: 17
         };
         content = [
             Rectangle { // Border

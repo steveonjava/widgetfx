@@ -17,7 +17,10 @@
  */
 package org.widgetfx;
 
+import java.lang.System;
+import java.util.Arrays;
 import javafx.lang.Sequences;
+import javax.jnlp.*;
 import org.widgetfx.config.IntegerSequenceProperty;
 
 /**
@@ -26,17 +29,23 @@ import org.widgetfx.config.IntegerSequenceProperty;
  */
 public class WidgetManager {
     
-    private static attribute INITIAL_WIDGETS = [
-        "../../widgets/Clock/dist/launch.jnlp",
-        "../../widgets/SlideShow/dist/launch.jnlp",
-        "../../widgets/WebFeed/dist/launch.jnlp"
-    ];
-    
     private static attribute instance = WidgetManager {}
     
     public static function getInstance() {
         return instance;
     }
+    
+    public attribute codebase = WidgetFXConfiguration.getInstance().codebase;
+    
+    private attribute initialWidgets = if (WidgetFXConfiguration.getInstance().devMode) [
+        "../../widgets/Clock/dist/launch.jnlp",
+        "../../widgets/SlideShow/dist/launch.jnlp",
+        "../../widgets/WebFeed/dist/launch.jnlp"
+    ] else [
+        "{codebase}widgets/Clock/launch.jnlp",
+        "{codebase}widgets/SlideShow/launch.jnlp",
+        "{codebase}widgets/WebFeed/launch.jnlp"
+    ];
     
     private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
         IntegerSequenceProperty {
@@ -69,9 +78,25 @@ public class WidgetManager {
         }
     }
     
+    private attribute sis = ServiceManager.lookup("javax.jnlp.SingleInstanceService") as SingleInstanceService;
+    private attribute sil = SingleInstanceListener {
+        public function newActivation(params) {
+            Dock.getInstance().showDockAndWidgets();
+            for (param in Arrays.asList(params)) {
+                addWidget(param);
+            }
+        }
+    };
+
     init {
+        sis.addSingleInstanceListener(sil);
         // todo - implement a widget security policy
-        java.lang.System.setSecurityManager(null);
+        System.setSecurityManager(null);
+    }
+    
+    public function exit() {
+        sis.removeSingleInstanceListener(sil);
+        System.exit(0);
     }
     
     public function dockOffscreenWidgets() {
@@ -81,7 +106,7 @@ public class WidgetManager {
     }
     
     public function loadInitialWidgets() {
-        for (url in INITIAL_WIDGETS) {
+        for (url in initialWidgets) {
             addWidget(url);
         }
     }

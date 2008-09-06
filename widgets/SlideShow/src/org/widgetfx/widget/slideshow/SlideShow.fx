@@ -54,8 +54,8 @@ var imageFiles:File[];
 var shuffle = true;
 var duration:Integer = 10;
 var keywords : String;
-var width = 150;
-var height = 100;
+var width = 300;
+var height = 200;
 var imageIndex:Integer;
 var imageHeight:Integer;
 var currentFile:File;
@@ -272,6 +272,18 @@ private function initTabbedPane() {
 
     // todo - replace with a javafx component when one is available
     tabbedPane = new JTabbedPane();
+
+    // workaround for a bug in javafx.ext.swing.Component where it gets stuck in
+    // an infinite hide/show loop when added to a JTabbedPane
+    var displayListeners = displayTab.getJComponent().getComponentListeners();
+    for (listener in displayListeners) {
+        displayTab.getJComponent().removeComponentListener(listener);
+    }
+    var contentListeners = contentTab.getJComponent().getComponentListeners();
+    for (listener in contentListeners) {
+        contentTab.getJComponent().removeComponentListener(listener);
+    }
+
     tabbedPane.add("display", displayTab.getJPanel());
     tabbedPane.add("content", contentTab.getJPanel());
 }

@@ -36,11 +36,13 @@ public class BaseDialog extends Dialog {
     function createWindow(): java.awt.Window {
         owner = new javafx.application.Frame();
         var window = super.createWindow();
-        window.addWindowListener(WindowAdapter {
+        var listener:WindowAdapter = WindowAdapter {
             public function windowClosed(e:WindowEvent):Void {
+                window.removeWindowListener(listener);
                 owner.window.dispose();
             }
-        });
+        };
+        window.addWindowListener(listener);
         return window;
     }
 }

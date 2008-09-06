@@ -142,7 +142,7 @@ public class WidgetFrame extends BaseDialog {
                     y => dockY - BORDER - toolbarHeight tween Interpolator.EASEIN
                 ],
                 action: function() {
-                    Sidebar.getInstance().dockAfterHover(instance);
+                    Dock.getInstance().dockAfterHover(instance);
                     if (instance.widget.onResize != null) {
                         instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                     }
@@ -324,7 +324,7 @@ public class WidgetFrame extends BaseDialog {
             onMousePressed: saveInitialPos;
             onMouseDragged: function(e) {
                 if (not docking) {
-                    var hoverOffset = Sidebar.getInstance().hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
+                    var hoverOffset = Dock.getInstance().hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
                     mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                         dragging = true;
                         x = initialX + xDelta + hoverOffset[0];
@@ -335,7 +335,7 @@ public class WidgetFrame extends BaseDialog {
             onMouseReleased: function(e) {
                 if (not docking) {
                     dragging = false;
-                    var targetBounds = Sidebar.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
+                    var targetBounds = Dock.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
                     if (targetBounds != null) {
                         dock(targetBounds.x, targetBounds.y);
                     }

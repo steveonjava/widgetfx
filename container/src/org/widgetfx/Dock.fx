@@ -52,7 +52,7 @@ import java.lang.System;
 /**
  * @author Stephen Chin
  */
-public class Sidebar extends BaseDialog {
+public class Dock extends BaseDialog {
     static attribute DEFAULT_WIDTH = 180;
     static attribute MIN_WIDTH = 120;
     static attribute MAX_WIDTH = 400;
@@ -62,7 +62,7 @@ public class Sidebar extends BaseDialog {
     static attribute BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
     static attribute BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
     
-    private static attribute instance = Sidebar {}
+    private static attribute instance = Dock {}
     
     public static function getInstance() {
         return instance;
@@ -166,7 +166,7 @@ public class Sidebar extends BaseDialog {
             InstallUtil.deleteStartupFile();
         }
     }
-    
+
     init {
         title = "WidgetFX";
         visible = true;
@@ -185,7 +185,7 @@ public class Sidebar extends BaseDialog {
         visible = false;
     }
     
-    private function showDock() {
+    public function showDock() {
         visible = true;
         DeferredTask { // workaround for defect where dock moves to center on show
             action: function() {updateDockLocation();}
@@ -194,15 +194,19 @@ public class Sidebar extends BaseDialog {
         WidgetManager.getInstance().dockOffscreenWidgets();
     }
     
+    public function showDockAndWidgets() {
+        showDock();
+        for (instance in WidgetManager.getInstance().widgets where instance.frame != null) {
+            instance.frame.toFront();
+        }
+    }
+    
     private function createTrayIcon() {
         var tray:JXTrayIcon = new JXTrayIcon(createImage());
         tray.setJPopupMenu(mainMenu);
         tray.addActionListener(ActionListener {
                 public function actionPerformed(e) {
-                    showDock();
-                    for (instance in WidgetManager.getInstance().widgets where instance.frame != null) {
-                        instance.frame.toFront();
-                    }
+                    showDockAndWidgets();
                 }
         });
         try {
@@ -242,7 +246,7 @@ public class Sidebar extends BaseDialog {
                 },
                 Menu {
                     var group = ToggleGroup {}
-                    text: "Dock Sidebar"
+                    text: "Dock Position"
                     items: [
                         RadioButtonMenuItem {
                             text: "Left"
@@ -255,7 +259,6 @@ public class Sidebar extends BaseDialog {
                             selected: bind dockRight with inverse
                         }
                     ]
-
                 },
                 MenuItem {
                     text: bind if (visible) "Hide" else "Show"
@@ -270,7 +273,7 @@ public class Sidebar extends BaseDialog {
                 MenuItem {
                     text: "Exit"
                     action: function() {
-                        System.exit(0);
+                        WidgetManager.getInstance().exit();
                     }
                 }
             ]
@@ -297,26 +300,24 @@ public class Sidebar extends BaseDialog {
             saveUndockedHeight = instance.undockedHeight;
             var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
             var newHeight = if (instance.docked) instance.undockedHeight else instance.dockedHeight;
-            if (newWidth > 0 or newHeight > 0) {
-                animateHover = Timeline {
-                    autoReverse: true, toggle: true
-                    keyFrames: KeyFrame {
-                        time: 300ms
-                        values: [
-                            if (newWidth > 0) {[
-                                instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH,
-                                xHoverOffset => localX - localX * newWidth / instance.widget.stage.width tween Interpolator.EASEBOTH
-                            ]} else {
-                                []
-                            },
-                            if (newHeight > 0) {[
-                                instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH,
-                                yHoverOffset => localY - localY * newHeight / instance.widget.stage.height tween Interpolator.EASEBOTH
-                            ]} else {
-                                []
-                            }
-                        ]
-                    }
+            animateHover = Timeline {
+                autoReverse: true, toggle: true
+                keyFrames: KeyFrame {
+                    time: 300ms
+                    values: [
+                        if (newWidth > 0) {[
+                            instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH,
+                            xHoverOffset => localX - localX * newWidth / instance.widget.stage.width tween Interpolator.EASEBOTH
+                        ]} else {
+                            []
+                        },
+                        if (newHeight > 0) {[
+                            instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH,
+                            yHoverOffset => localY - localY * newHeight / instance.widget.stage.height tween Interpolator.EASEBOTH
+                        ]} else {
+                            []
+                        }
+                    ]
                 }
             }
             animateDocked = instance.docked;
@@ -384,7 +385,7 @@ public class Sidebar extends BaseDialog {
     private function createWidgetView(instance:WidgetInstance):WidgetView {
         updateWidth(instance, false);
         return WidgetView {
-            sidebar: this
+            dock: this
             instance: instance
         }
     }
@@ -411,7 +412,7 @@ public class Sidebar extends BaseDialog {
     }
     
     private function loadContent():Void {
-        closeAction = function() {System.exit(0);};
+        closeAction = function() {WidgetManager.getInstance().exit()};
         logo = HBox { // Logo Text
             translateX: BORDER, translateY: BORDER
             content: [

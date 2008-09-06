@@ -17,10 +17,13 @@
  */
 package org.widgetfx;
 
+import java.io.File;
+import java.lang.System;
+import java.net.URL;
+import javax.jnlp.BasicService;
+import javax.jnlp.ServiceManager;
 import org.widgetfx.WidgetManager;
 import org.widgetfx.config.*;
-import java.lang.System;
-import java.io.File;
 
 /**
  * @author Stephen Chin
@@ -35,15 +38,28 @@ public class WidgetFXConfiguration {
     }
     
     public attribute properties:Property[] = [];
+    
+    public attribute codebase = (ServiceManager.lookup("javax.jnlp.BasicService") as BasicService).getCodeBase();
+    
+    public attribute devMode = codebase.getProtocol().equalsIgnoreCase("file") on replace {
+        if (devMode) {
+            System.out.println("Starting Development Mode");
+        }
+    }
 
+    public attribute configFolder = new File(System.getProperty("user.home"),
+        if (devMode) ".WidgetFXDev" else ".WidgetFX") on replace {
+        System.out.println("Configuration directory location is: \"{configFolder}\"");
+    }
+    
     public static function getInstanceWithProperties(properties:Property[]) {
         insert properties into instance.properties;
         return instance;
     }
     
     private function getPropertyFile():File {
-        var home = System.getProperty("user.home");
-        return new File(home, ".WidgetFX/WidgetFX.config");
+        var configPath = new File(configFolder, "WidgetFX.config");
+        return configPath;
     }
     
     private attribute persister = ConfigPersister {

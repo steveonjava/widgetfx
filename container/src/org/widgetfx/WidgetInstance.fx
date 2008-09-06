@@ -54,8 +54,7 @@ public class WidgetInstance {
     public attribute id:Integer;
 
     private bound function getPropertyFile():File {
-        var home = System.getProperty("user.home");
-        return new File(home, ".WidgetFX/widgets/{id}.config");
+        return new File(WidgetFXConfiguration.getInstance().configFolder, "widgets/{id}.config");
     }
     
     // todo - possibly prevent widgets from loading if they define user properties that start with "widget."
@@ -103,8 +102,7 @@ public class WidgetInstance {
     private attribute persister = ConfigPersister {properties: bind [properties, widget.configuration.properties], file: bind getPropertyFile()}
     
     private function resolve(url:String):String {
-        var bs = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
-        return (new URL(bs.getCodeBase(), url)).toString();
+        return (new URL(WidgetManager.getInstance().codebase, url)).toString();
     }
 
     public attribute jnlpUrl:String on replace {
@@ -125,16 +123,14 @@ public class WidgetInstance {
                         if (javafx.lang.Sequences.indexOf(loadedResources, url) == -1) {
                             ds.loadResource(url, null, DownloadServiceListener {
                                 function downloadFailed(url, version) {
-                                    java.lang.System.out.println("download failed");
+                                    System.out.println("download failed");
                                 }
                                 function progress(url, version, readSoFar, total, overallPercent) {
-                                    java.lang.System.out.println("progress: {overallPercent}");
                                 }
                                 function upgradingArchive(url, version, patchPercent, overallPercent) {
-                                    java.lang.System.out.println("upgradingArchive");
+                                    System.out.println("upgradingArchive");
                                 }
                                 function validating(url, version, entry, total, overallPercent) {
-                                    java.lang.System.out.println("validating");
                                 }
                             });
                             insert url into loadedResources;
@@ -144,7 +140,7 @@ public class WidgetInstance {
                 mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
                 title = xpath.evaluate("/jnlp/information/title", document, XPathConstants.STRING) as String;
             } catch (e) {
-                java.lang.System.out.println("Unable to load widget at location: {jnlpUrl}");
+                System.out.println("Unable to load widget at location: {jnlpUrl}");
                 e.printStackTrace();
             }
         }
@@ -159,6 +155,8 @@ public class WidgetInstance {
                 var name = Entry.entryMethodName();
                 var args = Sequences.make(java.lang.String.<<class>>) as java.lang.Object;
                 widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
+                undockedWidth = widget.stage.width;
+                undockedHeight = widget.stage.height;
             } catch (e:java.lang.RuntimeException) {
                 e.printStackTrace();
             }
@@ -204,19 +202,11 @@ public class WidgetInstance {
     
     private function initializeDimensions() {
         if (docked) {
-            if (dockedWidth > 0) {
-                widget.stage.width = dockedWidth;
-            }
-            if (dockedHeight > 0) {
-                widget.stage.height = dockedHeight;
-            }
+            widget.stage.width = dockedWidth;
+            widget.stage.height = dockedHeight;
         } else {
-            if (undockedWidth > 0) {
-                widget.stage.width = undockedWidth;
-            }
-            if (undockedHeight > 0) {
-                widget.stage.height = undockedHeight;
-            }
+            widget.stage.width = undockedWidth;
+            widget.stage.height = undockedHeight;
             frame = WidgetFrame {
                 instance: this
                 x: undockedX, y: undockedY

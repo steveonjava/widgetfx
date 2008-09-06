@@ -57,7 +57,7 @@ var entrySequence:SyndEntryImpl[];
 var error:String;
 
 var border = 6;
-var width = 150;
+var width = 300;
 var height = 200;
 var entryWidth = bind width - border * 2;
 var entryHeight = 25; // todo don't hardcode the height of the entries
