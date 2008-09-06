@@ -31,17 +31,16 @@ Make sure to specify Java SE Update 10 as the JDK for Netbeans when you first st
 
 == Opening up WidgetFX in Netbeans ==
 
-There are a total of 5 Netbeans projects.  One for the core API, one for the dock container, and three others for each of the core widgets.  All the projects depend on the API, but are otherwise independent.
+There are a total of 6 Netbeans projects.  One for the core API, one for the dock container, three others for each of the core widgets, and one for the web application.
 
-Make sure to open all five projects in Netbeans.  The WidgetFX project should be the main project, but you will also need to build the Clock, SlideShow, and WebFeed projects if you want any widgets to show up in the dock.
+The dependencies are organized as follows:
+- Webapp
+  - Container
+    - Widgets (Clock, SlideShow, WebFeed)
+      - Widget API
 
-Build the widgets in the following order:
-  # Build the WidgetFX-API project (optional, should automatically happen)
-  # Build all 3 widget projects by right clicking on the project in the Project view and choosing "Build Project".  This should invoke the default Web Start build, but not run the project.
-  # Build the WidgetFX project last
+Open the container and all its dependent projects in NetBeans (there is an option to automatically open dependent projects).  The project dependencies will automatically cause the api and widget projects to get recompiled whenever you build the container.  There is no need to load the webapp project unless you are deploying to the production instance.
 
-To run the application click "Run" with WidgetFX as the main project.  This should launch the default Web Start application runner and dynamically read in the widgets you built earlier.
+To run the application click "Run" with Container as the main project and the Web Start configuration selected.  This should launch the default Web Start application runner and dynamically read in the widgets you built earlier.
 
-If you make any changes to the 3 widgets, you must recompile them separately per the earlier instructions prior to run.
-
-If you run into any issues in future builds, try running a clean before reporting any problems.  Due to a defect in Netbeans, this may require a restart to free up file locks.  (also, make sure the WidgetFX app is not running)
+If you run into any issues in future builds, try running a clean before reporting any problems.  Due to a defect in Netbeans, this may require a restart to free up file locks.  (also, make sure the WidgetFX app is not running by checking for a tray icon)
