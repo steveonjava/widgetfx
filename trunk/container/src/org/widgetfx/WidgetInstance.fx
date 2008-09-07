@@ -21,6 +21,7 @@ import java.lang.Class;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NodeList;
 import org.widgetfx.config.*;
+import org.widgetfx.ui.ErrorWidget;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
 import com.sun.javafx.runtime.Entry;
@@ -140,23 +141,26 @@ public class WidgetInstance {
                 mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
                 title = xpath.evaluate("/jnlp/information/title", document, XPathConstants.STRING) as String;
             } catch (e) {
-                System.out.println("Unable to load widget at location: {jnlpUrl}");
+                title = "Error";
+                widget = ErrorWidget {
+                    errorLines: [
+                        "Unable to load widget:",
+                        jnlpUrl,
+                        e.getMessage()
+                    ]
+                }
                 e.printStackTrace();
             }
         }
     }
     
     public attribute mainClass:String on replace {
-        if (mainClass.length() == 0) {
-            widget = null;
-        } else {
+        if (mainClass.length() != 0) {
             try {
                 var widgetClass:Class = Class.forName(mainClass);
                 var name = Entry.entryMethodName();
                 var args = Sequences.make(java.lang.String.<<class>>) as java.lang.Object;
                 widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
-                undockedWidth = widget.stage.width;
-                undockedHeight = widget.stage.height;
             } catch (e:java.lang.RuntimeException) {
                 e.printStackTrace();
             }
@@ -172,7 +176,12 @@ public class WidgetInstance {
     public attribute undockedWidth:Integer;
     public attribute undockedHeight:Integer;
     
-    public attribute widget:Widget;
+    public attribute widget:Widget on replace {
+        if (widget != null) {
+            undockedWidth = widget.stage.width;
+            undockedHeight = widget.stage.height;
+        }
+    }
     public attribute title:String;
     public attribute frame:WidgetFrame;
     

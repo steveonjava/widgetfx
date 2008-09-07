@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="$$codebase" href="$$name">
+    <information>
+        <title>Clock</title>
+        <vendor>WidgetFX</vendor>
+        <description>Analog clock for WidgetFX</description>
+        <description kind="short">Clock</description>
+        <homepage href="http://widgetfx.org/"/>
+    </information>
+    <resources>
+        <property name="jnlp.packEnabled" value="true"/>
+        <j2se version="1.6+"/>
+        <jar href="Clock.jar" main="true" download="eager"/>
+    </resources>
+    <application-desc main-class="org.widgetfx.widget.clock.Clock">
+    </application-desc>
+</jnlp>

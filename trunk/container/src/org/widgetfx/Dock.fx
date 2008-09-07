@@ -53,14 +53,17 @@ import java.lang.System;
  * @author Stephen Chin
  */
 public class Dock extends BaseDialog {
-    static attribute DEFAULT_WIDTH = 180;
-    static attribute MIN_WIDTH = 120;
-    static attribute MAX_WIDTH = 400;
+    private static attribute isMac = "Mac OS X".equals(System.getProperty("os.name"));
+    private static attribute menuHeight = if (isMac) 22 else 0;
+    
+    private static attribute DEFAULT_WIDTH = 180;
+    private static attribute MIN_WIDTH = 120;
+    private static attribute MAX_WIDTH = 400;
     static attribute BORDER = 5;
     static attribute DS_RADIUS = 5;
-    static attribute BG_OPACITY = 0.7;
-    static attribute BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
-    static attribute BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
+    private static attribute BG_OPACITY = 0.7;
+    private static attribute BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
+    private static attribute BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
     
     private static attribute instance = Dock {}
     
@@ -135,9 +138,9 @@ public class Dock extends BaseDialog {
     attribute dragging:Boolean;
     
     private function updateDockLocation() {
-        height = screenBounds.height;
+        height = screenBounds.height - menuHeight;
         x = screenBounds.x + (if (dockLeft) 0 else screenBounds.width - width);
-        y = screenBounds.y;
+        y = screenBounds.y + menuHeight;
     }
     
     //private attribute backgroundImage : Image = Image {url:getClass().getResource("Inovis_SidebarBackground1.jpg").toString(), height: 1200};
@@ -365,8 +368,12 @@ public class Dock extends BaseDialog {
                 instance.widget.stage.height
             );
         } else {
+            if (animateHover != null and animateDocked) {
+                animateDocked = false;
+                animateHover.start();
+            }
             animateHover = null;
-            return null;        
+            return null;
         }
     }
     
