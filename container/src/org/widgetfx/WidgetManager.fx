@@ -125,7 +125,7 @@ public class WidgetManager {
     public function addWidget(jnlpUrl:String):WidgetInstance {
         for (widget in widgets) {
             if (widget.jnlpUrl.equals(jnlpUrl)) {
-                // todo - notify the user that they tried to load a duplicate widget
+                System.out.println("Widget already loaded: " + jnlpUrl);
                 return null;
             }
         }

@@ -3,27 +3,10 @@
     <type>org.netbeans.modules.web.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/web-project/3">
-            <name>WidgetFX</name>
+            <name>dock</name>
             <minimum-ant-version>1.6</minimum-ant-version>
             <web-module-libraries/>
-            <web-module-additional-libraries>
-                <library dirs="1">
-                    <file>${file.reference.container-dist}</file>
-                    <path-in-war>/container/dist</path-in-war>
-                </library>
-                <library dirs="1">
-                    <file>${file.reference.Clock-dist}</file>
-                    <path-in-war>/widgets/Clock/dist</path-in-war>
-                </library>
-                <library dirs="1">
-                    <file>${file.reference.SlideShow-dist}</file>
-                    <path-in-war>/widgets/SlideShow/dist</path-in-war>
-                </library>
-                <library dirs="1">
-                    <file>${file.reference.WebFeed-dist}</file>
-                    <path-in-war>/widgets/WebFeed</path-in-war>
-                </library>
-            </web-module-additional-libraries>
+            <web-module-additional-libraries/>
             <source-roots>
                 <root id="src.dir"/>
             </source-roots>
@@ -34,39 +17,5 @@
         <libraries xmlns="http://www.netbeans.org/ns/ant-project-libraries/1">
             <definitions>.\lib\nblibraries.properties</definitions>
         </libraries>
-        <references xmlns="http://www.netbeans.org/ns/ant-project-references/1">
-            <reference>
-                <foreign-project>Clock</foreign-project>
-                <artifact-type>jar</artifact-type>
-                <script>build.xml</script>
-                <target>jar</target>
-                <clean-target>clean</clean-target>
-                <id>jar</id>
-            </reference>
-            <reference>
-                <foreign-project>SlideShow</foreign-project>
-                <artifact-type>jar</artifact-type>
-                <script>build.xml</script>
-                <target>jar</target>
-                <clean-target>clean</clean-target>
-                <id>jar</id>
-            </reference>
-            <reference>
-                <foreign-project>WebFeed</foreign-project>
-                <artifact-type>jar</artifact-type>
-                <script>build.xml</script>
-                <target>jar</target>
-                <clean-target>clean</clean-target>
-                <id>jar</id>
-            </reference>
-            <reference>
-                <foreign-project>WidgetFX-Container</foreign-project>
-                <artifact-type>jar</artifact-type>
-                <script>build.xml</script>
-                <target>jar</target>
-                <clean-target>clean</clean-target>
-                <id>jar</id>
-            </reference>
-        </references>
     </configuration>
 </project>
