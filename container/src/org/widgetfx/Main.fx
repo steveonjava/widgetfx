@@ -18,10 +18,17 @@
 package org.widgetfx;
 
 import javafx.lang.DeferredTask;
+import javax.swing.UIManager;
 
 /**
  * @author Stephen Chin
  */
+try { // try nimbus look and feel first
+    UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+} catch (e) { // fall back on system look and feel
+    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+}
+
 Dock.getInstance();
 
 DeferredTask {
