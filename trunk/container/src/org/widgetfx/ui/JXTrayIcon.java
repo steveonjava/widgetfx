@@ -80,7 +80,8 @@ public class JXTrayIcon extends TrayIcon {
     private void showJPopupMenu(MouseEvent e) {
         if (e.isPopupTrigger() && menu != null) {
             Dimension size = menu.getPreferredSize();
-            dialog.setLocation(e.getX(), e.getY() - size.height);
+            int adjustedY = e.getY() - size.height;
+            dialog.setLocation(e.getX(), adjustedY < 0 ? e.getY() : adjustedY);
             dialog.setVisible(true);
             menu.show(dialog.getContentPane(), 0, 0);
             // popup works only for focused windows

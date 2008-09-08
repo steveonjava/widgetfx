@@ -30,12 +30,20 @@ import java.util.logging.Logger;
  * @author Keith Combs
  */
 public class InstallUtil {
+    private static final boolean isWindows = System.getProperty("os.name").contains("Windows");
     
     private static final String home = System.getProperty("user.home");
     
     private static final File windowsShortcut = new File(home, "/Start Menu/Programs/Startup/WidgetFX.lnk");
     
+    public static boolean startupSupported() {
+        return isWindows;
+    }
+    
     public static void copyStartupFile() {
+        if (!isWindows) {
+            return;
+        }
         try {
             OutputStream destination = null;
             InputStream source = null;
@@ -61,6 +69,9 @@ public class InstallUtil {
     }
     
     public static void deleteStartupFile() {
+        if (!isWindows) {
+            return;
+        }
         windowsShortcut.delete();
     }
 }

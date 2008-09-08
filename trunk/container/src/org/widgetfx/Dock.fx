@@ -53,7 +53,7 @@ import java.lang.System;
  * @author Stephen Chin
  */
 public class Dock extends BaseDialog {
-    private static attribute isMac = "Mac OS X".equals(System.getProperty("os.name"));
+    private static attribute isMac = System.getProperty("os.name").contains("Mac OS");
     private static attribute menuHeight = if (isMac) 22 else 0;
     
     private static attribute DEFAULT_WIDTH = 180;
@@ -243,9 +243,13 @@ public class Dock extends BaseDialog {
                     text: "Always on Top"
                     selected: bind alwaysOnTop with inverse;
                 },
-                CheckBoxMenuItem {
-                    text: "Launch on Startup"
-                    selected: bind launchOnStartup with inverse
+                if (InstallUtil.startupSupported()) {
+                    CheckBoxMenuItem {
+                        text: "Launch on Startup"
+                        selected: bind launchOnStartup with inverse
+                    }
+                } else {
+                    []
                 },
                 Menu {
                     var group = ToggleGroup {}
@@ -283,7 +287,7 @@ public class Dock extends BaseDialog {
         }
         // todo - replace with javafx Separator when one exists
         menu.getJMenu().insertSeparator(1);
-        menu.getJMenu().insertSeparator(4);
+        menu.getJMenu().insertSeparator(if (InstallUtil.startupSupported()) 4 else 3);
         // todo - create a javafx PopupMenu directly when one exists
         return menu.getJMenu().getPopupMenu();
     }
