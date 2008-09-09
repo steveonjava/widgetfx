@@ -53,6 +53,7 @@ import java.lang.System;
  * @author Stephen Chin
  */
 public class Dock extends BaseDialog {
+    private static attribute VERSION = "0.1.1";
     private static attribute isMac = System.getProperty("os.name").contains("Mac OS");
     private static attribute menuHeight = if (isMac) 22 else 0;
     
@@ -219,13 +220,10 @@ public class Dock extends BaseDialog {
         }
     }
     
-    static function createImage():java.awt.Image {
-        var i = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
-        var g2 = i.getGraphics() as Graphics2D;
-        g2.setColor(java.awt.Color.RED);
-        g2.fill(new Ellipse2D.Float(0, 0, i.getWidth(), i.getHeight()));
-        g2.dispose();
-        return i;
+    private attribute nutImage = Image {url: getClass().getResource("nut3_16.png").toString()};
+    
+    function createImage():java.awt.Image {
+        return nutImage.getBufferedImage();
     }
     
     public function addWidget():Void {
@@ -424,22 +422,33 @@ public class Dock extends BaseDialog {
     
     private function loadContent():Void {
         closeAction = function() {WidgetManager.getInstance().exit()};
-        logo = HBox { // Logo Text
-            translateX: BORDER, translateY: BORDER
-            content: [
-                Text {
-                    font: Font {style: FontStyle.BOLD_ITALIC}
-                    fill: Color.WHITE
-                    textOrigin: TextOrigin.TOP
-                    content: "Widget"
-                },
-                Text {
-                    font: Font {style: FontStyle.BOLD_ITALIC}
-                    fill: Color.ORANGE
-                    textOrigin: TextOrigin.TOP
-                    content: "FX"
-                }
-            ]
+        logo = Group { // Logo Text
+            cache: true
+            content: HBox {
+                translateX: BORDER, translateY: BORDER + 11
+                effect: DropShadow {radius: 5, offsetX: 2, offsetY: 2}
+                content: [
+                    ImageView {
+                        translateY: -13
+                        image: nutImage
+                    },
+                    Text {
+                        font: Font {style: FontStyle.BOLD_ITALIC}
+                        fill: Color.WHITE
+                        content: " Widget"
+                    },
+                    Text {
+                        font: Font {style: FontStyle.BOLD_ITALIC}
+                        fill: Color.ORANGE
+                        content: "FX"
+                    },
+                    Text {
+                        font: Font {style: FontStyle.ITALIC, size: 10}
+                        fill: Color.WHITE
+                        content: " v{VERSION}"
+                    }
+                ]
+            }
         }
         var addWidgetButton = Group {
             var color = BUTTON_COLOR;
