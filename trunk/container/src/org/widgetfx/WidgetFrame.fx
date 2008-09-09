@@ -180,7 +180,7 @@ public class WidgetFrame extends BaseDialog {
     private attribute rolloverOpacity = 0.0;
     private attribute rolloverTimeline = Timeline {
         autoReverse: true, toggle: true
-        keyFrames: KeyFrame {time: 1s, values: rolloverOpacity => 1.0 tween Interpolator.EASEBOTH}
+        keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
     }
     
     private attribute firstRollover = true;

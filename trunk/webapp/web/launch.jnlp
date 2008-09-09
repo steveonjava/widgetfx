@@ -13,7 +13,7 @@
     <resources>
         <property name="jnlp.packEnabled" value="true"/>
         <j2se version="1.6+" java-vm-args="-Xmx512m"/>
-        <jar href="widgetfx.jar" main="true" download="eager" version="0.1"/>
+        <jar href="widgetfx.jar" main="true" download="eager" version="0.1.1"/>
         <jar href="lib/Decora-D3D.jar" download="eager" version="0.9-pre-1"/>
         <jar href="lib/Decora-HW.jar" download="eager" version="0.9-pre-1"/>
         <jar href="lib/Decora-OGL.jar" download="eager" version="0.9-pre-1"/>
