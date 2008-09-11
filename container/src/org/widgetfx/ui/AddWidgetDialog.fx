@@ -31,10 +31,21 @@ import javax.swing.filechooser.FileFilter;
 public class AddWidgetDialog {
     
     public attribute jnlpUrl:String;
-
+    
+    private attribute selected:ListItem on replace {
+        jnlpUrl = selected.text;
+    }
+    
     public function showDialog() {
+        var widgetList = List {
+            selectedItem: bind selected with inverse
+            items: for (url in WidgetManager.getInstance().recentWidgets) ListItem {
+                text: url
+            }
+        }
+        var listLabel = Label {text: "Recent Widgets:", labelFor: widgetList}
         var jarField = TextField {text: bind jnlpUrl with inverse, hmin: 300, hmax: 300};
-        var jarLabel = Label {text: "JNLP URL:", labelFor: jarField};
+        var jarLabel = Label {text: "Widget URL:", labelFor: jarField};
         var browsebutton:Button = Button {
             text: "Browse...";
             action: function() {
@@ -58,22 +69,47 @@ public class AddWidgetDialog {
             title: "Add Widget"
             visible: true
             resizable: false
+            icons: Dock.getInstance().widgetFxIcon
             stage: Stage {
                 content: ComponentView {
                     component: BorderPanel {
                         center: ClusterPanel {
-                            vcluster: ParallelCluster {
+                            vcluster: SequentialCluster {
                                 content: [
-                                    jarLabel,
-                                    jarField,
-                                    browsebutton
+                                    ParallelCluster {
+                                        content: [
+                                            listLabel,
+                                            widgetList
+                                        ]
+                                    },
+                                    ParallelCluster {
+                                        content: [
+                                            jarLabel,
+                                            jarField,
+                                            browsebutton
+                                        ]
+                                    }
                                 ]
                             },
                             hcluster: SequentialCluster {
                                 content: [
-                                    jarLabel,
-                                    jarField,
-                                    browsebutton
+                                    ParallelCluster {
+                                        content: [
+                                            listLabel,
+                                            jarLabel
+                                        ]
+                                    },
+                                    ParallelCluster {
+                                        content: [
+                                            widgetList,
+                                            SequentialCluster {
+                                                content: [
+                                                    jarField,
+                                                    browsebutton
+                                                ]
+                                            }
+                                        ]
+                                    }
                                 ]
                             }
                         }

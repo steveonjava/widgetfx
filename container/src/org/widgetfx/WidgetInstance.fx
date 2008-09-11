@@ -271,6 +271,8 @@ public class WidgetInstance {
         }
     }
     
+    private attribute configDialog:SwingDialog;
+    
     public function save() {
         persister.save();
         if (widget.configuration.onSave != null) {
@@ -280,15 +282,13 @@ public class WidgetInstance {
                 e.printStackTrace();
             }
         }
-    }
-    
-    function deleteConfig() {
-        getPropertyFile().<<delete>>();
+        configDialog.close();
     }
     
     public function showConfigDialog():Void {
         if (widget.configuration != null) {
-            var configDialog:SwingDialog = SwingDialog {
+            configDialog = SwingDialog {
+                icons: Dock.getInstance().widgetFxIcon
                 title: "{title} Configuration"
                 resizable: false
                 closeAction: save
@@ -308,5 +308,9 @@ public class WidgetInstance {
                 visible: true
             }
         }
+    }
+
+    function deleteConfig() {
+        getPropertyFile().<<delete>>();
     }
 }

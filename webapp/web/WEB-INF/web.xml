@@ -14,7 +14,7 @@
         </init-param>
         <init-param>
             <param-name>logPath</param-name>
-            <param-value>jnlpdownloadservlet.log</param-value>
+            <param-value>/var/www/vhosts/widgetfx.org/tmp/jnlpdownloadservlet.log</param-value>
         </init-param>
         </servlet>
     <servlet-mapping>

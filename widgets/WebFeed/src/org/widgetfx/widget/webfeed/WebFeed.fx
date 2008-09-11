@@ -51,7 +51,7 @@ import com.sun.javafx.runtime.sequence.Sequences;
 /**
  * @author Stephen Chin
  */
-var feedUrl = "http://www.animenewsnetwork.com/all/rss.xml";
+var feedUrl = "http://news.google.com/news?ned=us&topic=h&output=atom";
 var feed:SyndFeed;
 var entrySequence:SyndEntryImpl[];
 var error:String;
@@ -60,7 +60,7 @@ var border = 6;
 var width = 300;
 var height = 200;
 var entryWidth = bind width - border * 2;
-var entryHeight = 25; // todo don't hardcode the height of the entries
+var entryHeight = 25; // todo - don't hardcode the height of the entries
 
 private function updateFeed():Void {
     var feedInfoCache = HashMapFeedInfoCache.getInstance();
@@ -182,7 +182,7 @@ Widget {
 
         component: ClusterPanel {
             var label = Label {text: "RSS Feed:"};
-            var textField = TextField {text: bind feedUrl with inverse};
+            var textField = TextField {text: bind feedUrl with inverse, hpref: 300};
             vcluster: ParallelCluster { content: [
                 label,
                 textField

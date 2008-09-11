@@ -129,7 +129,7 @@ public class WidgetFrame extends BaseDialog {
     }
     
     init {
-        windowStyle = WindowStyle.TRANSPARENT;
+        windowStyle = if (Dock.transparent) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
         title = instance.title;
     }
     

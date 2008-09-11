@@ -20,9 +20,12 @@ package org.widgetfx;
 import java.lang.System;
 import java.util.Arrays;
 import java.net.URL;
+import javafx.lang.DeferredTask;
 import javafx.lang.Sequences;
 import javax.jnlp.*;
 import org.widgetfx.config.IntegerSequenceProperty;
+import org.widgetfx.config.StringSequenceProperty;
+import org.widgetfx.ui.ErrorWidget;
 
 /**
  * @author Stephen Chin
@@ -48,10 +51,16 @@ public class WidgetManager {
         "{codebase}widgets/WebFeed/launch.jnlp"
     ];
     
+    public attribute recentWidgets:String[];
+    
     private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
         IntegerSequenceProperty {
             name: "widgets"
             value: bind widgetIds with inverse
+        },
+        StringSequenceProperty {
+            name: "recentWidgets"
+            value: bind recentWidgets with inverse
         }
     ]);
 
@@ -82,9 +91,13 @@ public class WidgetManager {
     private attribute sis = ServiceManager.lookup("javax.jnlp.SingleInstanceService") as SingleInstanceService;
     private attribute sil = SingleInstanceListener {
         public function newActivation(params) {
-            Dock.getInstance().showDockAndWidgets();
-            for (param in Arrays.asList(params)) {
-                addWidget(param);
+            DeferredTask {
+                action: function() {
+                    Dock.getInstance().showDockAndWidgets();
+                    for (param in Arrays.asList(params) where param.toLowerCase().endsWith(".jnlp")) {
+                        addWidget(param);
+                    }
+                }
             }
         }
     };
@@ -141,7 +154,16 @@ public class WidgetManager {
         var instance = WidgetInstance{jnlpUrl: jnlpUrl, id: maxId + 1};
         insert instance into widgets;
         instance.load();
+        addRecentWidget(instance);
         return instance
+    }
+    
+    private function addRecentWidget(instance:WidgetInstance):Void {
+        if (instance.widget instanceof ErrorWidget or
+            Sequences.indexOf(recentWidgets, instance.jnlpUrl) != -1) {
+            return;
+        }
+        insert instance.jnlpUrl into recentWidgets;
     }
     
     public function getWidgetInstance(widget:Widget):WidgetInstance {
