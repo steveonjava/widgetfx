@@ -528,11 +528,26 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest" name="do-dist"/>
     <target depends="init" if="dist.ear.dir" name="library-inclusion-in-manifest">
+        <basename file="${file.reference.serializer.jar}" property="included.lib.file.reference.serializer.jar"/>
+        <copy-ear-war file="${file.reference.serializer.jar}" propname="included.lib.file.reference.serializer.jar.X"/>
+        <basename file="${file.reference.xalan.jar}" property="included.lib.file.reference.xalan.jar"/>
+        <copy-ear-war file="${file.reference.xalan.jar}" propname="included.lib.file.reference.xalan.jar.X"/>
+        <basename file="${file.reference.xercesImpl.jar}" property="included.lib.file.reference.xercesImpl.jar"/>
+        <copy-ear-war file="${file.reference.xercesImpl.jar}" propname="included.lib.file.reference.xercesImpl.jar.X"/>
+        <basename file="${file.reference.xml-apis.jar}" property="included.lib.file.reference.xml-apis.jar"/>
+        <copy-ear-war file="${file.reference.xml-apis.jar}" propname="included.lib.file.reference.xml-apis.jar.X"/>
         <mkdir dir="${build.web.dir}/META-INF"/>
-        <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update"/>
+        <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update">
+            <attribute name="Class-Path" value="${included.lib.file.reference.serializer.jar} ${included.lib.file.reference.xalan.jar} ${included.lib.file.reference.xercesImpl.jar} ${included.lib.file.reference.xml-apis.jar} "/>
+        </manifest>
         <delete dir="${dist.ear.dir}/temp"/>
     </target>
-    <target depends="init" name="library-inclusion-in-archive" unless="dist.ear.dir"/>
+    <target depends="init" name="library-inclusion-in-archive" unless="dist.ear.dir">
+        <copy file="${file.reference.serializer.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copy file="${file.reference.xalan.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copy file="${file.reference.xercesImpl.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copy file="${file.reference.xml-apis.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+    </target>
     <target depends="init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest" name="do-ear-dist">
         <dirname file="${dist.ear.war}" property="dist.jar.dir"/>
         <mkdir dir="${dist.jar.dir}"/>

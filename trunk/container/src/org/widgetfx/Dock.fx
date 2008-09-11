@@ -53,7 +53,7 @@ import java.lang.System;
  * @author Stephen Chin
  */
 public class Dock extends BaseDialog {
-    private static attribute VERSION = "0.1.1";
+    private static attribute VERSION = "0.1.2";
     private static attribute isMac = System.getProperty("os.name").contains("Mac OS");
     private static attribute menuHeight = if (isMac) 22 else 0;
     
@@ -66,11 +66,18 @@ public class Dock extends BaseDialog {
     private static attribute BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
     private static attribute BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
     
-    private static attribute instance = Dock {}
+    private static attribute instance;
+    
+    public static attribute transparent = true;
     
     public static function getInstance() {
+        if (instance == null) {
+            instance = Dock {};
+        }
         return instance;
     }
+    
+    public attribute widgetFxIcon = Image {url: getClass().getResource("nut3_16.png").toString()};
     
     private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
         StringProperty {
@@ -171,12 +178,10 @@ public class Dock extends BaseDialog {
         }
     }
 
-    init {
-        title = "WidgetFX";
-        visible = true;
-        windowStyle = WindowStyle.TRANSPARENT;
-        width = DEFAULT_WIDTH + BORDER * 2;
-    }
+    override attribute title = "WidgetFX";
+    override attribute visible = true;
+    override attribute windowStyle = if (transparent) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
+    override attribute width = DEFAULT_WIDTH + BORDER * 2;
 
     postinit {
         configuration.load();
@@ -220,10 +225,8 @@ public class Dock extends BaseDialog {
         }
     }
     
-    private attribute nutImage = Image {url: getClass().getResource("nut4_16.png").toString()};
-    
     function createImage():java.awt.Image {
-        return nutImage.getBufferedImage();
+        return widgetFxIcon.getBufferedImage();
     }
     
     public function addWidget():Void {
@@ -291,7 +294,7 @@ public class Dock extends BaseDialog {
         }
         // todo - replace with javafx Separator when one exists
         // note: start with the bottom of the menu, because inserting separators changes the size
-        menu.getJMenu().insertSeparator(if (InstallUtil.startupSupported()) 6 else 5);
+        menu.getJMenu().insertSeparator(if (InstallUtil.startupSupported()) 5 else 4);
         menu.getJMenu().insertSeparator(if (InstallUtil.startupSupported()) 3 else 2);
         menu.getJMenu().insertSeparator(1);
         // todo - create a javafx PopupMenu directly when one exists
@@ -438,7 +441,7 @@ public class Dock extends BaseDialog {
                 content: [
                     ImageView {
                         translateY: -13
-                        image: nutImage
+                        image: widgetFxIcon
                     },
                     Text {
                         font: Font {style: FontStyle.BOLD_ITALIC}
@@ -446,6 +449,7 @@ public class Dock extends BaseDialog {
                         content: " Widget"
                     },
                     Text {
+                        translateX: -3
                         font: Font {style: FontStyle.BOLD_ITALIC}
                         fill: Color.ORANGE
                         content: "FX"
@@ -453,7 +457,7 @@ public class Dock extends BaseDialog {
                     Text {
                         font: Font {style: FontStyle.ITALIC, size: 10}
                         fill: Color.WHITE
-                        content: " v{VERSION}"
+                        content: "v{VERSION}"
                     }
                 ]
             }

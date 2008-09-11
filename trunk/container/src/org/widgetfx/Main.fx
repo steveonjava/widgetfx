@@ -29,11 +29,17 @@ try { // try nimbus look and feel first
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 }
 
+for (arg in __ARGS__) {
+    if (arg.equals("no-transparency")) {
+        Dock.transparent = false;
+    }
+}
+
 Dock.getInstance();
 
 DeferredTask {
     action: function() {
-        for (arg in __ARGS__) {
+        for (arg in __ARGS__ where arg.toLowerCase().endsWith(".jnlp")) {
             WidgetManager.getInstance().addWidget(arg);
         }
     }

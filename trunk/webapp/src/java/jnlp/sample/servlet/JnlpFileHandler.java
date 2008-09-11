@@ -284,7 +284,8 @@ public class JnlpFileHandler {
             return "";
         }
         String[] parameters = query.split("&");
-        for (String parameter : parameters) {
+        for (int i = 0; i < parameters.length; i++) {
+            String parameter = parameters[i];
             String[] keyValue = parameter.split("=");
             if (keyValue.length != 2) {
                 _log.addInformational("Invalid parameter: " + parameter);
