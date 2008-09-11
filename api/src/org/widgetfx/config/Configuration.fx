@@ -86,11 +86,4 @@ public class Configuration {
      * which can be enabled per (@see Property}.
      */
     public attribute onSave:function();
-    
-    /**
-     * If set, this provise a cancel handler that will be called when the user
-     * explicitly cancels the configuration dialog by clicking on the "Cancel"
-     * button.
-     */
-    public attribute onCancel:function();
 }

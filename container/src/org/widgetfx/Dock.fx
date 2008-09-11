@@ -220,7 +220,7 @@ public class Dock extends BaseDialog {
         }
     }
     
-    private attribute nutImage = Image {url: getClass().getResource("nut3_16.png").toString()};
+    private attribute nutImage = Image {url: getClass().getResource("nut4_16.png").toString()};
     
     function createImage():java.awt.Image {
         return nutImage.getBufferedImage();
@@ -276,6 +276,12 @@ public class Dock extends BaseDialog {
                     }
                 },
                 MenuItem {
+                    text: "Reload"
+                    action: function() {
+                        WidgetManager.getInstance().reload();
+                    }
+                },
+                MenuItem {
                     text: "Exit"
                     action: function() {
                         WidgetManager.getInstance().exit();
@@ -284,8 +290,10 @@ public class Dock extends BaseDialog {
             ]
         }
         // todo - replace with javafx Separator when one exists
+        // note: start with the bottom of the menu, because inserting separators changes the size
+        menu.getJMenu().insertSeparator(if (InstallUtil.startupSupported()) 6 else 5);
+        menu.getJMenu().insertSeparator(if (InstallUtil.startupSupported()) 3 else 2);
         menu.getJMenu().insertSeparator(1);
-        menu.getJMenu().insertSeparator(if (InstallUtil.startupSupported()) 4 else 3);
         // todo - create a javafx PopupMenu directly when one exists
         return menu.getJMenu().getPopupMenu();
     }

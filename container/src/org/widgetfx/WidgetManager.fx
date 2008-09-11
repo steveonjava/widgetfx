@@ -19,6 +19,7 @@ package org.widgetfx;
 
 import java.lang.System;
 import java.util.Arrays;
+import java.net.URL;
 import javafx.lang.Sequences;
 import javax.jnlp.*;
 import org.widgetfx.config.IntegerSequenceProperty;
@@ -92,6 +93,13 @@ public class WidgetManager {
         sis.addSingleInstanceListener(sil);
         // todo - implement a widget security policy
         System.setSecurityManager(null);
+    }
+    
+    public function reload() {
+        var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+        sis.removeSingleInstanceListener(sil);
+        basicService.showDocument(new URL(basicService.getCodeBase(), "launch.jnlp"));
+        System.exit(0);
     }
     
     public function exit() {

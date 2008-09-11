@@ -109,7 +109,7 @@ private function updateImage():Void {
     }
 }
 
-private function loadDirectory(directoryName:String):File {
+private function loadDirectory() {
     var directory = new File(directoryName);
     currentImage = null;
     if (not directory.exists()) {
@@ -133,7 +133,6 @@ private function loadDirectory(directoryName:String):File {
             status = "No Images Found"
         }
     }
-    return directory;
 }
 
 private function excludesFile(name:String):Boolean {
@@ -313,14 +312,12 @@ Widget {
 
         component: bind Component.fromJComponent(tabbedPane)
 
-        onLoad: function() {
-            imageHeight = height;
-            initTabbedPane();
-            loadDirectory(directoryName);
-        }
-        onSave: function() {
-            loadDirectory(directoryName);
-        }
+        onLoad: loadDirectory;
+        onSave: loadDirectory;
+    }
+    onStart: function() {
+        imageHeight = height;
+        initTabbedPane();
     }
     stage: Stage {
         width: bind width with inverse
