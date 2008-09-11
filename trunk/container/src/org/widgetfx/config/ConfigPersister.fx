@@ -20,6 +20,7 @@ package org.widgetfx.config;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.lang.*;
 import java.util.Properties;
 
 /**
@@ -49,7 +50,17 @@ public class ConfigPersister {
         }
     }
     
+    private function validateRequiredAttributes() {
+        if (file == null) {
+            throw new IllegalStateException("File attribute is required but missing");
+        }
+        if (properties == null) {
+            throw new IllegalStateException("Properties attribute is required but missing");
+        }
+    }
+    
     public function load():Boolean {
+        validateRequiredAttributes();
         disableAutoSave = true;
         try {
             if (file.exists() and properties != null) {
@@ -77,6 +88,7 @@ public class ConfigPersister {
     }
     
     public function save() {
+        validateRequiredAttributes();
         disableAutoSave = false;
         if (properties != null) {
             var savedProperties = Properties {};

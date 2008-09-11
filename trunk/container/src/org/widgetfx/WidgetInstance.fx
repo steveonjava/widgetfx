@@ -17,7 +17,6 @@
  */
 package org.widgetfx;
 
-import java.lang.Class;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NodeList;
 import org.widgetfx.config.*;
@@ -27,7 +26,7 @@ import com.sun.javafx.runtime.sequence.Sequences;
 import com.sun.javafx.runtime.Entry;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
-import java.lang.System;
+import java.lang.*;
 import java.net.URL;
 import java.util.Arrays;
 import javafx.application.Stage;
@@ -139,34 +138,43 @@ public class WidgetInstance {
                     }
                 }
                 mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
-                title = xpath.evaluate("/jnlp/information/title", document, XPathConstants.STRING) as String;
-            } catch (e) {
-                title = "Error";
-                widget = ErrorWidget {
-                    errorLines: [
-                        "Unable to load widget:",
-                        jnlpUrl,
-                        e.getMessage()
-                    ]
+                if (mainClass.length() == 0) {
+                    throw new IllegalStateException("No main class specified");
                 }
-                e.printStackTrace();
+                title = xpath.evaluate("/jnlp/information/title", document, XPathConstants.STRING) as String;
+            } catch (e:Throwable) {
+                createError(e);
             }
         }
     }
     
     public attribute mainClass:String on replace {
-        if (mainClass.length() != 0) {
+        if (mainClass.length() > 0) {
             try {
                 var widgetClass:Class = Class.forName(mainClass);
                 var name = Entry.entryMethodName();
-                var args = Sequences.make(java.lang.String.<<class>>) as java.lang.Object;
+                var args = Sequences.make(String.<<class>>) as Object;
                 widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
-            } catch (e:java.lang.RuntimeException) {
-                e.printStackTrace();
+            } catch (e:Throwable) {
+                createError(e);
             }
         }
     }
     
+    private function createError(e:Throwable) {
+        if (title == null) {
+            title = "Error";
+        }
+        widget = ErrorWidget {
+            errorLines: [
+                "Unable to load widget:",
+                jnlpUrl,
+                e.getMessage()
+            ]
+        }
+        e.printStackTrace();
+    }
+
     public attribute opacity:Integer = 80;
     public attribute docked:Boolean = true;
     public attribute dockedWidth:Integer;
@@ -208,7 +216,7 @@ public class WidgetInstance {
     function saveWithoutNotification() {
         persister.save();
     }
-    
+
     private function initializeDimensions() {
         if (docked) {
             widget.stage.width = dockedWidth;
@@ -248,17 +256,29 @@ public class WidgetInstance {
         if (not persister.load()) {
             persister.save(); // initial save
         }
-        if (widget.onStart != null) widget.onStart();
         initializeDimensions();
+        try {
+            if (widget.onStart != null) widget.onStart();
+        } catch (e:Throwable) {
+            e.printStackTrace();
+        }
         if (widget.configuration.onLoad != null) {
-            widget.configuration.onLoad();
+            try {
+                widget.configuration.onLoad();
+            } catch (e:Throwable) {
+                e.printStackTrace();
+            }
         }
     }
     
     public function save() {
         persister.save();
         if (widget.configuration.onSave != null) {
-            widget.configuration.onSave();
+            try {
+                widget.configuration.onSave();
+            } catch (e:Throwable) {
+                e.printStackTrace();
+            }
         }
     }
     
@@ -266,36 +286,23 @@ public class WidgetInstance {
         getPropertyFile().<<delete>>();
     }
     
-    public function cancel() {
-        if (widget.configuration.onCancel != null) {
-            widget.configuration.onCancel();
-        }
-    }
-    
     public function showConfigDialog():Void {
         if (widget.configuration != null) {
             var configDialog:SwingDialog = SwingDialog {
                 title: "{title} Configuration"
+                resizable: false
+                closeAction: save
                 content: BorderPanel {
                     center: widget.configuration.component
                     bottom: FlowPanel {
                         alignment: HorizontalAlignment.RIGHT
-                        content: [
-                            Button {
-                                text: "Save"
-                                action: function() {
-                                    save();
-                                    configDialog.close();
-                                }
-                            },
-                            Button {
-                                text: "Cancel"
-                                action: function() {
-                                    cancel();
-                                    configDialog.close();
-                                }
+                        content: Button {
+                            text: "Done"
+                            action: function() {
+                                save();
+                                configDialog.close();
                             }
-                        ]
+                        }
                     }
                 }
                 visible: true
