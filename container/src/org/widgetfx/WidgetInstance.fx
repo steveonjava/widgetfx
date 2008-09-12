@@ -159,9 +159,12 @@ public class WidgetInstance {
                 var name = Entry.entryMethodName();
                 var args = Sequences.make(String.<<class>>) as Object;
                 widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
-                widget.autoLaunch = false;
             } catch (e:Throwable) {
                 createError(e);
+            } finally {
+                if (widget != null) {
+                    widget.autoLaunch = false;
+                }
             }
         }
     }

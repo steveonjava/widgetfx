@@ -170,9 +170,5 @@ public class WidgetManager {
         var match = widgets[w|w.widget == widget];
         return match[0];
     }
-    
-    public function showConfigDialog(widget:Widget):Void {
-        getWidgetInstance(widget).showConfigDialog();
-    }
 
 }
