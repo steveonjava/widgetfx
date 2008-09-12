@@ -69,7 +69,7 @@ public class AddWidgetDialog {
             title: "Add Widget"
             visible: true
             resizable: false
-            icons: Dock.getInstance().widgetFxIcon
+            icons: WidgetFXConfiguration.getInstance().widgetFXIcon
             stage: Stage {
                 content: ComponentView {
                     component: BorderPanel {

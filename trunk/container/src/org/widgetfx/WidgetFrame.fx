@@ -129,7 +129,7 @@ public class WidgetFrame extends BaseDialog {
     }
     
     init {
-        windowStyle = if (Dock.transparent) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
+        windowStyle = if (WidgetFXConfiguration.TRANSPARENT) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
         title = instance.title;
     }
     
@@ -150,6 +150,16 @@ public class WidgetFrame extends BaseDialog {
                 }
             }
         }.start();
+    }
+    
+    /**
+     * WidgetFrame close hook that has a default implementation to remove the widget
+     * and close this Frame.
+     * This can be overriden to provide custom behavior.
+     */
+    public attribute onClose = function(frame:WidgetFrame) {
+        WidgetManager.getInstance().removeWidget(instance);
+        frame.close();
     }
     
     private function resize(widthDelta:Integer, heightDelta:Integer, updateX:Boolean, updateY:Boolean, widthOnly:Boolean, heightOnly:Boolean) {
@@ -324,7 +334,11 @@ public class WidgetFrame extends BaseDialog {
             onMousePressed: saveInitialPos;
             onMouseDragged: function(e) {
                 if (not docking) {
-                    var hoverOffset = Dock.getInstance().hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
+                    var hoverOffset = if (Dock.getInstance() == null) {
+                        [0, 0]
+                    } else {
+                        Dock.getInstance().hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
+                    }
                     mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                         dragging = true;
                         x = initialX + xDelta + hoverOffset[0];
@@ -335,9 +349,11 @@ public class WidgetFrame extends BaseDialog {
             onMouseReleased: function(e) {
                 if (not docking) {
                     dragging = false;
-                    var targetBounds = Dock.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
-                    if (targetBounds != null) {
-                        dock(targetBounds.x, targetBounds.y);
+                    if (Dock.getInstance() != null) {
+                        var targetBounds = Dock.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
+                        if (targetBounds != null) {
+                            dock(targetBounds.x, targetBounds.y);
+                        }
                     }
                     instance.saveWithoutNotification();
                 }
@@ -398,7 +414,7 @@ public class WidgetFrame extends BaseDialog {
                     opacity: bind rolloverOpacity
                     instance: instance
                     onClose: function() {
-                        close();
+                        onClose(this);
                     }
                 }
             ]

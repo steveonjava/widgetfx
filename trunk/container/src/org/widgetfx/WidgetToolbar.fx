@@ -199,7 +199,6 @@ public class WidgetToolbar extends Group {
                 onMouseReleased: function(e:MouseEvent) {
                     pressed = false;
                     if (hover) {
-                        WidgetManager.getInstance().removeWidget(instance);
                         if (onClose != null) {
                             onClose();
                         }

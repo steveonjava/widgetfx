@@ -20,6 +20,7 @@ package org.widgetfx;
 import java.io.File;
 import java.lang.System;
 import java.net.URL;
+import javafx.scene.image.*;
 import javax.jnlp.BasicService;
 import javax.jnlp.ServiceManager;
 import org.widgetfx.WidgetManager;
@@ -30,6 +31,9 @@ import org.widgetfx.config.*;
  * @author Keith Combs
  */
 public class WidgetFXConfiguration {
+    public static attribute VERSION = "0.1.2";
+    public static attribute TRANSPARENT = true;
+    public static attribute IS_MAC = System.getProperty("os.name").contains("Mac OS");
     
     private static attribute instance = WidgetFXConfiguration {}
     
@@ -38,6 +42,8 @@ public class WidgetFXConfiguration {
     }
     
     public attribute properties:Property[] = [];
+    
+    public attribute widgetFXIcon = Image {url: getClass().getResource("nut3_16.png").toString()};
     
     public attribute codebase = (ServiceManager.lookup("javax.jnlp.BasicService") as BasicService).getCodeBase();
     

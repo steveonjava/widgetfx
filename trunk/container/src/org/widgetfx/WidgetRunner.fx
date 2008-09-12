@@ -19,9 +19,11 @@ package org.widgetfx;
 
 import javafx.lang.DeferredTask;
 import javax.swing.UIManager;
+import java.lang.System;
 
 /**
  * @author Stephen Chin
+ * @author Keith Combs
  */
 try { // try nimbus look and feel first
     UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -29,18 +31,37 @@ try { // try nimbus look and feel first
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 }
 
-for (arg in __ARGS__) {
-    if (arg.equals("no-transparency")) {
-        WidgetFXConfiguration.TRANSPARENT = false;
+var widgetCount = 0;
+
+function closeHook(frame:WidgetFrame) {
+    widgetCount--;
+    frame.close();
+    if (widgetCount == 0) {
+        System.exit(0);
     }
 }
 
-Dock.createInstance();
-
-DeferredTask {
-    action: function() {
-        for (arg in __ARGS__ where arg.toLowerCase().endsWith(".jnlp")) {
-            WidgetManager.getInstance().addWidget(arg);
-        }
+for (arg in __ARGS__) {
+    var instance = null;
+    if (arg.equals("no-transparency")) {
+        WidgetFXConfiguration.TRANSPARENT = false;
+    } else if (arg.toLowerCase().endsWith(".jnlp")) {
+        // todo - fix the id
+        instance = WidgetInstance{
+            jnlpUrl: arg
+            id: 1000 + indexof arg
+            docked: false
+        };
+    } else {
+        instance = WidgetInstance{
+            mainClass: arg
+            id: 1000 + indexof arg
+            docked: false
+        };
+    }
+    if (instance != null) {
+        widgetCount++;
+        instance.load();
+        instance.frame.onClose = closeHook;
     }
 }
