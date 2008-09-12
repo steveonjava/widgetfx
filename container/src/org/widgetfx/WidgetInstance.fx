@@ -45,6 +45,9 @@ import javax.xml.xpath.XPathConstants;
  * @author Keith Combs
  */
 public class WidgetInstance {
+    public static attribute MIN_WIDTH = 100;
+    public static attribute MIN_HEIGHT = 50;
+    
     private static attribute JARS_TO_SKIP = ["widgetfx-api.jar", "widgetfx.jar",
         "Scenario.jar", "gluegen-rt.jar", "javafx-swing.jar", "javafxc.jar",
         "javafxdoc.jar", "javafxgui.jar", "javafxrt.jar", "jmc.jar", "jogl.jar"];
@@ -54,7 +57,8 @@ public class WidgetInstance {
     public attribute id:Integer;
 
     private bound function getPropertyFile():File {
-        return new File(WidgetFXConfiguration.getInstance().configFolder, "widgets/{id}.config");
+        var filename = if (id == 0) jnlpUrl.replaceAll("[^a-zA-Z0-9]", "_") else id;
+        return new File(WidgetFXConfiguration.getInstance().configFolder, "widgets/{filename}.config");
     }
     
     // todo - possibly prevent widgets from loading if they define user properties that start with "widget."
@@ -155,6 +159,7 @@ public class WidgetInstance {
                 var name = Entry.entryMethodName();
                 var args = Sequences.make(String.<<class>>) as Object;
                 widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
+                widget.autoLaunch = false;
             } catch (e:Throwable) {
                 createError(e);
             }
@@ -186,6 +191,12 @@ public class WidgetInstance {
     
     public attribute widget:Widget on replace {
         if (widget != null) {
+            if (widget.stage.width < MIN_WIDTH) {
+                widget.stage.width = MIN_WIDTH;
+            }
+            if (widget.stage.height < MIN_HEIGHT) {
+                widget.stage.height = MIN_HEIGHT;
+            }
             undockedWidth = widget.stage.width;
             undockedHeight = widget.stage.height;
         }

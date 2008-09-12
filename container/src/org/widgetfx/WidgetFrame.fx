@@ -50,7 +50,6 @@ import javax.swing.RootPaneContainer;
  * @author Stephen Chin
  */
 public class WidgetFrame extends BaseDialog {
-    public static attribute MIN_SIZE = 100;
     public static attribute BORDER = 5;
     public static attribute RESIZABLE_TOOLBAR_HEIGHT = 18;
     public static attribute NONRESIZABLE_TOOLBAR_HEIGHT = RESIZABLE_TOOLBAR_HEIGHT - BORDER;
@@ -163,11 +162,11 @@ public class WidgetFrame extends BaseDialog {
     }
     
     private function resize(widthDelta:Integer, heightDelta:Integer, updateX:Boolean, updateY:Boolean, widthOnly:Boolean, heightOnly:Boolean) {
-        if (initialWidth + widthDelta < MIN_SIZE) {
-            widthDelta = MIN_SIZE - initialWidth;
+        if (initialWidth + widthDelta < WidgetInstance.MIN_WIDTH) {
+            widthDelta = WidgetInstance.MIN_WIDTH - initialWidth;
         }
-        if (initialHeight + heightDelta < MIN_SIZE) {
-            heightDelta = MIN_SIZE - initialHeight;
+        if (initialHeight + heightDelta < WidgetInstance.MIN_HEIGHT) {
+            heightDelta = WidgetInstance.MIN_HEIGHT - initialHeight;
         }
         var newWidth = initialWidth + widthDelta;
         var newHeight = initialHeight + heightDelta;
@@ -440,6 +439,7 @@ public class WidgetFrame extends BaseDialog {
             }
             public function mouseReleased(e) {
                 changingOpacity = false;
+                instance.saveWithoutNotification();
             }
         });
         visible = true;

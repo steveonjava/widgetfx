@@ -124,8 +124,8 @@ public class WidgetView extends Group {
                 onMouseDragged: function(e:MouseEvent) {
                     if (resizing) {
                         widget.stage.height = initialHeight + e.getStageY().intValue() - initialY;
-                        if (widget.stage.height < WidgetFrame.MIN_SIZE) {
-                            widget.stage.height = WidgetFrame.MIN_SIZE;
+                        if (widget.stage.height < WidgetInstance.MIN_HEIGHT) {
+                            widget.stage.height = WidgetInstance.MIN_HEIGHT;
                         }
                         if (widget.aspectRatio != 0) {
                             widget.stage.width = (widget.stage.height * widget.aspectRatio).intValue();
