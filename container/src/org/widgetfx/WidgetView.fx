@@ -98,6 +98,9 @@ public class WidgetView extends Group {
                 instance: instance
                 onMouseEntered: function(e) {requestFocus(true)}
                 onMouseExited: function(e) {requestFocus(false)}
+                onClose: function() {
+                    WidgetManager.getInstance().removeWidget(instance);
+                }
             },
             Group { // Drag Bar
                 blocksMouse: true

@@ -47,16 +47,13 @@ import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.io.*;
-import java.lang.System;
+import java.lang.*;
 
 /**
  * @author Stephen Chin
  */
 public class Dock extends BaseDialog {
-    private static attribute VERSION = "0.1.2";
-    private static attribute isMac = System.getProperty("os.name").contains("Mac OS");
-    private static attribute menuHeight = if (isMac) 22 else 0;
-    
+    private static attribute menuHeight = if (WidgetFXConfiguration.IS_MAC) 22 else 0;
     private static attribute DEFAULT_WIDTH = 180;
     private static attribute MIN_WIDTH = 120;
     private static attribute MAX_WIDTH = 400;
@@ -68,16 +65,13 @@ public class Dock extends BaseDialog {
     
     private static attribute instance;
     
-    public static attribute transparent = true;
-    
-    public static function getInstance() {
-        if (instance == null) {
-            instance = Dock {};
-        }
-        return instance;
+    public static function createInstance() {
+        instance = Dock {};
     }
     
-    public attribute widgetFxIcon = Image {url: getClass().getResource("nut3_16.png").toString()};
+    public static function getInstance() {
+        return instance;
+    }    
     
     private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
         StringProperty {
@@ -180,7 +174,7 @@ public class Dock extends BaseDialog {
 
     override attribute title = "WidgetFX";
     override attribute visible = true;
-    override attribute windowStyle = if (transparent) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
+    override attribute windowStyle = if (WidgetFXConfiguration.TRANSPARENT) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
     override attribute width = DEFAULT_WIDTH + BORDER * 2;
 
     postinit {
@@ -226,7 +220,7 @@ public class Dock extends BaseDialog {
     }
     
     function createImage():java.awt.Image {
-        return widgetFxIcon.getBufferedImage();
+        return WidgetFXConfiguration.getInstance().widgetFXIcon.getBufferedImage();
     }
     
     public function addWidget():Void {
@@ -441,7 +435,7 @@ public class Dock extends BaseDialog {
                 content: [
                     ImageView {
                         translateY: -13
-                        image: widgetFxIcon
+                        image: WidgetFXConfiguration.getInstance().widgetFXIcon
                     },
                     Text {
                         font: Font {style: FontStyle.BOLD_ITALIC}
@@ -457,7 +451,7 @@ public class Dock extends BaseDialog {
                     Text {
                         font: Font {style: FontStyle.ITALIC, size: 10}
                         fill: Color.WHITE
-                        content: "v{VERSION}"
+                        content: "v{WidgetFXConfiguration.VERSION}"
                     }
                 ]
             }

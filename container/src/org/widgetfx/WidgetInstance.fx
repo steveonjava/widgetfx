@@ -288,7 +288,7 @@ public class WidgetInstance {
     public function showConfigDialog():Void {
         if (widget.configuration != null) {
             configDialog = SwingDialog {
-                icons: Dock.getInstance().widgetFxIcon
+                icons: WidgetFXConfiguration.getInstance().widgetFXIcon
                 title: "{title} Configuration"
                 resizable: false
                 closeAction: save
