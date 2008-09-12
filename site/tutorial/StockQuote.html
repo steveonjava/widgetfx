@@ -12,8 +12,8 @@
 </head>
 
 <body>
-<h1>Stock Quote Widget Sample</h1>
-<p>For the purpose of this example we are going to use NetBeans as the IDE. This is not an endorsement of the NetBeans editor, and everything shown can be accomplished with command line tools or your editor of choice.</p>
+<h1>Hello World Widget Sample</h1>
+<p>For the purpose of this example we are going to use NetBeans as the IDE. There is no requirement to use the NetBeans editor, and everything shown can be accomplished with command line tools or your editor of choice.</p>
 <h2>Setting Up Your Environment</h2>
 <p>You need the following technologies to get started developing WidgetFX </p>
 <ul>
@@ -48,16 +48,18 @@
   <li>Extract the Zip file in your location of choice</li>
 </ol>
 <h2>Setting Up the Netbeans Project</h2>
-<p>To start with, create a new JavaFX project in NetBeans:</p>
-<p><img src="newproject.jpg" alt="New JavaFX Project" /></p>
-<p>On the second page of the wizard, choose a name for the project (StockQuote might be nice), and select options as shown in the picture:</p>
-<p><img src="newproject2.jpg" alt="Second Project Wizard Page" /></p>
+<p>To start with, create a new JavaFX project in NetBeans by choosing New Project from the File menu:</p>
+<p><img src="newproject.jpg" alt="Project Wizard Page 1" width="547" height="385" /></p>
+<p>Select a JavaFX Script Application as your project type and click Next.</p>
+<p>In the second page of the wizard, choose a name for the project (&quot;HelloWorld&quot; might be nice), and select options as shown in the picture:</p>
+<p><img src="newproject2.jpg" alt="Project Wizard Page 2" width="547" height="472" /></p>
+<p>Click Finish to create your HelloWorld project.</p>
 <p>We also need to add in  the widgetfx-api.jar file to the project for widget development. This can be found as part of the Widget SDK bundle.</p>
-<p>Open the Project Properties dialog by .... and add the jar as shown in the following screenshot:</p>
-<p><img src="projectproperties-addlibrary.jpg" alt="Project Properties Add Library" /></p>
-<h2>Coding the Stock Widget</h2>
-<p>First, add a new empty JavaFX file to the project. It should be named &quot;StockQuote&quot; and placed in the &quot;tutorial&quot; package.</p>
-<p><img src="createjavafxclass.jpg" alt="Create JavaFX Class" width="502" height="331" /></p>
+<p>Open the Project Properties dialog by selecting 'HelloWorld' Properties from the File menu. Click on the Libraries category and add widgetfx-api.jar by clicking the Add JAR/Folder button as shown in the following screenshot:</p>
+<p><img src="projectproperties-addlibrary.jpg" alt="Add Library" width="547" height="429" /></p>
+<h2>Coding the HelloWorld Widget</h2>
+<p>First, add a new empty JavaFX file to the project. It should be named &quot;HelloWorld&quot; and placed in the &quot;tutorial&quot; package.</p>
+<p><img src="createjavafxclass.jpg" alt="Create JavaFX Class" width="547" height="329" /></p>
 <p>You should have a simple file with just a package statement and comments. If NetBeans inserted a full class defnition, you can just delete that and continue on.</p>
 <p>Creating a new widget is as simple as importing the org.widgetfx package and creating a new Widget instance. Here is an empty widget:</p>
 <blockquote>
@@ -68,15 +70,21 @@
 </blockquote>
 <p>This is not very interesting, so let's add in a stage with a rectangle for the background:</p>
 <blockquote>
-  <pre>Widget {<br />
-    stage: Stage {<br />        content: Text {<br />            translateX: 10<br />            translateY: 20<br />            content: <span class="style3">&quot;Stock Quote&quot;</span><br />        }<br />
-    }
+  <pre>...
+
+<span class="style1">import</span> javafx.application.*;<br /><span class="style1">import</span> javafx.scene.text.*;<br /><br />Widget {<br />    stage: Stage {<br />        content: Text {<br />            x: 10<br />            y: 20<br />            content: <span class="style3">&quot;Hello World&quot;</span><br />        }<br />    }
 }</pre>
 </blockquote>
-<p>The Widget class extends the JavaFX Application class so you can run it in directly in the Applet Runner to get a quick preview. To see what it looks like so far, right click on the &quot;StockQuote.fx&quot; file and choose &quot;Run Applet&quot;:</p>
-<p><img src="firstrun.jpg" alt="First Program Execution" width="358" height="277" /></p>
-<p>This isn't very interesting so far, so let's hook it up to a Web Service to fetch realtime data.</p>
-<p>We are going to use the <a href="http://www.webservicex.net/stockquote.asmx?op=GetQuote">Web Service X StockQuote</a> service to retrieve information. It supports HTTP or SOAP interfaces, but for simplicity we will use the HTTP interface in this example.</p>
+<p>The Widget class extends the JavaFX Application class so you can run it in directly in the Applet Runner to get a quick preview. To see what it looks like so far, right click on the HelloWorld.fx file and choose Run Applet:</p>
+<p><img src="firstrun.jpg" alt="Applet Viewer" width="204" height="136" /></p>
+<p>The Applet Viewer is convenient, because it allows rapid development and preview cycles, but does not show the end product in a dockable window, and can't simulate advanced functionality like configuration.</p>
+<h2>Deploying the HelloWorld Widget</h2>
+<p>To run the HelloWorld widget in the WidgetFX doc, you need to turn on Web Start in the run configuration. To do this, open the Project Properties dialog and go to the WebStart tab. On this tab check Enable Web Start as shown in the following picture:</p>
+<p><img src="enable-webstart.jpg" alt="Enable Web Start" width="653" height="348" /></p>
+<p>Next, go to the Run tab and select your main class (&quot;tutorial.HelloWorld&quot;) and enable &quot;Run with Java Web Start&quot; by clicking on the last checkbox.</p>
+<p>The final step is to Run the Main Project in Netbeans, which will automatically generate a JNLP file for you, start the WidgetFX dock, and deploy the widget in the dock. After this process is complete, you will see the following:</p>
+<p>xxxx</p>
+<p>Congratulations on completing your first WidgetFX project!</p>
 </body>
 
 </html>
