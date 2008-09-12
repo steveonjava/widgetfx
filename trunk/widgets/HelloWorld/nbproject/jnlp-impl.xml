@@ -462,8 +462,7 @@ made subject to such option by the copyright holder.
     
     <target name="jws-run" depends="jar,-verify-jnlp-enabled,-verify-codebase" description="Start javaws execution">
         <exec executable="${java.home}/bin/javaws">
-            <!-- todo - revert this and put in a clever WidgetRunner JNLP hack -->
-            <arg value="http://widgetfx.org/dock/launch.jnlp?arg=file:/${jnlp.dest.dir}/${launch.jnlp.file}"/>
+            <arg file="${jnlp.dest.dir}/${launch.jnlp.file}"/>
         </exec>
     </target>
     <target name="jws-debug" if="netbeans.home" depends="jar,-verify-jnlp-enabled,-verify-codebase,-debug-start-debugger,-debug-javaws-debuggee" 

@@ -132,7 +132,7 @@ public class WidgetToolbar extends Group {
                 onMouseReleased: function(e:MouseEvent) {
                     pressed = false;
                     if (hover) {
-                        WidgetManager.getInstance().showConfigDialog(instance.widget);    
+                        instance.showConfigDialog();    
                     }
                 }
             },

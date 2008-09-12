@@ -34,6 +34,8 @@ public class ErrorWidget extends Widget {
     
     public attribute errorLines:String[] = "uninitialized error";
     
+    override attribute autoLaunch = false;
+    
     override attribute resizable = true;
     
     override attribute stage = Stage {
