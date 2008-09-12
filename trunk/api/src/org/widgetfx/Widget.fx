@@ -16,8 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.widgetfx;
+
 import org.widgetfx.config.Configuration;
+import java.awt.EventQueue;
+import java.lang.Runnable;
+import java.lang.System;
+import java.net.URL;
 import javafx.application.Application;
+import javax.jnlp.BasicService;
+import javax.jnlp.ServiceManager;
 
 /**
  * Instance class for Widgets that can be deployed in the WidgetFX container.
@@ -132,4 +139,34 @@ public class Widget extends Application {
      * display.
      */
     public attribute onUndock:function():Void;
+    
+    /**
+     * Enables or disabled auto launch facility for testing widgets.  The default value
+     * is true to facilitate simple testing of widgets and debugging of deployed widgets.
+     *
+     * When autoLaunch is set to true, a Widget Runner will be invoked to run this widget
+     * in a different process.  The codebase and launchHref will be used to pass as
+     * parameters to the Widget Runner.  Once the Widget Runner has been started, this
+     * process will exit.
+     */
+    protected attribute autoLaunch = true;
+    
+    /**
+     * The href used to launch the Widget Runner process.  The default value is "launch.jnlp",
+     * and must be updated if you use a different jnlp filename.
+     */
+    protected attribute launchHref = "launch.jnlp";
+    
+    postinit {
+        // todo - replace with DeferredTask when it is safe to call it from the sandbox
+        EventQueue.invokeLater(Runnable {
+            public function run() {
+                if (autoLaunch) {
+                    var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+                    basicService.showDocument(new URL("http://widgetfx.org/dock/runner.jnlp?arg={basicService.getCodeBase()}{launchHref}"));
+                    System.exit(0);
+                }
+            }
+        });
+    }
 }

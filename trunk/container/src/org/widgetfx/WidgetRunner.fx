@@ -31,6 +31,10 @@ try { // try nimbus look and feel first
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 }
 
+for (arg in __ARGS__ where arg.equals("no-transparency")) {
+    WidgetFXConfiguration.TRANSPARENT = false;
+}
+
 var widgetCount = 0;
 
 function closeHook(frame:WidgetFrame) {
@@ -41,27 +45,13 @@ function closeHook(frame:WidgetFrame) {
     }
 }
 
-for (arg in __ARGS__) {
-    var instance = null;
-    if (arg.equals("no-transparency")) {
-        WidgetFXConfiguration.TRANSPARENT = false;
-    } else if (arg.toLowerCase().endsWith(".jnlp")) {
-        // todo - fix the id
-        instance = WidgetInstance{
-            jnlpUrl: arg
-            id: 1000 + indexof arg
-            docked: false
-        };
-    } else {
-        instance = WidgetInstance{
-            mainClass: arg
-            id: 1000 + indexof arg
-            docked: false
-        };
-    }
-    if (instance != null) {
-        widgetCount++;
-        instance.load();
-        instance.frame.onClose = closeHook;
-    }
+for (arg in __ARGS__ where arg.toLowerCase().endsWith(".jnlp")) {
+    // todo - fix the id
+    var instance = WidgetInstance {
+        jnlpUrl: arg
+        docked: false
+    };
+    widgetCount++;
+    instance.load();
+    instance.frame.onClose = closeHook;
 }
