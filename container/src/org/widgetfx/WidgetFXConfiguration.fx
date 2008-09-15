@@ -31,7 +31,7 @@ import org.widgetfx.config.*;
  * @author Keith Combs
  */
 public class WidgetFXConfiguration {
-    public static attribute VERSION = "0.1.3";
+    public static attribute VERSION = "0.1.4";
     public static attribute TRANSPARENT = true;
     public static attribute IS_MAC = System.getProperty("os.name").contains("Mac OS");
     
@@ -43,7 +43,9 @@ public class WidgetFXConfiguration {
     
     public attribute properties:Property[] = [];
     
-    public attribute widgetFXIcon = Image {url: getClass().getResource("nut3_16.png").toString()};
+    public attribute widgetFXIcon16 = Image {url: getClass().getResource("nut9_16.png").toString()};
+    public attribute widgetFXIcon16s = Image {url: getClass().getResource("nut9_16s.png").toString()};
+    public attribute widgetFXIcon16t = Image {url: getClass().getResource("nut9_16s.gif").toString()};
     
     public attribute codebase = (ServiceManager.lookup("javax.jnlp.BasicService") as BasicService).getCodeBase();
     

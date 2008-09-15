@@ -302,7 +302,7 @@ public class WidgetInstance {
     public function showConfigDialog():Void {
         if (widget.configuration != null) {
             configDialog = SwingDialog {
-                icons: WidgetFXConfiguration.getInstance().widgetFXIcon
+                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
                 title: "{title} Configuration"
                 resizable: false
                 closeAction: save
