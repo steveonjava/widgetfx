@@ -207,6 +207,7 @@ public class Dock extends BaseDialog {
     private function createTrayIcon() {
         var tray:JXTrayIcon = new JXTrayIcon(createImage());
         tray.setJPopupMenu(mainMenu);
+        tray.setToolTip("WidgetFX");
         tray.addActionListener(ActionListener {
                 public function actionPerformed(e) {
                     showDockAndWidgets();
@@ -220,13 +221,71 @@ public class Dock extends BaseDialog {
     }
     
     function createImage():java.awt.Image {
-        return WidgetFXConfiguration.getInstance().widgetFXIcon.getBufferedImage();
+        return WidgetFXConfiguration.getInstance().widgetFXIcon16t.getBufferedImage();
     }
     
     public function addWidget():Void {
         org.widgetfx.ui.AddWidgetDialog {}.showDialog();
     }
-    
+    /*
+    public function createNativeMainMenu():NativeMenu {
+        return NativeMenu {
+            items: [
+                NativeMenuItem {
+                    text: "Add Widget..."
+                    action: addWidget
+                },
+                NativeCheckBoxMenuItem {
+                    text: "Always on Top"
+                    selected: bind alwaysOnTop with inverse;
+                },
+                if (InstallUtil.startupSupported()) {
+                    NativeCheckBoxMenuItem {
+                        text: "Launch on Startup"
+                        selected: bind launchOnStartup with inverse
+                    }
+                } else {
+                    []
+                },
+                NativeMenu {
+                    text: "Dock Position"
+                    items: [
+                        NativeCheckBoxMenuItem {
+                            text: "Left"
+                            selected: bind dockLeft with inverse
+                        },
+                        NativeCheckBoxMenuItem {
+                            text: "Right"
+                            selected: bind dockRight with inverse
+                        }
+                    ]
+                },
+                NativeMenuItem {
+                    text: bind if (visible) "Hide" else "Show"
+                    action: function() {
+                        if (visible) {
+                            hideDock;
+                        } else {
+                            showDock();
+                        }
+                    }
+                },
+                NativeMenuItem {
+                    text: "Reload"
+                    action: function() {
+                        WidgetManager.getInstance().reload();
+                    }
+                },
+                NativeMenuItem {
+                    text: "Exit"
+                    action: function() {
+                        WidgetManager.getInstance().exit();
+                    }
+                }
+            ]
+        }
+    }
+    */
     public function createMainMenu():JPopupMenu {
         var menu = Menu {
             items: [
@@ -336,7 +395,7 @@ public class Dock extends BaseDialog {
     
     public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, localX:Integer, localY:Integer, animate:Boolean) {
         setupHoverAnimation(instance, localX, localY);
-        if (screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
+        if (visible and screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
             var index = widgetViews.size();
             for (view in widgetViews) {
                 var viewY = view.getBoundsY() + headerHeight;
@@ -363,7 +422,7 @@ public class Dock extends BaseDialog {
     }
     
     public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):java.awt.Rectangle {
-        if (screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
+        if (visible and screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
             animateHover.stop();
             animateHover = null;
             instance.undockedWidth = saveUndockedWidth;
@@ -434,8 +493,8 @@ public class Dock extends BaseDialog {
                 effect: DropShadow {radius: 5, offsetX: 2, offsetY: 2}
                 content: [
                     ImageView {
-                        translateY: -13
-                        image: WidgetFXConfiguration.getInstance().widgetFXIcon
+                        y: -13
+                        image: WidgetFXConfiguration.getInstance().widgetFXIcon16
                     },
                     Text {
                         font: Font {style: FontStyle.BOLD_ITALIC}
@@ -443,13 +502,14 @@ public class Dock extends BaseDialog {
                         content: " Widget"
                     },
                     Text {
-                        translateX: -3
+                        x: -3
                         font: Font {style: FontStyle.BOLD_ITALIC}
                         fill: Color.ORANGE
                         content: "FX"
                     },
                     Text {
-                        font: Font {style: FontStyle.ITALIC, size: 10}
+                        x: -3
+                        font: Font {style: FontStyle.ITALIC, size: 9}
                         fill: Color.WHITE
                         content: "v{WidgetFXConfiguration.VERSION}"
                     }
