@@ -11,6 +11,7 @@
         <property name="jnlp.packEnabled" value="true"/>
         <j2se version="1.6+"/>
         <jar href="WebFeed.jar" main="true" download="eager"/>
+        <jar href="lib/commons-lang-2.4.jar" download="eager"/>
         <jar href="lib/jdom-1.1.jar" download="eager"/>
         <jar href="lib/rome-0.9.jar" download="eager"/>
         <jar href="lib/rome-fetcher-0.9.jar" download="eager"/>
