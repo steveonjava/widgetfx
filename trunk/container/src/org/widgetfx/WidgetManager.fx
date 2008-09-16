@@ -51,7 +51,7 @@ public class WidgetManager {
         "{codebase}widgets/WebFeed/launch.jnlp"
     ];
     
-    public attribute recentWidgets:String[];
+    public attribute recentWidgets:String[] = [];
     
     private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
         IntegerSequenceProperty {
