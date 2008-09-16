@@ -128,6 +128,16 @@
 <tr>
 <th colspan="3" class="header">Protected</th>
 </tr>
+<tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx/org.widgetfx.Widget.html#autoLaunch"><b class="name">autoLaunch</b></a></td><td class="type"><a><i class="type">Boolean</i></a></td><td class="description">
+<p class="comment">Enables or disabled auto launch facility for testing widgets.</p>
+</td>
+</tr>
+<tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx/org.widgetfx.Widget.html#launchHref"><b class="name">launchHref</b></a></td><td class="type"><a><i class="type">String</i></a></td><td class="description">
+<p class="comment">The href used to launch the Widget Runner process.</p>
+</td>
+</tr>
 </table>
 <h3>Inherited Attributes</h3>
 <h3>Inherited Functions</h3>
@@ -153,6 +163,20 @@
 </div>
 <div class="attribute member profile-">
 <a>
+<h4 id="autoLaunch">
+<i class="modifiers">protected</i> <b class="name">autoLaunch</b>: <a><i class="type">Boolean</i></a>
+</h4>
+</a>
+<p class="comment">Enables or disabled auto launch facility for testing widgets.  The default value
+ is true to facilitate simple testing of widgets and debugging of deployed widgets.
+
+ When autoLaunch is set to true, a Widget Runner will be invoked to run this widget
+ in a different process.  The codebase and launchHref will be used to pass as
+ parameters to the Widget Runner.  Once the Widget Runner has been started, this
+ process will exit.</p>
+</div>
+<div class="attribute member profile-">
+<a>
 <h4 id="configuration">
 <i class="modifiers">public</i> <b class="name">configuration</b>: <a href="../org.widgetfx.config/org.widgetfx.config.Configuration.html"><i class="type">Configuration</i></a>
 </h4>
@@ -160,6 +184,15 @@
 <p class="comment">Configuration object for widgets.  This must be set in order to persist
  state between invocations of the widget container.  See the Configuration
  class for more information.</p>
+</div>
+<div class="attribute member profile-">
+<a>
+<h4 id="launchHref">
+<i class="modifiers">protected</i> <b class="name">launchHref</b>: <a><i class="type">String</i></a>
+</h4>
+</a>
+<p class="comment">The href used to launch the Widget Runner process.  The default value is "launch.jnlp",
+ and must be updated if you use a different jnlp filename.</p>
 </div>
 <div class="attribute member profile-">
 <a>

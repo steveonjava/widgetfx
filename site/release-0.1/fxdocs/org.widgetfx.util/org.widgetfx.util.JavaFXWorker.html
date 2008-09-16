@@ -75,6 +75,11 @@
 </td>
 </tr>
 <tr class="attribute profile-">
+<td class="name"><a href="../org.widgetfx.util/org.widgetfx.util.JavaFXWorker.html#onFailure"><b class="name">onFailure</b></a></td><td class="type"><a><i class="type">function(:ExecutionException):Void</i></a></td><td class="description">
+<p class="comment">Function that will be called if inBackground fails due to an exception.</p>
+</td>
+</tr>
+<tr class="attribute profile-">
 <td class="name"><a href="../org.widgetfx.util/org.widgetfx.util.JavaFXWorker.html#result"><b class="name">result</b></a></td><td class="type"><a><i class="type">Object</i></a></td><td class="description">
 <p class="comment">This attribute gets set to the result returned by the inBackground method
  if it is successful, and will also be passed in to the onDone handler.</p>
@@ -136,6 +141,22 @@
  can safely make changes to the UI state.
  <p>
  Failure to set this attribute will result in an NPE.</p>
+</div>
+<div class="attribute member profile-">
+<a>
+<h4 id="onFailure">
+<i class="modifiers">public</i> <b class="name">onFailure</b>: <a><i class="type">function(:ExecutionException):Void</i></a>
+</h4>
+</a>
+<p class="comment">Function that will be called if inBackground fails due to an exception.  The
+ exception is passed in as a parameter when this function is called, and the
+ attributes failed and failureText will be set to 'true' and the message of the
+ exception, respectively.
+ <p>
+ This function is guaranteed to be called on the Event Dispatch thread, and
+ can safely make changes to the UI state.
+ <p>
+ This attribute may be left null if no special handling of exceptions is required.</p>
 </div>
 <div class="attribute member profile-">
 <a>
