@@ -17,6 +17,7 @@
  */
 package org.widgetfx.widget.webfeed;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
 import org.widgetfx.util.*;
@@ -32,11 +33,11 @@ import javafx.scene.paint.*;
 import javafx.scene.transform.*;
 import javafx.scene.text.*;
 import javafx.scene.layout.*;
+import java.awt.Desktop;
 import java.lang.*;
+import java.net.URI;
 import java.net.URL;
 import java.util.Date;
-import java.net.URI;
-import java.awt.Desktop;
 
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.feed.synd.SyndEntryImpl;
@@ -116,7 +117,7 @@ private function createEntryDisplay(entry:SyndEntryImpl):Node {
                         font: Font {size: 11}
                         fill: Color.WHITE
                         textOrigin: TextOrigin.TOP
-                        text: entry.getTitle()
+                        text: StringEscapeUtils.unescapeHtml(entry.getTitle());
                         width: bind entryWidth - border * 2
                     },
                     Group {content: [

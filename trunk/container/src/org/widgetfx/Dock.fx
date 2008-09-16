@@ -38,6 +38,7 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.SystemTray;
+import java.awt.TrayIcon;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.ActionListener;
@@ -100,7 +101,7 @@ public class Dock extends BaseDialog {
         }
     ]);
     
-    private attribute mainMenu = createMainMenu();
+    private attribute mainMenu = createNativeMainMenu(window);
     private attribute logo:Node;
     private attribute content:GapVBox;
     private attribute headerHeight = bind BORDER * 2 + logo.getHeight();
@@ -205,8 +206,8 @@ public class Dock extends BaseDialog {
     }
     
     private function createTrayIcon() {
-        var tray:JXTrayIcon = new JXTrayIcon(createImage());
-        tray.setJPopupMenu(mainMenu);
+        var tray:TrayIcon = new TrayIcon(createImage());
+        tray.setPopupMenu(createNativeMainMenu(null).getPopupMenu());
         tray.setToolTip("WidgetFX");
         tray.addActionListener(ActionListener {
                 public function actionPerformed(e) {
@@ -227,34 +228,37 @@ public class Dock extends BaseDialog {
     public function addWidget():Void {
         org.widgetfx.ui.AddWidgetDialog {}.showDialog();
     }
-    /*
-    public function createNativeMainMenu():NativeMenu {
-        return NativeMenu {
+    
+    public function createNativeMainMenu(parent:java.awt.Component):NativePopupMenu {
+        return NativePopupMenu {
+            parent: parent
             items: [
                 NativeMenuItem {
                     text: "Add Widget..."
                     action: addWidget
                 },
-                NativeCheckBoxMenuItem {
+                NativeMenuSeparator {},
+                NativeCheckboxMenuItem {
                     text: "Always on Top"
                     selected: bind alwaysOnTop with inverse;
                 },
                 if (InstallUtil.startupSupported()) {
-                    NativeCheckBoxMenuItem {
+                    NativeCheckboxMenuItem {
                         text: "Launch on Startup"
                         selected: bind launchOnStartup with inverse
                     }
                 } else {
                     []
                 },
+                NativeMenuSeparator {},
                 NativeMenu {
                     text: "Dock Position"
                     items: [
-                        NativeCheckBoxMenuItem {
+                        NativeCheckboxMenuItem {
                             text: "Left"
                             selected: bind dockLeft with inverse
                         },
-                        NativeCheckBoxMenuItem {
+                        NativeCheckboxMenuItem {
                             text: "Right"
                             selected: bind dockRight with inverse
                         }
@@ -264,12 +268,13 @@ public class Dock extends BaseDialog {
                     text: bind if (visible) "Hide" else "Show"
                     action: function() {
                         if (visible) {
-                            hideDock;
+                            hideDock();
                         } else {
                             showDock();
                         }
                     }
                 },
+                NativeMenuSeparator {},
                 NativeMenuItem {
                     text: "Reload"
                     action: function() {
@@ -284,74 +289,6 @@ public class Dock extends BaseDialog {
                 }
             ]
         }
-    }
-    */
-    public function createMainMenu():JPopupMenu {
-        var menu = Menu {
-            items: [
-                MenuItem {
-                    text: "Add Widget..."
-                    action: addWidget
-                },
-                CheckBoxMenuItem {
-                    text: "Always on Top"
-                    selected: bind alwaysOnTop with inverse;
-                },
-                if (InstallUtil.startupSupported()) {
-                    CheckBoxMenuItem {
-                        text: "Launch on Startup"
-                        selected: bind launchOnStartup with inverse
-                    }
-                } else {
-                    []
-                },
-                Menu {
-                    var group = ToggleGroup {}
-                    text: "Dock Position"
-                    items: [
-                        RadioButtonMenuItem {
-                            text: "Left"
-                            toggleGroup: group
-                            selected: bind dockLeft with inverse
-                        },
-                        RadioButtonMenuItem {
-                            text: "Right"
-                            toggleGroup: group
-                            selected: bind dockRight with inverse
-                        }
-                    ]
-                },
-                MenuItem {
-                    text: bind if (visible) "Hide" else "Show"
-                    action: function() {
-                        if (visible) {
-                            hideDock;
-                        } else {
-                            showDock();
-                        }
-                    }
-                },
-                MenuItem {
-                    text: "Reload"
-                    action: function() {
-                        WidgetManager.getInstance().reload();
-                    }
-                },
-                MenuItem {
-                    text: "Exit"
-                    action: function() {
-                        WidgetManager.getInstance().exit();
-                    }
-                }
-            ]
-        }
-        // todo - replace with javafx Separator when one exists
-        // note: start with the bottom of the menu, because inserting separators changes the size
-        menu.getJMenu().insertSeparator(if (InstallUtil.startupSupported()) 5 else 4);
-        menu.getJMenu().insertSeparator(if (InstallUtil.startupSupported()) 3 else 2);
-        menu.getJMenu().insertSeparator(1);
-        // todo - create a javafx PopupMenu directly when one exists
-        return menu.getJMenu().getPopupMenu();
     }
     
     private attribute animateHover:Timeline;
@@ -574,7 +511,7 @@ public class Dock extends BaseDialog {
                 color = BUTTON_COLOR;
             }
             onMouseReleased: function(e:MouseEvent) {
-                mainMenu.show(window, e.getStageX(), e.getStageY());
+                mainMenu.show(window, e.getStageX().intValue(), e.getStageY().intValue());
             }
         }
         var hideButton = Group {
