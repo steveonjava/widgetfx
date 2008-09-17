@@ -2,8 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Untitled Document</title>
+<title>WidgetFX</title>
 <script type="text/javascript" src="iepngfix_tilebg.js"></script>
+<!--[if lte IE 6]>
+<style type="text/css">
+.transparentImage { behavior: url(iepngfix.htc) }
+</style>
+<![endif]-->
 <style type="text/css">
 <!--
 body {
@@ -42,10 +47,7 @@ div.transbox {
   padding: 7px 7px 7px 7px;
   background-image: url(transparent.png);
 }
-.transparentImage { behavior: url(iepngfix.htc) }
 .style7 {font-family: Geneva, Arial, Helvetica, sans-serif; font-size: 10pt; font-weight: bold; }
-
-
 -->
 </style></head>
 
@@ -53,7 +55,7 @@ div.transbox {
 
 <div id="container">
   <div id="mainContent">
-    <div class="transbox">
+    <div class="transbox transparentImage">
     	<span class="style7">Description:</span>    	<span class="style2">WidgetFX is a desktop widget platform written in the new JavaFX Script language. It can run widgets written in JavaFX Script and Java and takes advantage of the latest features in the Java Consumer JRE (Java SE 6 update 10).</span><br />
     </div>
     <table width="100%" border="0" cellspacing="0" cellpadding="11">
@@ -62,7 +64,7 @@ div.transbox {
         <td><img src="download-sdk.png" alt="Download SDK" width="250" height="53" class="transparentImage"/></td>
       </tr>
     </table>
-    <div class="transbox">
+    <div class="transbox transparentImage">
       <span class="style7">Getting Started:</span>
       <span class="style2">This release is targeted at developers who are interested in authoring new widgets.  To learn how to create your own widget:</span>
       <ul class="style2">
