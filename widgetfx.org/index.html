@@ -22,6 +22,7 @@ body {
 	margin: 0 auto; /* the auto margins (in conjunction with a width) center the page */
 	text-align: left; /* this overrides the text-align: center on the body element. */
 	background-image: url(background.jpg);
+	background-repeat: no-repeat;
 }
 .oneColFixCtr #mainContent {
 	padding: 146px 230px 20px 40px; /* remember that padding is the space inside the div box and margin is the space outside the div box */
@@ -39,12 +40,7 @@ body {
 div.transbox {
   width: 100%;
   padding: 7px 7px 7px 7px;
-  background-color: #ffffff;
-  border: 1px solid black;
-  /* for IE */
-  filter:alpha(opacity=70);
-  /* CSS3 standard */
-  opacity:0.7;
+  background-image: url(transparent.png);
 }
 .transparentImage { behavior: url(iepngfix.htc) }
 .style7 {font-family: Geneva, Arial, Helvetica, sans-serif; font-size: 10pt; font-weight: bold; }
