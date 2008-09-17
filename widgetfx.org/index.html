@@ -11,6 +11,10 @@
 <![endif]-->
 <style type="text/css">
 <!--
+ul {
+margin: 5px;
+padding-left: 3em; /* or pick another offset */
+}
 body {
 	font: 100% Verdana, Arial, Helvetica, sans-serif;
 	background-color: #341006;
@@ -23,14 +27,14 @@ body {
 }
 .oneColFixCtr #container {
 	width: 780px;  /* using 20px less than a full 800px width allows for browser chrome and avoids a horizontal scroll bar */
-	height: 678px;
+	height: 834px;
 	margin: 0 auto; /* the auto margins (in conjunction with a width) center the page */
 	text-align: left; /* this overrides the text-align: center on the body element. */
 	background-image: url(background.jpg);
 	background-repeat: no-repeat;
 }
 .oneColFixCtr #mainContent {
-	padding: 146px 230px 20px 40px; /* remember that padding is the space inside the div box and margin is the space outside the div box */
+	padding: 0px 230px 20px 40px; /* remember that padding is the space inside the div box and margin is the space outside the div box */
 }
 .style2 {
 	font-family: Geneva, Arial, Helvetica, sans-serif;
@@ -47,7 +51,41 @@ div.transbox {
   padding: 7px 7px 7px 7px;
   background-image: url(transparent.png);
 }
-.style7 {font-family: Geneva, Arial, Helvetica, sans-serif; font-size: 10pt; font-weight: bold; }
+.style5 {
+	font-size: 12pt;
+	font-weight: bold;
+}
+.style7 {font-family: Geneva, Arial, Helvetica, sans-serif; font-size: 12pt; }
+.headerImage {
+	padding: 5px 0px 15px 0px;
+}
+a#button1 {
+    display: block;
+    width: 240px;
+    height: 59px;
+    background-image: url(launch-dock.png);
+    margin: 0 auto;
+}
+a#button1:hover {
+    background-image: url(launch-dock-hover.png);
+}
+a#button1:active {
+    background-image: url(launch-dock-pressed.png);
+}
+a#button2 {
+    display: block;
+    width: 262px;
+    height: 59px;
+    background-image: url(download-sdk.png);
+    margin: 0 auto;
+}
+a#button2:hover {
+    background-image: url(download-sdk-hover.png);
+}
+a#button2:active {
+    background-image: url(download-sdk-pressed.png);
+}
+a .alt { display: none; }
 -->
 </style></head>
 
@@ -55,31 +93,44 @@ div.transbox {
 
 <div id="container">
   <div id="mainContent">
-    <div class="transbox transparentImage">
-    	<span class="style7">Description:</span>    	<span class="style2">WidgetFX is a desktop widget platform written in the new JavaFX Script language. It can run widgets written in JavaFX Script and Java and takes advantage of the latest features in the Java Consumer JRE (Java SE 6 update 10).</span><br />
+    <div align="center" class="headerImage"><img src="widgetfx-logo.png" alt="WidgetFX Logo" width="454" height="120" />
     </div>
-    <table width="100%" border="0" cellspacing="0" cellpadding="11">
+    <div class="transbox transparentImage">      <span class="style2">WidgetFX is an open-source desktop widget platform written from the ground up in the  JavaFX Script language. It can run widgets written in JavaFX Script and Java and takes advantage of the latest features in the Java Consumer JRE (Java SE 6 Update 10).
+        <br />
+        <br />
+      <strong>Key Features</strong>:
+      <ul>
+        <li><strong>Open-Source</strong> - WidgetFX is the only open-source widget container (widgets themselves can be licensed commercially)</li>
+        <li><strong>Cross-platform Support</strong> - WidgetFX runs on all major platforms and is the  only widget framework that runs natively on Linux.</li>
+        <li><strong>One-click Installation</strong> - WidgetFX takes advantage of Java Web Start to provide one-click installation and automatic updates of the dock <strong>and</strong> widgets.</li>
+        <li><strong>Rich Desktop Applications</strong> - WidgetFX leverages the full power of Java  providing a very rich library of visual, animation, and media capabilities.</li>
+      </ul>
+      </span></div>
+      <br />
+    <div class="transbox transparentImage"><span class="style2">
+      <strong>
+      Prerequisites</strong>: WidgetFX requires Java SE 6 or higher. For best results install <a href="https://jdk6.dev.java.net/6u10ea.html">Java SE 6 Update 10</a>.</span><br />
+    </div>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 20px 0px 20px 0px">
       <tr>
-        <td><img src="launch-doc.png" alt="Launch Dock" width="232" height="54" class="transparentImage"/></td>
-        <td><img src="download-sdk.png" alt="Download SDK" width="250" height="53" class="transparentImage"/></td>
+        <td><a href="http://widgetfx.org/dock/launch.jnlp" id="button1" class="transparentImage"><span class="alt">Launch Dock</span></a></td>
+        <td align="right"><a href="http://code.google.com/p/widgetfx/downloads/list" id="button2" class="transparentImage"></a><a href="http://code.google.com/p/widgetfx/downloads/list"><span class="alt">Download SDK</span></a></td>
       </tr>
     </table>
     <div class="transbox transparentImage">
-      <span class="style7">Getting Started:</span>
-      <span class="style2">This release is targeted at developers who are interested in authoring new widgets.  To learn how to create your own widget:</span>
-      <ul class="style2">
-        <li>Give the Hello World tutorial a try.  It introduces the basics of widget development in JavaFX Script.</li>
-        <li>Read up on JavaFX Script.  There are lots of interesting things you can do with this technology, and when combined with Java libraries anything is possible.</li>
-        <li>Join the user mailing list.  The WidgetFX team is glad to answer questions or hear comments and feedback directly from users: http://groups.google.com/group/widgetfx-users<br />
-        </li>
-    </ul>
-    </div>
-      <p class="style2">&nbsp;</p>
-    <p>&nbsp;</p>
-      <p>&nbsp;</p>
-      <p>&nbsp;</p>
-      <p>&nbsp;</p>
-      <p>
+      <span class="style5">WidgetFX 0.1 Release</span>
+      <span class="style2"><br />
+      <br />
+      This release is targeted at developers who are interested in authoring new widgets.  To learn how to create your own widgets:
+      <ul>
+        <li>Give the <a href="tutorial/HelloWorldTutorial.html">Hello World Widget Tutorial</a> a try.  It introduces the basics of widget development in JavaFX Script.</li>
+        <li>For  help coding JavaFX Script, there are plenty of good resources, including <a href="http://learnjavafx.typepad.com/">Jim Weaver's blog</a>.</li>
+        <li>Join the <a href="http://groups.google.com/group/widgetfx-users">WidgetFX User Mailing List</a>.  The WidgetFX team is glad to answer questions or hear comments and feedback directly from users.</li>
+      </ul>
+      <br />
+      </span>
+      <span class="style7">
+      For more information visit the <a href="http://code.google.com/p/widgetfx/">WidgetFX Project Website</a></span></div>
         <!-- end #mainContent -->
     </p>
 </div>
