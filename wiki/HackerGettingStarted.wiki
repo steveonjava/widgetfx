@@ -1,4 +1,5 @@
 #summary Getting started with developing on the codebase for hackers
+#labels Featured
 
 = Introduction =
 
