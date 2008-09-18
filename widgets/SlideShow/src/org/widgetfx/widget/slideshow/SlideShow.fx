@@ -64,6 +64,10 @@ var nextImage:Image;
 var worker:JavaFXWorker;
 var timeline:Timeline;
 var tabbedPane:JTabbedPane;
+var maxFiles = 10000;
+var maxFolders = 1000;
+var folderCount = 0;
+var fileCount = 0;
 
 private function initTimeline() {
     imageIndex = 0;
@@ -122,7 +126,15 @@ private function loadDirectory() {
             worker.cancel();
         }
         status = "Loading Images...";
+        folderCount = 0;
+        fileCount = 0;
         imageFiles = getImageFiles(directory);
+        if (fileCount > maxFiles) {
+            System.out.println("Slide Show exceeded limit of {maxFiles} image files.");
+        }
+        if (folderCount > maxFolders) {
+            System.out.println("Slide Show exceeded limit of {maxFolders} folders to scan.");
+        }
         if (imageFiles.size() > 0) {
             if (shuffle) {
                 imageFiles = Sequences.shuffle(imageFiles) as File[];
@@ -146,7 +158,14 @@ private function excludesFile(name:String):Boolean {
 
 private function getImageFiles(directory:File):File[] {
     var emptyFile:File[] = [];
-    var files = Arrays.asList(directory.listFiles());
+    if (folderCount++ >= maxFolders or fileCount >= maxFiles) {
+        return emptyFile;
+    }
+    var fileArray = directory.listFiles();
+    if (fileArray == null) {
+        return emptyFile;
+    }
+    var files = Arrays.asList(fileArray);
     return for (file in files) {
         var name = file.getName();
         if (excludesFile(name)) {
@@ -157,6 +176,7 @@ private function getImageFiles(directory:File):File[] {
             if (file.isDirectory()) {
                 getImageFiles(file);
             } else if (extension != null and ImageIO.getImageReadersBySuffix(extension).hasNext()) {
+                fileCount++;
                 file;
             } else {
                 emptyFile;
@@ -307,6 +327,14 @@ Widget {
             StringProperty {
                 name : "keywords"
                 value : bind keywords with inverse
+            },
+            IntegerProperty {
+                name: "maxFiles"
+                value: bind maxFiles with inverse
+            },
+            IntegerProperty {
+                name: "maxFolders"
+                value: bind maxFolders with inverse
             }
         ]
 
