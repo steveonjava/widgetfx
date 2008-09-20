@@ -42,7 +42,11 @@ public class ConfigPersister {
     
     public attribute autoSave = false;
     
+    public attribute mergeProperties = false;
+    
     private attribute disableAutoSave = true;
+    
+    private attribute savedProperties:Properties;
     
     private function changeListener(changedProperty:Property):Void {
         if (not disableAutoSave and (autoSave or changedProperty.autoSave)) {
@@ -64,7 +68,7 @@ public class ConfigPersister {
         disableAutoSave = true;
         try {
             if (file.exists() and properties != null) {
-                var savedProperties = Properties {};
+                savedProperties = Properties {};
                 var reader = new FileReader(file);
                 try {
                     savedProperties.load(reader);
@@ -83,6 +87,9 @@ public class ConfigPersister {
             }
         } finally {
             disableAutoSave = false;
+            if (not mergeProperties) {
+                savedProperties = null;
+            }
         }
         return false;
     }
@@ -91,7 +98,9 @@ public class ConfigPersister {
         validateRequiredAttributes();
         disableAutoSave = false;
         if (properties != null) {
-            var savedProperties = Properties {};
+            if (not mergeProperties or savedProperties == null) {
+                savedProperties = Properties {};
+            }
             for (property in properties) {
                 savedProperties.put(property.name, property.getStringValue());
             }

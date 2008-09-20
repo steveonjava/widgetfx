@@ -43,6 +43,8 @@ public class WidgetFXConfiguration {
     
     public attribute properties:Property[] = [];
     
+    public attribute mergeProperties = false;
+    
     public attribute widgetFXIcon16 = Image {url: getClass().getResource("nut9_16.png").toString()};
     public attribute widgetFXIcon16s = Image {url: getClass().getResource("nut9_16s.png").toString()};
     public attribute widgetFXIcon16t = Image {url: getClass().getResource("nut9_16s.gif").toString()};
@@ -74,6 +76,7 @@ public class WidgetFXConfiguration {
         file: getPropertyFile()
         properties: bind properties
         autoSave: true
+        mergeProperties: bind mergeProperties
     }
     
     public function load() {
