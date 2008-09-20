@@ -33,11 +33,20 @@ import org.widgetfx.ui.ErrorWidget;
  */
 public class WidgetManager {
     
-    private static attribute instance = WidgetManager {}
+    private static attribute instance:WidgetManager;
+    
+    public static function createWidgetRunnerInstance() {
+        instance = WidgetManager {widgetRunner: true};
+    }
     
     public static function getInstance() {
+        if (instance == null) {
+            instance = WidgetManager {};
+        }
         return instance;
     }
+    
+    public attribute widgetRunner = false;
     
     public attribute codebase = WidgetFXConfiguration.getInstance().codebase;
     
@@ -67,7 +76,7 @@ public class WidgetManager {
     private attribute updating:Boolean;
 
     private attribute widgetIds:Integer[] on replace [i..j]=newWidgetIds {
-        if (not updating) {
+        if (not widgetRunner and not updating) {
             try {
                 updating = true;
                 widgets[i..j] = for (id in newWidgetIds) loadWidget(id);
@@ -103,7 +112,9 @@ public class WidgetManager {
     };
 
     init {
-        sis.addSingleInstanceListener(sil);
+        if (not widgetRunner) {
+            sis.addSingleInstanceListener(sil);
+        }
         // todo - implement a widget security policy
         System.setSecurityManager(null);
     }
@@ -116,7 +127,9 @@ public class WidgetManager {
     }
     
     public function exit() {
-        sis.removeSingleInstanceListener(sil);
+        if (sis != null) {
+            sis.removeSingleInstanceListener(sil);
+        }
         System.exit(0);
     }
     
@@ -158,7 +171,7 @@ public class WidgetManager {
         return instance
     }
     
-    private function addRecentWidget(instance:WidgetInstance):Void {
+    public function addRecentWidget(instance:WidgetInstance):Void {
         if (instance.widget instanceof ErrorWidget or
             Sequences.indexOf(recentWidgets, instance.jnlpUrl) != -1) {
             return;

@@ -17,6 +17,7 @@
  */
 package org.widgetfx;
 
+import org.widgetfx.ui.AddWidgetDialog;
 import javafx.lang.DeferredTask;
 import javax.swing.UIManager;
 import java.lang.System;
@@ -45,13 +46,32 @@ function closeHook(frame:WidgetFrame) {
     }
 }
 
-for (arg in __ARGS__ where arg.toLowerCase().endsWith(".jnlp")) {
-    // todo - fix the id
+function runWidget(jnlpUrl:String) {
     var instance = WidgetInstance {
-        jnlpUrl: arg
+        jnlpUrl: jnlpUrl
         docked: false
     };
     widgetCount++;
     instance.load();
     instance.frame.onClose = closeHook;
+    WidgetManager.getInstance().addRecentWidget(instance);
+}
+
+WidgetManager.createWidgetRunnerInstance();
+WidgetFXConfiguration.getInstance().mergeProperties = true;
+WidgetFXConfiguration.getInstance().load();
+
+for (arg in __ARGS__ where arg.toLowerCase().endsWith(".jnlp")) {
+    runWidget(arg);
+}
+
+if (widgetCount == 0) {
+    AddWidgetDialog {
+        addHandler: function(jnlpFile:String) {
+            runWidget(jnlpFile);
+        }
+        cancelHandler: function() {
+            System.exit(0);
+        }
+    }
 }

@@ -226,7 +226,11 @@ public class Dock extends BaseDialog {
     }
     
     public function addWidget():Void {
-        org.widgetfx.ui.AddWidgetDialog {}.showDialog();
+        AddWidgetDialog {
+            addHandler: function(jnlpUrl:String):Void {
+                WidgetManager.getInstance().addWidget(jnlpUrl);
+            }
+        }
     }
     
     public function createNativeMainMenu(parent:java.awt.Component):NativePopupMenu {

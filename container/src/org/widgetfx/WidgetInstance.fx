@@ -117,7 +117,11 @@ public class WidgetInstance {
                 var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
                 var document = builder.parse(resolve(jnlpUrl));
                 var xpath = XPathFactory.newInstance().newXPath();
-                var codeBase = new URL(xpath.evaluate("/jnlp/@codebase", document, XPathConstants.STRING) as String);
+                var codeBaseString = xpath.evaluate("/jnlp/@codebase", document, XPathConstants.STRING) as String;
+                if (not codeBaseString.endsWith("/")) {
+                    codeBaseString += '/';
+                }
+                var codeBase = new URL(codeBaseString);
                 var widgetNodes = xpath.evaluate("/jnlp/resources/jar", document, XPathConstants.NODESET) as NodeList;
                 var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
                 for (i in [0..widgetNodes.getLength()-1]) {

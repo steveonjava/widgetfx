@@ -30,13 +30,30 @@ import javax.swing.filechooser.FileFilter;
  */
 public class AddWidgetDialog {
     
-    public attribute jnlpUrl:String;
+    public attribute addHandler:function(jnlpUrl:String):Void;
+    
+    public attribute cancelHandler:function():Void;
+    
+    private attribute jnlpUrl:String;
+    
+    private attribute dialog:Dialog;
+    
+    postinit {
+        showDialog();
+    }
     
     private attribute selected:ListItem on replace {
         jnlpUrl = selected.text;
     }
     
-    public function showDialog() {
+    private function cancel() {
+        dialog.close();
+        if (cancelHandler != null) {
+            cancelHandler();
+        }
+    }
+    
+    private function showDialog() {
         var widgetList = List {
             selectedItem: bind selected with inverse
             items: for (url in WidgetManager.getInstance().recentWidgets) ListItem {
@@ -65,11 +82,12 @@ public class AddWidgetDialog {
             }
         }
 
-        var dialog:Dialog = Dialog {
+        dialog = Dialog {
             title: "Add Widget"
             visible: true
             resizable: false
             icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
+            closeAction: cancel
             stage: Stage {
                 content: ComponentView {
                     component: BorderPanel {
@@ -119,15 +137,15 @@ public class AddWidgetDialog {
                                 Button {
                                     text: "Add"
                                     action: function() {
-                                        WidgetManager.getInstance().addWidget(jnlpUrl);
                                         dialog.close();
+                                        if (addHandler != null) {
+                                            addHandler(jnlpUrl);
+                                        }
                                     }
                                 },
                                 Button {
                                     text: "Cancel"
-                                    action: function() {
-                                        dialog.close();
-                                    }
+                                    action: cancel
                                 }
                             ]
                         }
