@@ -1,0 +1,28 @@
+RewriteEngine on
+RewriteCond %{HTTP_HOST} !^widgetfx.org$ [NC]
+RewriteRule ^(.*)$ http://widgetfx.org/$1 [L,R=301]
+
+ErrorDocument 400 /errors/file.php?error=400
+ErrorDocument 401 /errors/file.php?error=401
+ErrorDocument 402 /errors/file.php?error=402
+ErrorDocument 403 /errors/file.php?error=403
+ErrorDocument 404 /errors/file.php?error=404
+ErrorDocument 405 /errors/file.php?error=405
+ErrorDocument 406 /errors/file.php?error=406
+ErrorDocument 407 /errors/file.php?error=407
+ErrorDocument 408 /errors/file.php?error=408
+ErrorDocument 409 /errors/file.php?error=409
+ErrorDocument 410 /errors/file.php?error=410
+ErrorDocument 411 /errors/file.php?error=411
+ErrorDocument 412 /errors/file.php?error=412
+ErrorDocument 413 /errors/file.php?error=413
+ErrorDocument 414 /errors/file.php?error=414
+ErrorDocument 415 /errors/file.php?error=415
+ErrorDocument 416 /errors/file.php?error=416
+ErrorDocument 417 /errors/file.php?error=417
+ErrorDocument 500 /errors/file.php?error=500
+ErrorDocument 501 /errors/file.php?error=501
+ErrorDocument 502 /errors/file.php?error=502
+ErrorDocument 503 /errors/file.php?error=503
+ErrorDocument 504 /errors/file.php?error=504
+ErrorDocument 505 /errors/file.php?error=505
