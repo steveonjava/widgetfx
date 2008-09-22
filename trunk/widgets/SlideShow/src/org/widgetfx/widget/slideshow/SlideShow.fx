@@ -351,6 +351,9 @@ Widget {
         width: bind width with inverse
         height: bind height with inverse
         content: [
+            ImageView {
+                image: bind currentImage
+            },
             Group {
                 content: [
                     Rectangle {
@@ -368,9 +371,6 @@ Widget {
                     }
                 ]
                 opacity: bind if (status == null) 0 else 1;
-            },
-            ImageView {
-                image: bind currentImage
             }
         ]
     }
