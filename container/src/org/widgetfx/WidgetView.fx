@@ -81,14 +81,24 @@ public class WidgetView extends Group {
             },
             Group { // Widget with DropShadow
                 translateY: TOP_BORDER
-                effect: bind if (resizing or dock.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
-                content: Group {
-                    translateX: Dock.BORDER
-                    content: widget.stage.content
-                    clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
-                    horizontalAlignment: HorizontalAlignment.CENTER
-                    translateX: bind dock.width / 2
-                }
+                translateX: bind (dock.width - widget.stage.width) / 2
+                content: [
+                    Group { // Rear Slice
+                        cache: true
+                        content: Group { // Drop Shadow
+                            effect: bind if (resizing or dock.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
+                            content: Group { // Clip Group
+                                content: bind widget.stage.content[0]
+                                clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                            }
+                        }
+                    },
+                    Group { // Front Slices
+                        cache: true
+                        content: bind widget.stage.content[1..]
+                        clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                    },
+                ]
             },
             WidgetToolbar {
                 blocksMouse: true

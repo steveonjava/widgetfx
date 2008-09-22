@@ -79,7 +79,7 @@ public class WidgetFrame extends BaseDialog {
         height = widgetHeight;
     }
 
-    private attribute resizing:Boolean on replace {
+    attribute resizing:Boolean on replace {
         updateFocus();
     }
     private attribute dragging:Boolean on replace {
@@ -368,16 +368,25 @@ public class WidgetFrame extends BaseDialog {
         stage = Stage {
             content: [
                 dragRect,
-                Group { // Widget Content
-                    cache: true
+                Group { // Widget with DropShadow
                     translateX: BORDER, translateY: BORDER + toolbarHeight
-                    content: Group {
-                        effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
-                        content: Group {
-                            content: widget.stage.content
+                    content: [
+                        Group { // Rear Slice
+                            cache: true
+                            content: Group { // Drop Shadow
+                                effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                                content: Group { // Clip Group
+                                    content: bind widget.stage.content[0]
+                                    clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                                }
+                            }
+                        },
+                        Group { // Front Slices
+                            cache: true
+                            content: bind widget.stage.content[1..]
                             clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
-                        }
-                    }
+                        },
+                    ]
                     opacity: bind (instance.opacity as Number) / 100
                 },
                 Group { // Transparency Slider

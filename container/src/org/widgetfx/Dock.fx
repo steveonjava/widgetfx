@@ -296,6 +296,10 @@ public class Dock extends BaseDialog {
     }
     
     private attribute animateHover:Timeline;
+    private attribute animatingInstance:WidgetInstance;
+    private attribute animating = bind if (animateHover == null) false else animateHover.running on replace {
+        animatingInstance.frame.resizing = animating;
+    }
     private attribute animateDocked:Boolean;
     private attribute saveUndockedWidth:Integer;
     private attribute saveUndockedHeight:Integer;
@@ -304,6 +308,7 @@ public class Dock extends BaseDialog {
     
     public function setupHoverAnimation(instance:WidgetInstance, localX:Integer, localY:Integer) {
         if (animateHover == null) {
+            animatingInstance = instance;
             xHoverOffset = 0;
             yHoverOffset = 0;
             saveUndockedWidth = instance.undockedWidth;
@@ -460,6 +465,7 @@ public class Dock extends BaseDialog {
         var addWidgetButton = Group {
             var color = BUTTON_COLOR;
             translateY: 7
+            cache: true
             content: [
                 Circle {
                     stroke: bind color
@@ -492,6 +498,7 @@ public class Dock extends BaseDialog {
         var mainMenuButton:Group = Group {
             var color = BUTTON_COLOR;
             translateY: 7
+            cache: true
             content: [
                 Circle {
                     stroke: bind color
@@ -521,6 +528,7 @@ public class Dock extends BaseDialog {
         var hideButton = Group {
             var color = BUTTON_COLOR;
             translateY: 7
+            cache: true
             content: [
                 Circle {
                     stroke: bind color
