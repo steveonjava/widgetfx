@@ -43,6 +43,17 @@ public class WidgetView extends Group {
     private attribute initialScreenPosX:Integer;
     private attribute initialScreenPosY:Integer;
     
+    private attribute scale:Number = bind calculateScale();
+    
+    private bound function calculateScale():Number {
+        var dockWidth:Number = dock.width - Dock.BORDER * 2;
+        return if (widget.resizable or widget.stage.width < dockWidth) {
+            1.0;
+        } else {
+            dockWidth / widget.stage.width;
+        }
+    }
+    
     private attribute firstRollover = true;
         
     private attribute hasFocus:Boolean on replace {
@@ -75,13 +86,13 @@ public class WidgetView extends Group {
         cache = true;
         content = [
             Rectangle { // Invisible Spacer
-                height: bind widget.stage.height + TOP_BORDER + BOTTOM_BORDER
+                height: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER
                 width: bind dock.width
                 fill: Color.rgb(0, 0, 0, 0.0)
             },
             Group { // Widget with DropShadow
                 translateY: TOP_BORDER
-                translateX: bind (dock.width - widget.stage.width) / 2
+                translateX: bind (dock.width - widget.stage.width * scale) / 2
                 content: [
                     Group { // Rear Slice
                         cache: true
@@ -90,6 +101,7 @@ public class WidgetView extends Group {
                             content: Group { // Clip Group
                                 content: bind widget.stage.content[0]
                                 clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                                scaleX: bind scale, scaleY: bind scale
                             }
                         }
                     },
@@ -97,12 +109,13 @@ public class WidgetView extends Group {
                         cache: true
                         content: bind widget.stage.content[1..]
                         clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                        scaleX: bind scale, scaleY: bind scale
                     },
                 ]
             },
             WidgetToolbar {
                 blocksMouse: true
-                translateX: bind (dock.width + widget.stage.width) / 2
+                translateX: bind (dock.width + widget.stage.width * scale) / 2
                 horizontalAlignment: HorizontalAlignment.RIGHT
                 opacity: bind rolloverOpacity
                 instance: instance
@@ -115,7 +128,7 @@ public class WidgetView extends Group {
             Group { // Drag Bar
                 blocksMouse: true
                 translateX: Dock.BORDER
-                translateY: bind widget.stage.height + TOP_BORDER + BOTTOM_BORDER - 3
+                translateY: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER - 3
                 content: [
                     Line {endX: bind dock.width - Dock.BORDER * 2, stroke: Color.BLACK, strokeWidth: 1, opacity: bind dock.rolloverOpacity / 4},
                     Line {endX: bind dock.width - Dock.BORDER * 2, stroke: Color.BLACK, strokeWidth: 1, opacity: bind dock.rolloverOpacity, translateY: 1},
@@ -127,13 +140,13 @@ public class WidgetView extends Group {
                 onMousePressed: function(e:MouseEvent) {
                     if (widget.resizable) {
                         resizing = true;
-                        initialHeight = widget.stage.height;
+                        initialHeight = widget.stage.height * scale;
                         initialY = e.getStageY().intValue();
                     }
                 }
                 onMouseDragged: function(e:MouseEvent) {
                     if (resizing) {
-                        widget.stage.height = initialHeight + e.getStageY().intValue() - initialY;
+                        widget.stage.height = (initialHeight + (e.getStageY().intValue() - initialY) / scale).intValue();
                         if (widget.stage.height < WidgetInstance.MIN_HEIGHT) {
                             widget.stage.height = WidgetInstance.MIN_HEIGHT;
                         }
@@ -167,7 +180,7 @@ public class WidgetView extends Group {
                 var yPos;
                 if (instance.docked) {
                     dock.dragging = true;
-                    xPos = dock.x + (dock.width - widget.stage.width) / 2 - WidgetFrame.BORDER;
+                    xPos = (dock.x + (dock.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                     var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
                     yPos = dock.y + e.getStageY().intValue() - e.getY().intValue() + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight) - 1;
                     instance.frame = WidgetFrame {

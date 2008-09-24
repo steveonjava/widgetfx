@@ -226,100 +226,102 @@ public class WidgetFrame extends BaseDialog {
                 Rectangle { // background
                     translateX: BORDER, translateY: BORDER
                     width: bind width - BORDER * 2, height: bind boxHeight - BORDER * 2
-                    fill: backgroundColor, stroke: null
+                    fill: backgroundColor
                     opacity: bind (instance.opacity as Number) / 100
                 },
-                Rectangle { // NW resize corner
-                    width: BORDER, height: BORDER
-                    stroke: null, fill: backgroundColor
-                    cursor: Cursor.NW_RESIZE
-                    blocksMouse: true
-                    onMousePressed: startResizing
-                    onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(-xDelta, -yDelta, true, true, false, false);
-                    })
-                    onMouseReleased: doneResizing
-                },
-                Rectangle { // N resize corner
-                    translateX: BORDER, width: bind width - BORDER * 2, height: BORDER
-                    stroke: null, fill: backgroundColor
-                    cursor: Cursor.N_RESIZE
-                    blocksMouse: true
-                    onMousePressed: startResizing
-                    onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(0, -yDelta, false, true, false, true);
-                    })
-                    onMouseReleased: doneResizing
-                },
-                Rectangle { // NE resize corner
-                    translateX: bind width - BORDER, width: BORDER, height: BORDER
-                    stroke: null, fill: backgroundColor
-                    cursor: Cursor.NE_RESIZE
-                    blocksMouse: true
-                    onMousePressed: startResizing
-                    onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(xDelta, -yDelta, false, true, false, false);
-                    })
-                    onMouseReleased: doneResizing
-                },
-                Rectangle { // E resize corner
-                    translateX: bind width - BORDER, translateY: BORDER
-                    width: BORDER, height: bind boxHeight - BORDER * 2
-                    stroke: null, fill: backgroundColor
-                    cursor: Cursor.E_RESIZE
-                    blocksMouse: true
-                    onMousePressed: startResizing
-                    onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(xDelta, 0, false, false, true, false);
-                    })
-                    onMouseReleased: doneResizing
-                },
-                Rectangle { // SE resize corner
-                    translateX: bind width - BORDER, translateY: bind boxHeight - BORDER
-                    width: BORDER, height: BORDER
-                    stroke: null, fill: backgroundColor
-                    cursor: Cursor.SE_RESIZE
-                    blocksMouse: true
-                    onMousePressed: startResizing
-                    onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(xDelta, yDelta, false, false, false, false);
-                    })
-                    onMouseReleased: doneResizing
-                },
-                Rectangle { // S resize corner
-                    translateX: BORDER, translateY: bind boxHeight - BORDER
-                    width: bind width - BORDER * 2, height: BORDER
-                    stroke: null, fill: backgroundColor
-                    cursor: Cursor.S_RESIZE
-                    blocksMouse: true
-                    onMousePressed: startResizing
-                    onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(0, yDelta, false, false, false, true);
-                    })
-                    onMouseReleased: doneResizing
-                },
-                Rectangle { // SW resize corner
-                    translateY: bind boxHeight - BORDER, width: BORDER, height: BORDER
-                    stroke: null, fill: backgroundColor
-                    cursor: Cursor.SW_RESIZE
-                    blocksMouse: true
-                    onMousePressed: startResizing
-                    onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(-xDelta, yDelta, true, false, false, false);
-                    })
-                    onMouseReleased: doneResizing
-                },
-                Rectangle { // W resize corner
-                    translateY: BORDER, width: BORDER, height: bind boxHeight - BORDER * 2
-                    stroke: null, fill: backgroundColor
-                    cursor: Cursor.W_RESIZE
-                    blocksMouse: true
-                    onMousePressed: startResizing
-                    onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        resize(-xDelta, 0, true, false, true, false);
-                    })
-                    onMouseReleased: doneResizing
-                },
+                if (instance.widget.resizable) then [
+                    Rectangle { // NW resize corner
+                        width: BORDER, height: BORDER
+                        stroke: null, fill: backgroundColor
+                        cursor: Cursor.NW_RESIZE
+                        blocksMouse: true
+                        onMousePressed: startResizing
+                        onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
+                            resize(-xDelta, -yDelta, true, true, false, false);
+                        })
+                        onMouseReleased: doneResizing
+                    },
+                    Rectangle { // N resize corner
+                        translateX: BORDER, width: bind width - BORDER * 2, height: BORDER
+                        stroke: null, fill: backgroundColor
+                        cursor: Cursor.N_RESIZE
+                        blocksMouse: true
+                        onMousePressed: startResizing
+                        onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
+                            resize(0, -yDelta, false, true, false, true);
+                        })
+                        onMouseReleased: doneResizing
+                    },
+                    Rectangle { // NE resize corner
+                        translateX: bind width - BORDER, width: BORDER, height: BORDER
+                        stroke: null, fill: backgroundColor
+                        cursor: Cursor.NE_RESIZE
+                        blocksMouse: true
+                        onMousePressed: startResizing
+                        onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
+                            resize(xDelta, -yDelta, false, true, false, false);
+                        })
+                        onMouseReleased: doneResizing
+                    },
+                    Rectangle { // E resize corner
+                        translateX: bind width - BORDER, translateY: BORDER
+                        width: BORDER, height: bind boxHeight - BORDER * 2
+                        stroke: null, fill: backgroundColor
+                        cursor: Cursor.E_RESIZE
+                        blocksMouse: true
+                        onMousePressed: startResizing
+                        onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
+                            resize(xDelta, 0, false, false, true, false);
+                        })
+                        onMouseReleased: doneResizing
+                    },
+                    Rectangle { // SE resize corner
+                        translateX: bind width - BORDER, translateY: bind boxHeight - BORDER
+                        width: BORDER, height: BORDER
+                        stroke: null, fill: backgroundColor
+                        cursor: Cursor.SE_RESIZE
+                        blocksMouse: true
+                        onMousePressed: startResizing
+                        onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
+                            resize(xDelta, yDelta, false, false, false, false);
+                        })
+                        onMouseReleased: doneResizing
+                    },
+                    Rectangle { // S resize corner
+                        translateX: BORDER, translateY: bind boxHeight - BORDER
+                        width: bind width - BORDER * 2, height: BORDER
+                        stroke: null, fill: backgroundColor
+                        cursor: Cursor.S_RESIZE
+                        blocksMouse: true
+                        onMousePressed: startResizing
+                        onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
+                            resize(0, yDelta, false, false, false, true);
+                        })
+                        onMouseReleased: doneResizing
+                    },
+                    Rectangle { // SW resize corner
+                        translateY: bind boxHeight - BORDER, width: BORDER, height: BORDER
+                        stroke: null, fill: backgroundColor
+                        cursor: Cursor.SW_RESIZE
+                        blocksMouse: true
+                        onMousePressed: startResizing
+                        onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
+                            resize(-xDelta, yDelta, true, false, false, false);
+                        })
+                        onMouseReleased: doneResizing
+                    },
+                    Rectangle { // W resize corner
+                        translateY: BORDER, width: BORDER, height: bind boxHeight - BORDER * 2
+                        stroke: null, fill: backgroundColor
+                        cursor: Cursor.W_RESIZE
+                        blocksMouse: true
+                        onMousePressed: startResizing
+                        onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
+                            resize(-xDelta, 0, true, false, true, false);
+                        })
+                        onMouseReleased: doneResizing
+                    }
+                ] else [],
                 Rectangle { // outer border
                     width: bind width - 1, height: bind boxHeight - 1
                     stroke: Color.BLACK
@@ -330,23 +332,27 @@ public class WidgetFrame extends BaseDialog {
                     stroke: Color.WHITESMOKE
                 }
             ]
-            onMousePressed: saveInitialPos;
+            onMousePressed: function(e) {
+                if (e.getButton() == 1) {
+                    dragging = true;
+                    saveInitialPos(e);
+                }
+            }
             onMouseDragged: function(e) {
-                if (not docking) {
+                if (dragging and not docking) {
                     var hoverOffset = if (Dock.getInstance() == null) {
                         [0, 0]
                     } else {
                         Dock.getInstance().hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
                     }
                     mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        dragging = true;
                         x = initialX + xDelta + hoverOffset[0];
                         y = initialY + yDelta + hoverOffset[1];
                     })(e);
                 }
             }
             onMouseReleased: function(e) {
-                if (not docking) {
+                if (e.getButton() == 1 and not docking) {
                     dragging = false;
                     if (Dock.getInstance() != null) {
                         var targetBounds = Dock.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
@@ -361,7 +367,7 @@ public class WidgetFrame extends BaseDialog {
         }
         var slider = Slider {
             minimum: 20
-            maximum: 100
+            maximum: 99 // todo - hack to prevent swing component defect -- needs further investigation
             value: bind instance.opacity with inverse
             preferredSize: bind [width * 2 / 5, 16]
         }

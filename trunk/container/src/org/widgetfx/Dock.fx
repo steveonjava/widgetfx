@@ -153,15 +153,15 @@ public class Dock extends BaseDialog {
     private attribute leftBG = bind LinearGradient {
         endY: 0
         stops: [
-            Stop {offset: 0.0, color: Color.color(0, 0, 0, bgOpacity)},
-            Stop {offset: 1.0, color: Color.color(0, 0, 0, 0)}
+            Stop {offset: 0.0, color: Color.color(0.3, 0.1, 0.1, bgOpacity)},
+            Stop {offset: 1.0, color: Color.color(0.3, 0.1, 0.1, 0)}
         ]
     }
     private attribute rightBG = bind LinearGradient {
         endY: 0
         stops: [
-            Stop {offset: 0.0, color: Color.color(0, 0, 0, 0)},
-            Stop {offset: 1.0, color: Color.color(0, 0, 0, bgOpacity)}
+            Stop {offset: 0.0, color: Color.color(0.3, 0.1, 0.1, 0)},
+            Stop {offset: 1.0, color: Color.color(0.3, 0.1, 0.1, bgOpacity)}
         ]
     }
     
@@ -427,40 +427,43 @@ public class Dock extends BaseDialog {
     attribute rolloverOpacity = 0.01;
     attribute rolloverTimeline = Timeline {
         autoReverse: true, toggle: true
-        keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY tween Interpolator.EASEBOTH]}
+        keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY * 1.1 tween Interpolator.EASEBOTH]}
     }
     
     private function loadContent():Void {
         closeAction = function() {WidgetManager.getInstance().exit()};
-        logo = Group { // Logo Text
-            cache: true
-            content: HBox {
-                translateX: BORDER, translateY: BORDER + 11
-                effect: DropShadow {radius: 5, offsetX: 2, offsetY: 2}
-                content: [
-                    ImageView {
-                        y: -13
-                        image: WidgetFXConfiguration.getInstance().widgetFXIcon16
-                    },
-                    Text {
-                        font: Font {style: FontStyle.BOLD_ITALIC}
-                        fill: Color.WHITE
-                        content: " Widget"
-                    },
-                    Text {
-                        x: -3
-                        font: Font {style: FontStyle.BOLD_ITALIC}
-                        fill: Color.ORANGE
-                        content: "FX"
-                    },
-                    Text {
-                        x: -3
-                        font: Font {style: FontStyle.ITALIC, size: 9}
-                        fill: Color.WHITE
-                        content: "v{WidgetFXConfiguration.VERSION}"
-                    }
-                ]
-            }
+//        logo = Group { // Logo Text
+//            cache: true
+//            content: HBox {
+//                translateX: BORDER, translateY: BORDER + 11
+//                effect: DropShadow {radius: 5, offsetX: 2, offsetY: 2}
+//                content: [
+//                    ImageView {
+//                        y: -13
+//                        image: WidgetFXConfiguration.getInstance().widgetFXIcon16
+//                    },
+//                    Text {
+//                        font: Font {style: FontStyle.BOLD_ITALIC}
+//                        fill: Color.WHITE
+//                        content: " Widget"
+//                    },
+//                    Text {
+//                        x: -3
+//                        font: Font {style: FontStyle.BOLD_ITALIC}
+//                        fill: Color.ORANGE
+//                        content: "FX"
+//                    },
+//                    Text {
+//                        x: -3
+//                        font: Font {style: FontStyle.ITALIC, size: 9}
+//                        fill: Color.WHITE
+//                        content: "v{WidgetFXConfiguration.VERSION}"
+//                    }
+//                ]
+//            }
+//        }
+        logo = ImageView {
+            image: Image {url: "{__DIR__}inovis-logo.png"}
         }
         var addWidgetButton = Group {
             var color = BUTTON_COLOR;
