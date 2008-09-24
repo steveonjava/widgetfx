@@ -39,8 +39,6 @@ Dock.createInstance();
 
 DeferredTask {
     action: function() {
-        for (arg in __ARGS__ where arg.toLowerCase().endsWith(".jnlp")) {
-            WidgetManager.getInstance().addWidget(arg);
-        }
+        WidgetManager.getInstance().loadParams(__ARGS__);
     }
 }

@@ -47,8 +47,10 @@ import java.awt.GraphicsEnvironment;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+import java.util.Properties;
 import java.io.*;
 import java.lang.*;
+import java.net.URL;
 
 /**
  * @author Stephen Chin
@@ -72,7 +74,38 @@ public class Dock extends BaseDialog {
     
     public static function getInstance() {
         return instance;
-    }    
+    }
+    
+    private attribute logoUrl:String;
+    private attribute backgroundStartColor = [0.0, 0.0, 0.0];
+    private attribute backgroundEndColor = [0.0, 0.0, 0.0];
+    
+    private attribute themeProperties = [
+        StringProperty {
+            name: "logoUrl"
+            value: bind logoUrl with inverse;
+        },
+        NumberSequenceProperty {
+            name: "backgroundStartColor"
+            value: bind backgroundStartColor with inverse;
+        },
+        NumberSequenceProperty {
+            name: "backgroundEndColor"
+            value: bind backgroundEndColor with inverse;
+        }
+    ];
+    
+    public attribute theme:String on replace {
+        if (not theme.isEmpty()) {
+            var savedProperties = Properties {};
+            savedProperties.load((new URL(theme)).openStream());
+            for (property in themeProperties) {
+                if (savedProperties.containsKey(property.name)) {
+                    property.setStringValue(savedProperties.get(property.name) as String);
+                }
+            }
+        }
+    }
     
     private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
         StringProperty {
@@ -102,7 +135,13 @@ public class Dock extends BaseDialog {
     ]);
     
     private attribute mainMenu = createNativeMainMenu(window);
-    private attribute logo:Node;
+    private attribute logo:Node = bind if (logoUrl.isEmpty()) {
+        createWidgetFXLogo()
+    } else {
+        ImageView { // resolve the logoUrl against the theme
+            image: Image {url: (new URL(new URL(theme), logoUrl)).toString()}
+        }
+    }
     private attribute content:GapVBox;
     private attribute headerHeight = bind BORDER * 2 + logo.getHeight();
     private attribute dockedWidgets = bind WidgetManager.getInstance().widgets[w|w.docked];
@@ -150,18 +189,20 @@ public class Dock extends BaseDialog {
     
     private attribute transparentBG = bind if (dockLeft) leftBG else rightBG;
     private attribute bgOpacity = BG_OPACITY;
+    private attribute startColor = bind Color.color(backgroundStartColor[0], backgroundStartColor[1], backgroundStartColor[2], 0);
+    private attribute endColor = bind Color.color(backgroundEndColor[0], backgroundEndColor[1], backgroundEndColor[2], bgOpacity);
     private attribute leftBG = bind LinearGradient {
         endY: 0
         stops: [
-            Stop {offset: 0.0, color: Color.color(0.3, 0.1, 0.1, bgOpacity)},
-            Stop {offset: 1.0, color: Color.color(0.3, 0.1, 0.1, 0)}
+            Stop {offset: 0.0, color: endColor},
+            Stop {offset: 1.0, color: startColor}
         ]
     }
     private attribute rightBG = bind LinearGradient {
         endY: 0
         stops: [
-            Stop {offset: 0.0, color: Color.color(0.3, 0.1, 0.1, 0)},
-            Stop {offset: 1.0, color: Color.color(0.3, 0.1, 0.1, bgOpacity)}
+            Stop {offset: 0.0, color: startColor},
+            Stop {offset: 1.0, color: endColor}
         ]
     }
     
@@ -427,44 +468,44 @@ public class Dock extends BaseDialog {
     attribute rolloverOpacity = 0.01;
     attribute rolloverTimeline = Timeline {
         autoReverse: true, toggle: true
-        keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY * 1.1 tween Interpolator.EASEBOTH]}
+        keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY * 1.2 tween Interpolator.EASEBOTH]}
+    }
+    
+    private function createWidgetFXLogo():Group {
+        return Group {
+            cache: true
+            content: HBox {
+                translateX: BORDER, translateY: BORDER + 11
+                effect: DropShadow {radius: 5, offsetX: 2, offsetY: 2}
+                content: [
+                    ImageView {
+                        y: -13
+                        image: WidgetFXConfiguration.getInstance().widgetFXIcon16
+                    },
+                    Text {
+                        font: Font {style: FontStyle.BOLD_ITALIC}
+                        fill: Color.WHITE
+                        content: " Widget"
+                    },
+                    Text {
+                        x: -3
+                        font: Font {style: FontStyle.BOLD_ITALIC}
+                        fill: Color.ORANGE
+                        content: "FX"
+                    },
+                    Text {
+                        x: -3
+                        font: Font {style: FontStyle.ITALIC, size: 9}
+                        fill: Color.WHITE
+                        content: "v{WidgetFXConfiguration.VERSION}"
+                    }
+                ]
+            }
+        }
     }
     
     private function loadContent():Void {
         closeAction = function() {WidgetManager.getInstance().exit()};
-//        logo = Group { // Logo Text
-//            cache: true
-//            content: HBox {
-//                translateX: BORDER, translateY: BORDER + 11
-//                effect: DropShadow {radius: 5, offsetX: 2, offsetY: 2}
-//                content: [
-//                    ImageView {
-//                        y: -13
-//                        image: WidgetFXConfiguration.getInstance().widgetFXIcon16
-//                    },
-//                    Text {
-//                        font: Font {style: FontStyle.BOLD_ITALIC}
-//                        fill: Color.WHITE
-//                        content: " Widget"
-//                    },
-//                    Text {
-//                        x: -3
-//                        font: Font {style: FontStyle.BOLD_ITALIC}
-//                        fill: Color.ORANGE
-//                        content: "FX"
-//                    },
-//                    Text {
-//                        x: -3
-//                        font: Font {style: FontStyle.ITALIC, size: 9}
-//                        fill: Color.WHITE
-//                        content: "v{WidgetFXConfiguration.VERSION}"
-//                    }
-//                ]
-//            }
-//        }
-        logo = ImageView {
-            image: Image {url: "{__DIR__}inovis-logo.png"}
-        }
         var addWidgetButton = Group {
             var color = BUTTON_COLOR;
             translateY: 7
@@ -572,8 +613,9 @@ public class Dock extends BaseDialog {
         }
         stage = Stage {
             content: [
-//                ImageView {image:backgroundImage, opacity: .9},      
-                logo,
+                Group {
+                    content: bind logo
+                },
                 menus,
                 content,
                 Group { // Drag Bar

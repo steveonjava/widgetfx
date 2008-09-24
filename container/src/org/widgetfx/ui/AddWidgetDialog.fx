@@ -46,6 +46,13 @@ public class AddWidgetDialog {
         jnlpUrl = selected.text;
     }
     
+    private function add() {
+        dialog.close();
+        if (addHandler != null) {
+            addHandler(jnlpUrl);
+        }
+    }
+    
     private function cancel() {
         dialog.close();
         if (cancelHandler != null) {
@@ -61,7 +68,7 @@ public class AddWidgetDialog {
             }
         }
         var listLabel = Label {text: "Recent Widgets:", labelFor: widgetList}
-        var jarField = TextField {text: bind jnlpUrl with inverse, hmin: 300, hmax: 300};
+        var jarField = TextField {text: bind jnlpUrl with inverse, hmin: 300, hmax: 300, action: add};
         var jarLabel = Label {text: "Widget URL:", labelFor: jarField};
         var browsebutton:Button = Button {
             text: "Browse...";
@@ -136,12 +143,7 @@ public class AddWidgetDialog {
                             content: [
                                 Button {
                                     text: "Add"
-                                    action: function() {
-                                        dialog.close();
-                                        if (addHandler != null) {
-                                            addHandler(jnlpUrl);
-                                        }
-                                    }
+                                    action: add
                                 },
                                 Button {
                                     text: "Cancel"
