@@ -237,11 +237,15 @@ public class WidgetInstance {
 
     private function initializeDimensions() {
         if (docked) {
-            widget.stage.width = dockedWidth;
-            widget.stage.height = dockedHeight;
+            if (widget.resizable) {
+                widget.stage.width = dockedWidth;
+                widget.stage.height = dockedHeight;
+            }
         } else {
-            widget.stage.width = undockedWidth;
-            widget.stage.height = undockedHeight;
+            if (widget.resizable) {
+                widget.stage.width = undockedWidth;
+                widget.stage.height = undockedHeight;
+            }
             frame = WidgetFrame {
                 instance: this
                 x: undockedX, y: undockedY

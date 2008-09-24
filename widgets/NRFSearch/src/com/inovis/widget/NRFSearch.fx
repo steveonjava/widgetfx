@@ -6,6 +6,8 @@
 
 package com.inovis.widget;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.widgetfx.*;
 import javafx.application.*;
 import javafx.scene.geometry.*;
@@ -16,11 +18,33 @@ import javafx.scene.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.*;
 import javafx.scene.effect.*;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathConstants;
 
 /**
  * @author Stephen Chin
  * @author Keith Comb
  */
+var searchText:String;
+var colorList:ListItem[];
+
+public function doSearch():Void {
+    var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+    var document = builder.parse("http://catalogue.inovis.com/QRSGUI/widget/nrfColorCodes?ss={searchText}");
+    var xpath = XPathFactory.newInstance().newXPath();
+    var colorCodes = xpath.evaluate("//colorCodeNrf", document, XPathConstants.NODESET) as NodeList;
+    colorList = for (i in [0..colorCodes.getLength()-1]) {
+        var element = colorCodes.item(i) as Element;
+        var colorCode = element.getElementsByTagName("colorCode").item(0).getTextContent();
+        var color = element.getElementsByTagName("color").item(0).getTextContent();
+        var colorGroup = element.getElementsByTagName("colorGroup").item(0).getTextContent();
+        ListItem {
+            text: "{colorCode} - {color} / {colorGroup}"
+        }
+    }
+}
+
 Widget {
     var transparent = Color.rgb(0, 0, 0, 0);
     var border = 5;
@@ -29,7 +53,26 @@ Widget {
     var width = 300;
     var height = 250;
     
-    var searchText:String;
+    var searchField = ComponentView {
+        translateX: 3
+        blocksMouse: true
+        component: TextField {
+            x: 30
+            borderless: true
+            selectOnFocus: true
+            preferredSize: [200, textHeight]
+            font: Font {
+                size: 11
+            }
+            background: transparent
+            text: bind searchText with inverse
+            action: doSearch
+        }
+    }
+    
+    onStart: function() {
+        searchField.requestFocus();
+    }
     
     stage: Stage {
         width: width
@@ -60,38 +103,7 @@ Widget {
                         blocksMouse: true
                         component: List {
                             preferredSize: [width - border * 2, height - titleHeight - border * 2 - 58]
-                            items: [
-                                ListItem {
-                                    text: "First Item";
-                                },
-                                ListItem {
-                                    text: "Second Item";
-                                },
-                                ListItem {
-                                    text: "Third Item";
-                                },
-                                ListItem {
-                                    text: "Fourth Item";
-                                },
-                                ListItem {
-                                    text: "Fifth Item";
-                                },
-                                ListItem {
-                                    text: "First Item";
-                                },
-                                ListItem {
-                                    text: "Second Item";
-                                },
-                                ListItem {
-                                    text: "Third Item";
-                                },
-                                ListItem {
-                                    text: "Fourth Item";
-                                },
-                                ListItem {
-                                    text: "Fifth Item";
-                                }
-                            ]
+                            items: bind colorList
                             font: Font {
                                 size: 11
                             }
@@ -127,30 +139,14 @@ Widget {
                                             offsetY: 2
                                         }                                
                                     },
-                                    ComponentView {
-                                        translateX: 3
-                                        blocksMouse: true
-                                        component: TextField {
-                                            x: 30
-                                            borderless: true
-                                            preferredSize: [200, textHeight]
-                                            font: Font {
-                                                size: 11
-                                            }
-                                            background: transparent
-                                            text: bind searchText with inverse
-                                        }
-                                    }
+                                    searchField
                                 ]
                             },
                             ComponentView {
                                 blocksMouse: true
                                 component: Button {
-//                                    text: "Search"
-//                                    action: function() {
-//                                        var connection = new URL("http://catalogue.inovis.com/QRSGUI/widget/nrfColorCodes?ss={searchText}").openConnection();
-//                                        connection.getInputStream();
-//                                    }
+                                    text: "Search"
+                                    action: doSearch
                                 }
                             }
                         ]
