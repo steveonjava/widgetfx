@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="$$codebase" href="$$name">
+    <information>
+        <title>Bind to Function</title>
+        <vendor>Jim Weaver</vendor>
+        <description>Bind to Function example from Jim Weaver's blog</description>
+        <description kind="short">Bind to Function</description>
+        <homepage href=""/>
+    </information>
+    <resources>
+        <property name="jnlp.packEnabled" value="true"/>
+        <j2se version="1.6+"/>
+        <jar href="BindToFunction.jar" main="true" download="eager"/>
+    </resources>
+    <application-desc main-class="com.javafxpert.bind_to_function.BindToFunctionWidget">
+    </application-desc>
+</jnlp>
