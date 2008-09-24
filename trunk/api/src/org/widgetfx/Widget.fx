@@ -21,6 +21,7 @@ import org.widgetfx.config.Configuration;
 import java.awt.EventQueue;
 import java.lang.Runnable;
 import java.lang.System;
+import java.lang.Throwable;
 import java.net.URL;
 import javafx.application.Application;
 import javax.jnlp.BasicService;
@@ -162,9 +163,13 @@ public class Widget extends Application {
         EventQueue.invokeLater(Runnable {
             public function run() {
                 if (autoLaunch) {
-                    var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
-                    basicService.showDocument(new URL("http://widgetfx.org/dock/runner.jnlp?arg={basicService.getCodeBase()}{launchHref}"));
-                    System.exit(0);
+                    try {
+                        var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+                        basicService.showDocument(new URL("http://widgetfx.org/dock/runner.jnlp?arg={basicService.getCodeBase()}{launchHref}"));
+                        System.exit(0);
+                    } catch (e:Throwable) {
+                        // not running in Web Start, continue running the applet
+                    }
                 }
             }
         });

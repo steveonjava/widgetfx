@@ -97,15 +97,22 @@ public class WidgetManager {
         }
     }
     
+    public function loadParams(params:String[]) {
+        for (param in params where param.toLowerCase().endsWith(".jnlp")) {
+            addWidget(param);
+        }
+        for (param in params where param.toLowerCase().endsWith(".theme")) {
+            Dock.getInstance().theme = param;
+        }
+    }
+    
     private attribute sis = ServiceManager.lookup("javax.jnlp.SingleInstanceService") as SingleInstanceService;
     private attribute sil = SingleInstanceListener {
         public function newActivation(params) {
             DeferredTask {
                 action: function() {
                     Dock.getInstance().showDockAndWidgets();
-                    for (param in Arrays.asList(params) where param.toLowerCase().endsWith(".jnlp")) {
-                        addWidget(param);
-                    }
+                    loadParams(for (s in Arrays.asList(params)) s);
                 }
             }
         }
