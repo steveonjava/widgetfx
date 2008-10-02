@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.widgetfx;
+
+import org.widgetfx.toolbar.WidgetToolbar;
 import javafx.animation.*;
 import javafx.input.*;
 import javafx.lang.DeferredTask;

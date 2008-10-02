@@ -17,6 +17,7 @@
  */
 package org.widgetfx;
 
+import org.widgetfx.toolbar.WidgetToolbar;
 import org.widgetfx.ui.BaseDialog;
 import javafx.application.WindowStyle;
 import javafx.application.Stage;
