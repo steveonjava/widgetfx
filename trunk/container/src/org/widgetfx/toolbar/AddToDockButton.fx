@@ -17,52 +17,55 @@
  */
 package org.widgetfx.toolbar;
 
+import org.widgetfx.*;
+import java.net.URL;
 import javafx.scene.*;
 import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
 import javafx.scene.transform.*;
+import javax.jnlp.*;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class CloseButton extends ToolbarButton {
-    public attribute onClose:function():Void;
+public class AddToDockButton extends ToolbarButton {
+    public static attribute PUBLIC_CODEBASE = "http://widgetfx.org/dock/";
     
-    override attribute name = "Close";
+    override attribute name = "Add to Dock";
     
-    override attribute visible = bind toolbar.instance.widget.configuration == null;
+    private attribute basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
     
     protected function performAction() {
-        if (toolbar.onClose != null) {
-            toolbar.onClose();
-        }
+        basicService.showDocument(new URL("{PUBLIC_CODEBASE}launch.jnlp?arg={toolbar.instance.jnlpUrl}"));
     }
+    
+    override attribute visible = bind WidgetManager.getInstance().widgetRunner or not basicService.getCodeBase().toString().equals(PUBLIC_CODEBASE);
     
     protected function getShape() {
         [Line { // Border
             stroke: bind Color.BLACK
             strokeWidth: 4
-            startX: -3, startY: -3
-            endX: 3, endY: 3
+            startX: -3, startY: 0
+            endX: 3, endY: 0
         },
         Line { // Border
             stroke: bind Color.BLACK
             strokeWidth: 4
-            startX: 3, startY: -3
-            endX: -3, endY: 3
+            startX: 0, startY: -3
+            endX: 0, endY: 3
         },
         Line {// X Line
             stroke: bind highlightColor
             strokeWidth: 3
-            startX: -3, startY: -3
-            endX: 3, endY: 3
+            startX: -3, startY: 0
+            endX: 3, endY: 0
         },
         Line {// X Line
             stroke: bind highlightColor
             strokeWidth: 3
-            startX: 3, startY: -3
-            endX: -3, endY: 3
+            startX: 0, startY: -3
+            endX: 0, endY: 3
         }];
     }
 }

@@ -425,7 +425,6 @@ public class WidgetFrame extends BaseDialog {
                 },
                 WidgetToolbar {
                     translateX: bind width
-                    horizontalAlignment: HorizontalAlignment.RIGHT
                     opacity: bind rolloverOpacity
                     instance: instance
                     onClose: function() {
