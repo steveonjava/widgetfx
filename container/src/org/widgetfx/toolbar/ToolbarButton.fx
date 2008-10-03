@@ -17,6 +17,7 @@
  */
 package org.widgetfx.toolbar;
 
+import org.widgetfx.*;
 import javafx.animation.*;
 import javafx.input.*;
 import javafx.scene.*;
@@ -31,6 +32,10 @@ import javafx.scene.paint.*;
 public abstract class ToolbarButton extends Group {
     private static attribute pressedColor = Color.rgb(54, 101, 143);
 
+    public attribute toolbar:WidgetToolbar;
+
+    public attribute name:String;
+    
     protected abstract function performAction():Void;
 
     protected abstract function getShape():Node[];
@@ -63,9 +68,11 @@ public abstract class ToolbarButton extends Group {
     }
     override attribute onMouseEntered = function(e) {
         hover = true;
+        toolbar.setName(name);
     }
     override attribute onMouseExited = function(e) {
         hover = false;
+        toolbar.setName(null);
     }
     
     private attribute pressed = false;

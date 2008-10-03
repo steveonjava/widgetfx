@@ -22,13 +22,14 @@ import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.input.MouseEvent;
-import javafx.scene.Group;
+import javafx.scene.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.geometry.Circle;
 import javafx.scene.geometry.Line;
 import javafx.scene.geometry.Rectangle;
 import javafx.scene.geometry.ShapeSubtract;
 import javafx.scene.paint.Color;
+import javafx.scene.text.*;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 
@@ -46,48 +47,85 @@ public class WidgetToolbar extends Group {
     
     public attribute instance:WidgetInstance;
     
+    private attribute selectedName:String = null;
+    
+    public function setName(name:String):Void {
+        selectedName = name;
+    }
+    
     public attribute onClose:function():Void;
-
+    
     public attribute buttons = bind [
-        if (instance.widget.configuration == null) then []
-        else ConfigButton {
-            instance: bind instance
+        ConfigButton {
+            toolbar: this
+        },
+        AddToDockButton {
+            toolbar: this
         },
         CloseButton {
-            onClose: bind onClose
+            toolbar: this
         }
     ];
-
-    public attribute toolbarWidth = bind buttons.size() * (BUTTON_SIZE + BUTTON_SPACING) - BUTTON_SPACING + BUTTON_BORDER * 2;
-
-    override attribute clip = Rectangle { // Clip
-        width: bind toolbarWidth + 1
-        height: TOOLBAR_HEIGHT + 1
-    };
     
+    public attribute visibleButtons = bind buttons[b|b.visible];
+
+    public attribute toolbarWidth = bind visibleButtons.size() * (BUTTON_SIZE + BUTTON_SPACING) - BUTTON_SPACING + BUTTON_BORDER * 2;
+    
+    private attribute text = Text {
+        visible: bind selectedName != null
+        translateX: bind -toolbarWidth - BUTTON_BORDER * 2
+        translateY: BUTTON_BORDER
+        content: bind selectedName
+        textOrigin: TextOrigin.TOP
+        horizontalAlignment: HorizontalAlignment.RIGHT
+        fill: Color.BLACK
+        font: Font {size: 10}
+    }
+
     override attribute content = bind [
-        Rectangle { // Border
-            width: bind toolbarWidth
+        Group { // Buttons
+            translateX: bind -toolbarWidth - 1
+            clip: Rectangle { // Clip
+                width: bind toolbarWidth + 1
+                height: TOOLBAR_HEIGHT + 1
+            }
+            content: bind [
+                Rectangle { // Border
+                    width: bind toolbarWidth
+                    height: TOOLBAR_HEIGHT
+                    arcWidth: TOOLBAR_HEIGHT
+                    arcHeight: TOOLBAR_HEIGHT
+                    stroke: Color.BLACK
+                },
+                Rectangle { // Background
+                    translateX: 1
+                    translateY: 1
+                    width: bind toolbarWidth - 2
+                    height: TOOLBAR_HEIGHT - 2
+                    arcWidth: TOOLBAR_HEIGHT - 2
+                    arcHeight: TOOLBAR_HEIGHT - 2
+                    stroke: Color.WHITE
+                    fill: BACKGROUND
+                    opacity: 0.7
+                },
+                for (button in visibleButtons) Group {
+                    translateX: BUTTON_SIZE / 2 + BUTTON_BORDER + (BUTTON_SIZE + BUTTON_SPACING) * indexof button
+                    translateY: BUTTON_SIZE / 2 + BUTTON_BORDER
+                    content: button
+                }
+            ]
+        },
+        Rectangle {
+            visible: bind selectedName != null
+            translateX: bind -toolbarWidth - BUTTON_BORDER
+            width: bind text.getWidth() + BUTTON_BORDER * 2
             height: TOOLBAR_HEIGHT
             arcWidth: TOOLBAR_HEIGHT
             arcHeight: TOOLBAR_HEIGHT
-            stroke: Color.BLACK
+            horizontalAlignment: HorizontalAlignment.RIGHT
+            fill: Color.WHITESMOKE
+            opacity: .7
         },
-        Rectangle { // Background
-            translateX: 1
-            translateY: 1
-            width: bind toolbarWidth - 2
-            height: TOOLBAR_HEIGHT - 2
-            arcWidth: TOOLBAR_HEIGHT - 2
-            arcHeight: TOOLBAR_HEIGHT - 2
-            stroke: Color.WHITE
-            fill: BACKGROUND
-            opacity: 0.7
-        },
-        for (button in buttons) Group {
-            translateX: BUTTON_SIZE / 2 + BUTTON_BORDER + (BUTTON_SIZE + BUTTON_SPACING) * indexof button
-            translateY: BUTTON_SIZE / 2 + BUTTON_BORDER
-            content: button
-        }
+        text
     ];
 }

@@ -118,7 +118,6 @@ public class WidgetView extends Group {
             WidgetToolbar {
                 blocksMouse: true
                 translateX: bind (dock.width + widget.stage.width * scale) / 2
-                horizontalAlignment: HorizontalAlignment.RIGHT
                 opacity: bind rolloverOpacity
                 instance: instance
                 onMouseEntered: function(e) {requestFocus(true)}

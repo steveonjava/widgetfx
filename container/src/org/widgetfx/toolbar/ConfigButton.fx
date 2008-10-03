@@ -28,10 +28,11 @@ import javafx.scene.transform.*;
  * @author Keith Combs
  */
 public class ConfigButton extends ToolbarButton {
-    public attribute instance:WidgetInstance;
+    
+    override attribute name = "Configuration";
     
     protected function performAction() {
-        instance.showConfigDialog();
+        toolbar.instance.showConfigDialog();
     }
     
     protected function getShape() {
