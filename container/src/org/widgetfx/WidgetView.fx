@@ -18,6 +18,7 @@
 package org.widgetfx;
 
 import org.widgetfx.toolbar.WidgetToolbar;
+import org.widgetfx.ui.WidgetContainer;
 import javafx.animation.*;
 import javafx.input.*;
 import javafx.lang.DeferredTask;
@@ -34,7 +35,7 @@ public class WidgetView extends Group {
     public static attribute TOP_BORDER = 3;
     public static attribute BOTTOM_BORDER = 7;
     
-    public attribute dock:Dock;
+    public attribute container:WidgetContainer;
     public attribute instance:WidgetInstance;
     private attribute widget = bind instance.widget;
     
@@ -48,7 +49,7 @@ public class WidgetView extends Group {
     private attribute scale:Number = bind calculateScale();
     
     private bound function calculateScale():Number {
-        var dockWidth:Number = dock.width - Dock.BORDER * 2;
+        var dockWidth:Number = container.width;
         return if (widget.resizable or widget.stage.width < dockWidth) {
             1.0;
         } else {
@@ -89,17 +90,17 @@ public class WidgetView extends Group {
         content = [
             Rectangle { // Invisible Spacer
                 height: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER
-                width: bind dock.width
+                width: bind container.width
                 fill: Color.rgb(0, 0, 0, 0.0)
             },
             Group { // Widget with DropShadow
                 translateY: TOP_BORDER
-                translateX: bind (dock.width - widget.stage.width * scale) / 2
+                translateX: bind (container.width - widget.stage.width * scale) / 2
                 content: [
                     Group { // Rear Slice
                         cache: true
                         content: Group { // Drop Shadow
-                            effect: bind if (resizing or dock.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
+                            effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
                             content: Group { // Clip Group
                                 content: bind widget.stage.content[0]
                                 clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
@@ -117,7 +118,7 @@ public class WidgetView extends Group {
             },
             WidgetToolbar {
                 blocksMouse: true
-                translateX: bind (dock.width + widget.stage.width * scale) / 2
+                translateX: bind (container.width + widget.stage.width * scale) / 2
                 opacity: bind rolloverOpacity
                 instance: instance
                 onMouseEntered: function(e) {requestFocus(true)}
@@ -128,12 +129,11 @@ public class WidgetView extends Group {
             },
             Group { // Drag Bar
                 blocksMouse: true
-                translateX: Dock.BORDER
                 translateY: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER - 3
                 content: [
-                    Line {endX: bind dock.width - Dock.BORDER * 2, stroke: Color.BLACK, strokeWidth: 1, opacity: bind dock.rolloverOpacity / 4},
-                    Line {endX: bind dock.width - Dock.BORDER * 2, stroke: Color.BLACK, strokeWidth: 1, opacity: bind dock.rolloverOpacity, translateY: 1},
-                    Line {endX: bind dock.width - Dock.BORDER * 2, stroke: Color.WHITE, strokeWidth: 1, opacity: bind dock.rolloverOpacity / 3, translateY: 2}
+                    Line {endX: bind container.width, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 4},
+                    Line {endX: bind container.width, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity, translateY: 1},
+                    Line {endX: bind container.width, stroke: Color.WHITE, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 3, translateY: 2}
                 ]
                 cursor: Cursor.V_RESIZE
                 var initialHeight;
@@ -153,8 +153,8 @@ public class WidgetView extends Group {
                         }
                         if (widget.aspectRatio != 0) {
                             widget.stage.width = (widget.stage.height * widget.aspectRatio).intValue();
-                            if (widget.stage.width > dock.width - Dock.BORDER * 2) {
-                                widget.stage.width = dock.width - Dock.BORDER * 2;
+                            if (widget.stage.width > container.width) {
+                                widget.stage.width = container.width;
                                 widget.stage.height = (widget.stage.width / widget.aspectRatio).intValue();
                             }
                         }
@@ -180,11 +180,12 @@ public class WidgetView extends Group {
                 var xPos;
                 var yPos;
                 if (instance.docked) {
-                    dock.dragging = true;
-                    xPos = (dock.x + (dock.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
+                    container.dragging = true;
+                    xPos = (container.window.x + (container.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                     var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
-                    yPos = dock.y + e.getStageY().intValue() - e.getY().intValue() + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight) - 1;
+                    yPos = container.window.y + e.getStageY().intValue() - e.getY().intValue() + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight) - 1;
                     instance.frame = WidgetFrame {
+                        container: container
                         instance: instance
                         x: xPos, y: yPos
                     }
@@ -194,7 +195,7 @@ public class WidgetView extends Group {
                     xPos = e.getScreenX().intValue();
                     yPos = e.getScreenY().intValue();
                 }
-                var hoverOffset = dock.hover(instance, xPos, yPos, e.getX(), e.getY(), not instance.docked);
+                var hoverOffset = container.hover(instance, xPos, yPos, e.getX(), e.getY(), not instance.docked);
                 instance.docked = false;
                 instance.frame.x = e.getStageX().intValue() + initialScreenPosX + hoverOffset[0];
                 instance.frame.y = e.getStageY().intValue() + initialScreenPosY + hoverOffset[1];
@@ -202,7 +203,7 @@ public class WidgetView extends Group {
         };
         onMouseReleased = function(e:MouseEvent):Void {
             if (not docking and not instance.docked) {
-                var targetBounds = Dock.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
+                var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
                 if (targetBounds != null) {
                     docking = true;
                     instance.frame.dock(targetBounds.x, targetBounds.y);
@@ -211,7 +212,7 @@ public class WidgetView extends Group {
                         instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                     }
                 }
-                Dock.getInstance().dragging = false;
+                container.dragging = false;
                 instance.saveWithoutNotification();
             }
         };

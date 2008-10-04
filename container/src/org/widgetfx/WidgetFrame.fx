@@ -19,6 +19,7 @@ package org.widgetfx;
 
 import org.widgetfx.toolbar.WidgetToolbar;
 import org.widgetfx.ui.BaseDialog;
+import org.widgetfx.ui.WidgetContainer;
 import javafx.application.WindowStyle;
 import javafx.application.Stage;
 import javafx.scene.Group;
@@ -58,6 +59,9 @@ public class WidgetFrame extends BaseDialog {
     
     private attribute toolbarHeight = bind if (instance.widget.configuration == null) NONRESIZABLE_TOOLBAR_HEIGHT else RESIZABLE_TOOLBAR_HEIGHT;
     
+    // todo - this should automatically be picked up based on what container we are hovering over...
+    public attribute container:WidgetContainer;
+    
     public attribute instance:WidgetInstance;
     
     private attribute widget = bind instance.widget;
@@ -80,7 +84,7 @@ public class WidgetFrame extends BaseDialog {
         height = widgetHeight;
     }
 
-    attribute resizing:Boolean on replace {
+    public attribute resizing:Boolean on replace {
         updateFocus();
     }
     private attribute dragging:Boolean on replace {
@@ -142,7 +146,7 @@ public class WidgetFrame extends BaseDialog {
                     y => dockY - BORDER - toolbarHeight tween Interpolator.EASEIN
                 ],
                 action: function() {
-                    Dock.getInstance().dockAfterHover(instance);
+                    container.dockAfterHover(instance);
                     if (instance.widget.onResize != null) {
                         instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                     }
@@ -341,10 +345,10 @@ public class WidgetFrame extends BaseDialog {
             }
             onMouseDragged: function(e) {
                 if (dragging and not docking) {
-                    var hoverOffset = if (Dock.getInstance() == null) {
+                    var hoverOffset = if (container == null) {
                         [0, 0]
                     } else {
-                        Dock.getInstance().hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
+                        container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
                     }
                     mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                         x = initialX + xDelta + hoverOffset[0];
@@ -355,8 +359,8 @@ public class WidgetFrame extends BaseDialog {
             onMouseReleased: function(e) {
                 if (e.getButton() == 1 and not docking) {
                     dragging = false;
-                    if (Dock.getInstance() != null) {
-                        var targetBounds = Dock.getInstance().finishHover(instance, e.getScreenX(), e.getScreenY());
+                    if (container != null) {
+                        var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
                         if (targetBounds != null) {
                             dock(targetBounds.x, targetBounds.y);
                         }
