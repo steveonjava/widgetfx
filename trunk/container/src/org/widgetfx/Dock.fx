@@ -61,7 +61,7 @@ public class Dock extends BaseDialog {
     private static attribute MIN_WIDTH = 120;
     private static attribute MAX_WIDTH = 400;
     static attribute BORDER = 5;
-    static attribute DS_RADIUS = 5;
+    public static attribute DS_RADIUS = 5;
     private static attribute BG_OPACITY = 0.7;
     private static attribute BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
     private static attribute BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
@@ -142,10 +142,19 @@ public class Dock extends BaseDialog {
             image: Image {url: (new URL(new URL(theme), logoUrl)).toString()}
         }
     }
-    private attribute content:GapVBox;
-    private attribute headerHeight = bind BORDER * 2 + logo.getHeight();
+    private attribute headerHeight:Integer = bind BORDER * 2 + logo.getHeight().intValue();
     private attribute dockedWidgets = bind WidgetManager.getInstance().widgets[w|w.docked];
-    attribute widgetViews:Node[] = bind for (instance in dockedWidgets) createWidgetView(instance);
+    attribute container:WidgetContainer = WidgetContainer {
+        window: this
+        resizing: bind resizing
+        translateX: BORDER
+        translateY: bind headerHeight
+        widgets: bind dockedWidgets;
+        width: bind width - BORDER * 2
+        height: bind height - headerHeight
+        layout: GapVBox {}
+        headerHeight: bind headerHeight
+    }
     
     private attribute currentGraphics:java.awt.GraphicsConfiguration;
     private attribute screenBounds = bind currentGraphics.getBounds() on replace {
@@ -177,7 +186,6 @@ public class Dock extends BaseDialog {
     }
     
     attribute resizing:Boolean;
-    attribute dragging:Boolean;
     
     private function updateDockLocation() {
         height = screenBounds.height - menuHeight;
@@ -336,135 +344,6 @@ public class Dock extends BaseDialog {
         }
     }
     
-    private attribute animateHover:Timeline;
-    private attribute animatingInstance:WidgetInstance;
-    private attribute animating = bind if (animateHover == null) false else animateHover.running on replace {
-        animatingInstance.frame.resizing = animating;
-    }
-    private attribute animateDocked:Boolean;
-    private attribute saveUndockedWidth:Integer;
-    private attribute saveUndockedHeight:Integer;
-    private attribute xHoverOffset;
-    private attribute yHoverOffset;
-    
-    public function setupHoverAnimation(instance:WidgetInstance, localX:Integer, localY:Integer) {
-        if (animateHover == null) {
-            animatingInstance = instance;
-            xHoverOffset = 0;
-            yHoverOffset = 0;
-            saveUndockedWidth = instance.undockedWidth;
-            saveUndockedHeight = instance.undockedHeight;
-            var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
-            var newHeight = if (instance.docked) instance.undockedHeight else instance.dockedHeight;
-            animateHover = Timeline {
-                autoReverse: true, toggle: true
-                keyFrames: KeyFrame {
-                    time: 300ms
-                    values: [
-                        if (newWidth > 0) {[
-                            instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH,
-                            xHoverOffset => localX - localX * newWidth / instance.widget.stage.width tween Interpolator.EASEBOTH
-                        ]} else {
-                            []
-                        },
-                        if (newHeight > 0) {[
-                            instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH,
-                            yHoverOffset => localY - localY * newHeight / instance.widget.stage.height tween Interpolator.EASEBOTH
-                        ]} else {
-                            []
-                        }
-                    ]
-                }
-            }
-            animateDocked = instance.docked;
-        }
-    }
-    
-    public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, localX:Integer, localY:Integer, animate:Boolean) {
-        setupHoverAnimation(instance, localX, localY);
-        if (visible and screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
-            var index = widgetViews.size();
-            for (view in widgetViews) {
-                var viewY = view.getBoundsY() + headerHeight;
-                var viewHeight = view.getBoundsHeight();
-                if (screenY - y < viewY + viewHeight / 2) {
-                    index = indexof view;
-                    break;
-                }
-            }
-            var dockedHeight = if (instance.dockedHeight == 0) instance.widget.stage.height else instance.dockedHeight;
-            content.setGap(index, dockedHeight + DS_RADIUS * 2 + 2, animate);
-            if (animateHover != null and not animateDocked) {
-                animateDocked = true;
-                animateHover.start();
-            }
-        } else {
-            content.clearGap(animate);
-            if (animateHover != null and animateDocked) {
-                animateDocked = false;
-                animateHover.start();
-            }
-        }
-        return [xHoverOffset, yHoverOffset];
-    }
-    
-    public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):java.awt.Rectangle {
-        if (visible and screenX >= x and screenX < x + width and screenY >= y and screenY < y + height) {
-            animateHover.stop();
-            animateHover = null;
-            instance.undockedWidth = saveUndockedWidth;
-            instance.undockedHeight = saveUndockedHeight;
-            return new java.awt.Rectangle(
-                x + (width - instance.widget.stage.width) / 2,
-                y + content.getGapLocation() + headerHeight + WidgetView.TOP_BORDER,
-                instance.widget.stage.width,
-                instance.widget.stage.height
-            );
-        } else {
-            if (animateHover != null and animateDocked) {
-                animateDocked = false;
-                animateHover.start();
-            }
-            animateHover = null;
-            return null;
-        }
-    }
-    
-    public function dockAfterHover(instance:WidgetInstance) {
-        delete instance from WidgetManager.getInstance().widgets;
-        instance.docked = true;
-        if (content.getGapIndex() >= dockedWidgets.size()) {
-            insert instance into WidgetManager.getInstance().widgets;
-        } else {
-            var index = Sequences.indexOf(WidgetManager.getInstance().widgets, dockedWidgets[content.getGapIndex()]);
-            insert instance before WidgetManager.getInstance().widgets[index];
-        }
-        content.clearGap(false);
-    }
-    
-    private function createWidgetView(instance:WidgetInstance):WidgetView {
-        updateWidth(instance, false);
-        return WidgetView {
-            dock: this
-            instance: instance
-        }
-    }
-    
-    private function updateWidth(instance:WidgetInstance, notifyResize:Boolean):Void {
-        if (instance.widget.resizable) {
-            instance.widget.stage.width = width - BORDER * 2;
-            if (instance.widget.aspectRatio != 0) {
-                instance.widget.stage.height = (instance.widget.stage.width / instance.widget.aspectRatio).intValue();
-            }
-            if (notifyResize) {
-                if (instance.widget.onResize != null) {
-                    instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
-                }
-                instance.saveWithoutNotification();
-            }
-        }
-    }
-    
     attribute rolloverOpacity = 0.01;
     attribute rolloverTimeline = Timeline {
         autoReverse: true, toggle: true
@@ -607,17 +486,13 @@ public class Dock extends BaseDialog {
             ]
 
         }
-        content = GapVBox {
-            translateY: bind headerHeight
-            content: bind widgetViews
-        }
         stage = Stage {
             content: [
                 Group {
                     content: bind logo
                 },
                 menus,
-                content,
+                container,
                 Group { // Drag Bar
                     blocksMouse: true
                     content: [
@@ -633,13 +508,15 @@ public class Dock extends BaseDialog {
                         var draggedWidth = if (dockLeft) e.getScreenX().intValue() - screenBounds.x
                                 else screenBounds.x + screenBounds.width - e.getScreenX().intValue();
                         width = if (draggedWidth < MIN_WIDTH) MIN_WIDTH else if (draggedWidth > MAX_WIDTH) MAX_WIDTH else draggedWidth;
-                        for (instance in dockedWidgets) {
-                            updateWidth(instance, false);
-                        }
                     }
                     onMouseReleased: function(e) {
                         for (instance in dockedWidgets) {
-                            updateWidth(instance, true);
+                            if (instance.widget.resizable) {
+                                if (instance.widget.onResize != null) {
+                                    instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                                }
+                                instance.saveWithoutNotification();
+                            }
                         }
                         resizing = false;
                     }
@@ -663,7 +540,7 @@ public class Dock extends BaseDialog {
     }
     
     private function getGraphicsConfiguration(location:Point) {
-        if (not dragging and not resizing) {
+        if (not container.dragging and not resizing) {
             if (not screenBounds.contains(location)) {
                 for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {
                     var gc = gd.getDefaultConfiguration();

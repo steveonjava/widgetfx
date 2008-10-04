@@ -28,12 +28,20 @@ import javafx.scene.Group;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class GapVBox extends GapBox {
+public class GapGridBox extends GapBox {
 
     public attribute spacing:Number on replace {
         impl_requestLayout();
     }
-        
+    
+    public attribute rows:Integer = 1;
+
+    public attribute columns:Integer = 1;
+    
+    private attribute nodeWidth = bind (width - (columns - 1) * spacing) / columns;
+    
+    private attribute nodeHeight = bind (height - (rows - 1) * spacing) / rows;
+    
     private attribute timeline:Timeline;
     
     public function getGapLocation():Number {
@@ -58,73 +66,32 @@ public class GapVBox extends GapBox {
      * The actual gap size will also include spacing if it is set.
      */
     public function setGap(index:Integer, size:Number, animate:Boolean):Void {
-        size = if (size == -1) 0 else size + spacing;
-        if (gapIndex != index or gapSize != size) {
+        if (gapIndex != index) {
             gapIndex = index;
-            gapSize = size;
-            if (animate) {
-                animateGapVBoxLayout();
-            } else {
-                timeline.stop();
-                timeline.running = false; // set running false synchronously to unblock layout
-                impl_requestLayout();
-            }
+            impl_requestLayout();
         }
     }
     
     init {
-        impl_layout = doGapVBoxLayout;
+        impl_layout = doGapGridLayout;
     }
 
-    private function doGapVBoxLayout(g:Group):Void {
+    private function doGapGridLayout(g:Group):Void {
         if (timeline.running) {
             return;
         }
         var x:Number = 0;
         var y:Number = 0;
-        for (node in content) {
-            if (indexof node == gapIndex) {
-                y += gapSize;
-            }
-            if (node.visible) {
-                node.impl_layoutX = x;
-                node.impl_layoutY = y;
-                y += node.getBoundsHeight() + spacing;
+        for (node in content where node.visible) {
+            node.impl_layoutX = x;
+            node.impl_layoutY = y;
+            if (indexof node mod columns == columns - 1) {
+                x = 0;
+                y += nodeHeight + spacing;
+            } else {
+                x += nodeWidth + spacing;
             }
         }
     }
 
-    private function animateGapVBoxLayout():Void {
-        if (timeline != null) {
-            timeline.pause();
-        }
-        var x:Number = 0;
-        var y:Number = 0;
-        var newTimeline = Timeline {
-            keyFrames: KeyFrame {
-                time: 500ms
-                values: for (node in content) {
-                    if (indexof node == gapIndex) {
-                        y += gapSize;
-                    }
-                    if (node.visible) {
-                        var values = [
-                            node.impl_layoutX => x tween Interpolator.EASEIN,
-                            node.impl_layoutY => y tween Interpolator.EASEIN
-                        ];
-                        y += node.getBoundsHeight() + spacing;
-                        values;
-                    } else {
-                        [];
-                    }
-                }
-                action: function() {
-                    impl_requestLayout();
-                }
-            }
-        }
-        newTimeline.start();
-        newTimeline.running = true; // make sure there are no gaps between animation swapping
-        timeline = newTimeline;
-    }
 }
