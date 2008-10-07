@@ -38,8 +38,16 @@ public class WidgetManager {
     
     private static attribute instance:WidgetManager;
     
+    public attribute widgetRunner = false;
+    
     public static function createWidgetRunnerInstance() {
         instance = WidgetManager {widgetRunner: true};
+    }
+    
+    public attribute portal = false;
+    
+    public static function createPortalInstance() {
+        instance = WidgetManager {portal: true};
     }
     
     public static function getInstance() {
@@ -48,8 +56,6 @@ public class WidgetManager {
         }
         return instance;
     }
-    
-    public attribute widgetRunner = false;
     
     public attribute codebase = WidgetFXConfiguration.getInstance().codebase;
     
@@ -122,7 +128,7 @@ public class WidgetManager {
     };
 
     init {
-        if (not widgetRunner) {
+        if (not widgetRunner and not portal) {
             sis.addSingleInstanceListener(sil);
         }
         // todo - implement a widget security policy
