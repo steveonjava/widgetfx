@@ -12,6 +12,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
 
+ * This particular file is subject to the "Classpath" exception as provided
+ * in the LICENSE file that accompanied this code.
+
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -23,6 +26,8 @@ import javax.swing.UIManager;
 /**
  * @author Stephen Chin
  */
+java.lang.System.setProperty("apple.awt.UIElement", "true");
+
 try { // try nimbus look and feel first
     UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
 } catch (e) { // fall back on system look and feel
