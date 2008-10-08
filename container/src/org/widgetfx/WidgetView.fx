@@ -52,7 +52,7 @@ public class WidgetView extends Group {
     private attribute scale:Number = bind calculateScale();
     
     private bound function calculateScale():Number {
-        var dockWidth:Number = container.width;
+        var dockWidth:Number = container.columnWidth;
         return if (widget.resizable or widget.stage.width < dockWidth) {
             1.0;
         } else {
@@ -93,12 +93,12 @@ public class WidgetView extends Group {
         content = [
             Rectangle { // Invisible Spacer
                 height: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER
-                width: bind container.width
+                width: bind container.columnWidth
                 fill: Color.rgb(0, 0, 0, 0.0)
             },
             Group { // Widget with DropShadow
                 translateY: TOP_BORDER
-                translateX: bind (container.width - widget.stage.width * scale) / 2
+                translateX: bind (container.columnWidth - widget.stage.width * scale) / 2
                 content: [
                     Group { // Rear Slice
                         cache: true
@@ -121,7 +121,7 @@ public class WidgetView extends Group {
             },
             WidgetToolbar {
                 blocksMouse: true
-                translateX: bind (container.width + widget.stage.width * scale) / 2
+                translateX: bind (container.columnWidth + widget.stage.width * scale) / 2
                 opacity: bind rolloverOpacity
                 instance: instance
                 onMouseEntered: function(e) {requestFocus(true)}
@@ -134,9 +134,9 @@ public class WidgetView extends Group {
                 blocksMouse: true
                 translateY: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER - 3
                 content: [
-                    Line {endX: bind container.width, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 4},
-                    Line {endX: bind container.width, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity, translateY: 1},
-                    Line {endX: bind container.width, stroke: Color.WHITE, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 3, translateY: 2}
+                    Line {endX: bind container.columnWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 4},
+                    Line {endX: bind container.columnWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity, translateY: 1},
+                    Line {endX: bind container.columnWidth, stroke: Color.WHITE, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 3, translateY: 2}
                 ]
                 cursor: Cursor.V_RESIZE
                 var initialHeight;
@@ -156,8 +156,8 @@ public class WidgetView extends Group {
                         }
                         if (widget.aspectRatio != 0) {
                             widget.stage.width = (widget.stage.height * widget.aspectRatio).intValue();
-                            if (widget.stage.width > container.width) {
-                                widget.stage.width = container.width;
+                            if (widget.stage.width > container.columnWidth) {
+                                widget.stage.width = container.columnWidth;
                                 widget.stage.height = (widget.stage.width / widget.aspectRatio).intValue();
                             }
                         }
@@ -184,7 +184,7 @@ public class WidgetView extends Group {
                 var yPos;
                 if (instance.docked) {
                     container.dragging = true;
-                    xPos = (container.window.x + (container.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
+                    xPos = (container.window.x + (container.columnWidth - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                     var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
                     yPos = container.window.y + e.getStageY().intValue() - e.getY().intValue() + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight) - 1;
                     instance.frame = WidgetFrame {

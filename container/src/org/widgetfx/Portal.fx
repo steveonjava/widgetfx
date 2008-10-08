@@ -43,7 +43,7 @@ var frame:Frame = Frame {
             widgets: bind WidgetManager.getInstance().widgets[w|w.docked];
             width: bind width
             height: bind height
-            layout: GapGridBox {}
+            layout: GapGridBox {rows: 2 columns: 2}
         }
     }
     visible: true

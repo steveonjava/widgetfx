@@ -28,9 +28,15 @@ import javafx.scene.Group;
  */
 public abstract class GapBox extends Group {
     
+    public static attribute UNBOUNDED = -1;
+    
     public attribute width:Integer = 300;
     
     public attribute height:Integer = 300;
+    
+    public attribute nodeWidth:Number = UNBOUNDED;
+    
+    public attribute nodeHeight:Number = UNBOUNDED;
     
     private attribute gapIndex:Integer;
     
