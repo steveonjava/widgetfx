@@ -41,9 +41,9 @@ public class GapGridBox extends GapBox {
 
     public attribute columns:Integer = 1;
     
-    private attribute nodeWidth = bind (width - (columns - 1) * spacing) / columns;
+    override attribute nodeWidth = bind (width - (columns - 1) * spacing) / columns;
     
-    private attribute nodeHeight = bind (height - (rows - 1) * spacing) / rows;
+    override attribute nodeHeight = bind (height - (rows - 1) * spacing) / rows;
     
     private attribute timeline:Timeline;
     

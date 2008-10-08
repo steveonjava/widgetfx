@@ -36,6 +36,8 @@ public class GapVBox extends GapBox {
     public attribute spacing:Number on replace {
         impl_requestLayout();
     }
+    
+    override attribute nodeWidth = bind width;
         
     private attribute timeline:Timeline;
     

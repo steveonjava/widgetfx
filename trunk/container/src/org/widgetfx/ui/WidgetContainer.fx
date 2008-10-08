@@ -54,6 +54,8 @@ public class WidgetContainer extends Group {
         }
     }
     
+    public attribute columnWidth = bind layout.nodeWidth.intValue();
+    
     public attribute height:Integer on replace {
         layout.height = height;
     }
@@ -79,7 +81,7 @@ public class WidgetContainer extends Group {
     
     private function updateWidth(instance:WidgetInstance):Void {
         if (instance.widget.resizable) {
-            instance.widget.stage.width = width;
+            instance.widget.stage.width = columnWidth;
             if (instance.widget.aspectRatio != 0) {
                 instance.widget.stage.height = (instance.widget.stage.width / instance.widget.aspectRatio).intValue();
             }
