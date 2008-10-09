@@ -188,7 +188,6 @@ public class WidgetView extends Group {
                     var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
                     yPos = container.window.y + e.getStageY().intValue() - e.getY().intValue() + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight) - 1;
                     instance.frame = WidgetFrame {
-                        container: container
                         instance: instance
                         x: xPos, y: yPos
                     }

@@ -22,20 +22,18 @@ package org.widgetfx.ui;
 
 import com.sun.scenario.scenegraph.SGNode;
 import com.sun.scenario.scenegraph.SGGroup;
+import java.awt.Point;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Interpolator;
 import javafx.scene.Group;
+import javax.swing.SwingUtilities;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
 public class GapGridBox extends GapBox {
-
-    public attribute spacing:Number on replace {
-        impl_requestLayout();
-    }
     
     public attribute rows:Integer = 1;
 
@@ -59,9 +57,15 @@ public class GapGridBox extends GapBox {
         }
         return y;
     }
-
-    public function clearGap(animate:Boolean):Void {
-        setGap(0, -1, animate);
+    
+    public function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
+        var point = new Point(screenX, screenY);
+        SwingUtilities.convertPointFromScreen(point, impl_getSGNode().getPanel());
+        impl_getSGNode().globalToLocal(point, point);
+        var xCell = point.x * columns / width;
+        var yCell = point.y * rows / height;
+        var index = yCell * columns + xCell;
+        setGap(index, size, animate);
     }
     
     /**
@@ -85,10 +89,20 @@ public class GapGridBox extends GapBox {
         }
         var x:Number = 0;
         var y:Number = 0;
+        var gap = 0;
         for (node in content where node.visible) {
+            if (indexof node == gapIndex) {
+                if (indexof node mod columns == columns - 1) {
+                    x = 0;
+                    y += nodeHeight + spacing;
+                } else {
+                    x += nodeWidth + spacing;
+                }
+                gap = 1;
+            }
             node.impl_layoutX = x;
             node.impl_layoutY = y;
-            if (indexof node mod columns == columns - 1) {
+            if ((indexof node + gap) mod columns == columns - 1) {
                 x = 0;
                 y += nodeHeight + spacing;
             } else {
