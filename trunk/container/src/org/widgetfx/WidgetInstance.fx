@@ -250,7 +250,6 @@ public class WidgetInstance {
                 widget.stage.height = undockedHeight;
             }
             frame = WidgetFrame {
-                container: Dock.getInstance().container
                 instance: this
                 x: undockedX, y: undockedY
             }

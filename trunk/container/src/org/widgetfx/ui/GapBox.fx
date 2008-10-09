@@ -30,6 +30,10 @@ public abstract class GapBox extends Group {
     
     public static attribute UNBOUNDED = -1;
     
+    public attribute spacing:Number on replace {
+        impl_requestLayout();
+    }
+    
     public attribute width:Integer = 300;
     
     public attribute height:Integer = 300;
@@ -38,7 +42,7 @@ public abstract class GapBox extends Group {
     
     public attribute nodeHeight:Number = UNBOUNDED;
     
-    private attribute gapIndex:Integer;
+    private attribute gapIndex:Integer = -1;
     
     private attribute gapSize:Number;
     
@@ -52,7 +56,11 @@ public abstract class GapBox extends Group {
     
     public abstract function getGapLocation():Number;
     
-    public abstract function clearGap(animate:Boolean):Void;
+    public function clearGap(animate:Boolean):Void {
+        setGap(-1, -1, animate);
+    }
+        
+    public abstract function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void;
     
     public abstract function setGap(index:Integer, size:Number, animate:Boolean):Void;
 }

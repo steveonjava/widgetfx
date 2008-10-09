@@ -39,11 +39,11 @@ var frame:Frame = Frame {
     height: bind height with inverse
     stage: Stage {
         content: WidgetContainer {
-            window: frame
+            window: bind frame
             widgets: bind WidgetManager.getInstance().widgets[w|w.docked];
             width: bind width
             height: bind height
-            layout: GapGridBox {rows: 2 columns: 2}
+            layout: GapGridBox {rows: 2, columns: 2, spacing: 5}
         }
     }
     visible: true

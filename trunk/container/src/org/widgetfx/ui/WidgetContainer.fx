@@ -32,6 +32,8 @@ import org.widgetfx.*;
  */
 public class WidgetContainer extends Group {
     
+    public static attribute containers:WidgetContainer[];
+    
     public attribute window:Window;
     
     public attribute widgets:WidgetInstance[];
@@ -99,6 +101,10 @@ public class WidgetContainer extends Group {
     private attribute xHoverOffset;
     private attribute yHoverOffset;
     
+    init {
+        insert this into containers;
+    }
+    
     public function setupHoverAnimation(instance:WidgetInstance, localX:Integer, localY:Integer) {
         if (animateHover == null) {
             animatingInstance = instance;
@@ -135,17 +141,8 @@ public class WidgetContainer extends Group {
     public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, localX:Integer, localY:Integer, animate:Boolean) {
         setupHoverAnimation(instance, localX, localY);
         if (visible and screenX >= window.x and screenX < window.x + width and screenY >= window.y and screenY < window.y + height) {
-            var index = widgetViews.size();
-            for (view in widgetViews) {
-                var viewY = view.getBoundsY() + headerHeight;
-                var viewHeight = view.getBoundsHeight();
-                if (screenY - window.y < viewY + viewHeight / 2) {
-                    index = indexof view;
-                    break;
-                }
-            }
             var dockedHeight = if (instance.dockedHeight == 0) instance.widget.stage.height else instance.dockedHeight;
-            layout.setGap(index, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
+            layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
             if (animateHover != null and not animateDocked) {
                 animateDocked = true;
                 animateHover.start();

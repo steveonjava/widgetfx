@@ -22,10 +22,12 @@ package org.widgetfx.ui;
 
 import com.sun.scenario.scenegraph.SGNode;
 import com.sun.scenario.scenegraph.SGGroup;
+import java.awt.Point;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Interpolator;
-import javafx.scene.Group;
+import javafx.scene.*;
+import javax.swing.SwingUtilities;
 
 /**
  * @author Stephen Chin
@@ -33,10 +35,6 @@ import javafx.scene.Group;
  */
 public class GapVBox extends GapBox {
 
-    public attribute spacing:Number on replace {
-        impl_requestLayout();
-    }
-    
     override attribute nodeWidth = bind width;
         
     private attribute timeline:Timeline;
@@ -54,8 +52,20 @@ public class GapVBox extends GapBox {
         return y;
     }
 
-    public function clearGap(animate:Boolean):Void {
-        setGap(0, -1, animate);
+    public function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
+        var point = new Point(screenX, screenY);
+        SwingUtilities.convertPointFromScreen(point, impl_getSGNode().getPanel());
+        impl_getSGNode().globalToLocal(point, point);
+        var index = content.size();
+        for (node in content) {
+            var viewY = node.getBoundsY();
+            var viewHeight = node.getBoundsHeight();
+            if (point.y < viewY + viewHeight / 2) {
+                index = indexof node;
+                break;
+            }
+        }
+        setGap(index, size, animate);
     }
     
     /**

@@ -62,9 +62,6 @@ public class WidgetFrame extends BaseDialog {
     
     private attribute toolbarHeight = bind if (instance.widget.configuration == null) NONRESIZABLE_TOOLBAR_HEIGHT else RESIZABLE_TOOLBAR_HEIGHT;
     
-    // todo - this should automatically be picked up based on what container we are hovering over...
-    public attribute container:WidgetContainer;
-    
     public attribute instance:WidgetInstance;
     
     private attribute widget = bind instance.widget;
@@ -149,7 +146,9 @@ public class WidgetFrame extends BaseDialog {
                     y => dockY - BORDER - toolbarHeight tween Interpolator.EASEIN
                 ],
                 action: function() {
-                    container.dockAfterHover(instance);
+                    for (container in WidgetContainer.containers) {
+                        container.dockAfterHover(instance);
+                    }
                     if (instance.widget.onResize != null) {
                         instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                     }
@@ -348,10 +347,10 @@ public class WidgetFrame extends BaseDialog {
             }
             onMouseDragged: function(e) {
                 if (dragging and not docking) {
-                    var hoverOffset = if (container == null) {
-                        [0, 0]
-                    } else {
-                        container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
+                    var hoverOffset = [0, 0];
+                    for (container in WidgetContainer.containers) {
+                        // todo - don't let the last container win...
+                        hoverOffset = container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
                     }
                     mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                         x = initialX + xDelta + hoverOffset[0];
@@ -362,7 +361,7 @@ public class WidgetFrame extends BaseDialog {
             onMouseReleased: function(e) {
                 if (e.getButton() == 1 and not docking) {
                     dragging = false;
-                    if (container != null) {
+                    for (container in WidgetContainer.containers) {
                         var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
                         if (targetBounds != null) {
                             dock(targetBounds.x, targetBounds.y);
