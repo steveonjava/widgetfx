@@ -33,6 +33,8 @@ WidgetFXConfiguration.getInstance().mergeProperties = true;
 WidgetFXConfiguration.getInstance().load();
 Frame {
     closeAction: function() {java.lang.System.exit(0)}
+    x: 100
+    y: 200
     width: 500
     height: 500
     stage: Stage {
@@ -41,7 +43,7 @@ Frame {
         width: bind width with inverse
         height: bind height with inverse
         content: WidgetContainer {
-            widgets: bind WidgetManager.getInstance().widgets[w|w.docked];
+            widgets: WidgetManager.getInstance().widgets[w|w.docked];
             width: bind width
             height: bind height
             layout: GapGridBox {rows: 2, columns: 2, spacing: 5}
@@ -49,23 +51,25 @@ Frame {
     }
     visible: true
 }
-// todo - get multiple windows working:
-//Frame {
-//    closeAction: function() {java.lang.System.exit(0)}
-//    width: 500
-//    height: 500
-//    stage: Stage {
-//        var widgetList:WidgetInstance[];
-//        var width:Integer;
-//        var height:Integer;
-//        width: bind width with inverse
-//        height: bind height with inverse
-//        content: WidgetContainer {
-//            widgets: bind widgetList
-//            width: bind width
-//            height: bind height
-//            layout: GapGridBox {rows: 2, columns: 2, spacing: 5}
-//        }
-//    }
-//    visible: true
-//}
+
+Frame {
+    closeAction: function() {java.lang.System.exit(0)}
+    x: 700
+    y: 200
+    width: 500
+    height: 500
+    stage: Stage {
+        var widgetList:WidgetInstance[];
+        var width:Integer;
+        var height:Integer;
+        width: bind width with inverse
+        height: bind height with inverse
+        content: WidgetContainer {
+            widgets: widgetList
+            width: bind width
+            height: bind height
+            layout: GapGridBox {rows: 2, columns: 2, spacing: 5}
+        }
+    }
+    visible: true
+}
