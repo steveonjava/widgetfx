@@ -204,7 +204,11 @@ public class WidgetView extends Group, Constrained {
                     initialScreenPosX += xPos;
                     initialScreenPosY += yPos;
                 }
-                var hoverOffset = container.hover(instance, e.getScreenX().intValue(), e.getScreenY().intValue(), e.getX(), e.getY(), not instance.docked);
+                var hoverOffset:Integer[];
+                for (container in WidgetContainer.containers) {
+                    // todo - don't let the last container win...
+                    hoverOffset = container.hover(instance, e.getScreenX().intValue(), e.getScreenY().intValue(), e.getX(), e.getY(), not instance.docked);
+                }
                 instance.docked = false;
                 instance.frame.x = e.getStageX().intValue() + initialScreenPosX + hoverOffset[0];
                 instance.frame.y = e.getStageY().intValue() + initialScreenPosY + hoverOffset[1];
@@ -212,13 +216,16 @@ public class WidgetView extends Group, Constrained {
         };
         onMouseReleased = function(e:MouseEvent):Void {
             if (not docking and not instance.docked) {
-                var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
-                if (targetBounds != null) {
-                    docking = true;
-                    instance.frame.dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
-                } else {
-                    if (instance.widget.onResize != null) {
-                        instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                for (container in WidgetContainer.containers) {
+                    var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
+                    if (targetBounds != null) {
+                        docking = true;
+                        instance.frame.dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
+                    } else {
+                        // todo - don't call onResize multiple times
+                        if (instance.widget.onResize != null) {
+                            instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                        }
                     }
                 }
                 container.dragging = false;

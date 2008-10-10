@@ -37,9 +37,11 @@ Frame {
     y: 200
     width: 500
     height: 500
+    title: "Portal 1"
     stage: Stage {
         var width:Integer;
         var height:Integer;
+        fill: Color.SLATEGRAY
         width: bind width with inverse
         height: bind height with inverse
         content: WidgetContainer {
@@ -58,10 +60,12 @@ Frame {
     y: 200
     width: 500
     height: 500
+    title: "Portal 2"
     stage: Stage {
         var widgetList:WidgetInstance[];
         var width:Integer;
         var height:Integer;
+        fill: Color.SLATEGRAY
         width: bind width with inverse
         height: bind height with inverse
         content: WidgetContainer {
