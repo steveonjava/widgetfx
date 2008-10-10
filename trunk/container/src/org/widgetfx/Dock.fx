@@ -148,7 +148,6 @@ public class Dock extends BaseDialog {
     private attribute headerHeight:Integer = bind BORDER * 2 + logo.getHeight().intValue();
     private attribute dockedWidgets = bind WidgetManager.getInstance().widgets[w|w.docked];
     attribute container:WidgetContainer = WidgetContainer {
-        window: this
         resizing: bind resizing
         translateX: BORDER
         translateY: bind headerHeight
@@ -156,7 +155,6 @@ public class Dock extends BaseDialog {
         width: bind width - BORDER * 2
         height: bind height - headerHeight
         layout: GapVBox {}
-        headerHeight: bind headerHeight
     }
     
     private attribute currentGraphics:java.awt.GraphicsConfiguration;

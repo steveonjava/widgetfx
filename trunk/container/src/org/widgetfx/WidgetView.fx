@@ -21,6 +21,7 @@
 package org.widgetfx;
 
 import org.widgetfx.toolbar.WidgetToolbar;
+import org.widgetfx.ui.Constrained;
 import org.widgetfx.ui.WidgetContainer;
 import javafx.animation.*;
 import javafx.input.*;
@@ -34,7 +35,7 @@ import javafx.scene.paint.*;
 /**
  * @author Stephen Chin
  */
-public class WidgetView extends Group {
+public class WidgetView extends Group, Constrained {
     public static attribute TOP_BORDER = 3;
     public static attribute BOTTOM_BORDER = 7;
     
@@ -52,11 +53,10 @@ public class WidgetView extends Group {
     private attribute scale:Number = bind calculateScale();
     
     private bound function calculateScale():Number {
-        var dockWidth:Number = container.columnWidth;
-        return if (widget.resizable or widget.stage.width < dockWidth) {
+        return if (widget.resizable or widget.stage.width < maxWidth) {
             1.0;
         } else {
-            dockWidth / widget.stage.width;
+            maxWidth / widget.stage.width;
         }
     }
     
@@ -88,17 +88,26 @@ public class WidgetView extends Group {
         keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
     }
     
+    override attribute maxWidth on replace {
+        if (instance.widget.resizable) {
+            instance.widget.stage.width = maxWidth.intValue();
+            if (instance.widget.aspectRatio != 0) {
+                instance.widget.stage.height = (instance.widget.stage.width / instance.widget.aspectRatio).intValue();
+            }
+        }
+    }
+    
     init {
         cache = true;
         content = [
             Rectangle { // Invisible Spacer
                 height: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER
-                width: bind container.columnWidth
+                width: bind maxWidth
                 fill: Color.rgb(0, 0, 0, 0.0)
             },
             Group { // Widget with DropShadow
                 translateY: TOP_BORDER
-                translateX: bind (container.columnWidth - widget.stage.width * scale) / 2
+                translateX: bind (maxWidth - widget.stage.width * scale) / 2
                 content: [
                     Group { // Rear Slice
                         cache: true
@@ -121,7 +130,7 @@ public class WidgetView extends Group {
             },
             WidgetToolbar {
                 blocksMouse: true
-                translateX: bind (container.columnWidth + widget.stage.width * scale) / 2
+                translateX: bind (maxWidth + widget.stage.width * scale) / 2
                 opacity: bind rolloverOpacity
                 instance: instance
                 onMouseEntered: function(e) {requestFocus(true)}
@@ -134,9 +143,9 @@ public class WidgetView extends Group {
                 blocksMouse: true
                 translateY: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER - 3
                 content: [
-                    Line {endX: bind container.columnWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 4},
-                    Line {endX: bind container.columnWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity, translateY: 1},
-                    Line {endX: bind container.columnWidth, stroke: Color.WHITE, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 3, translateY: 2}
+                    Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 4},
+                    Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity, translateY: 1},
+                    Line {endX: bind maxWidth, stroke: Color.WHITE, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 3, translateY: 2}
                 ]
                 cursor: Cursor.V_RESIZE
                 var initialHeight;
@@ -156,8 +165,8 @@ public class WidgetView extends Group {
                         }
                         if (widget.aspectRatio != 0) {
                             widget.stage.width = (widget.stage.height * widget.aspectRatio).intValue();
-                            if (widget.stage.width > container.columnWidth) {
-                                widget.stage.width = container.columnWidth;
+                            if (widget.stage.width > maxWidth) {
+                                widget.stage.width = maxWidth.intValue();
                                 widget.stage.height = (widget.stage.width / widget.aspectRatio).intValue();
                             }
                         }
@@ -184,20 +193,18 @@ public class WidgetView extends Group {
                 var yPos;
                 if (instance.docked) {
                     container.dragging = true;
-                    xPos = (container.window.x + (container.columnWidth - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
+                    var bounds = container.layout.getScreenBounds(this);
+                    xPos = (bounds.x + (bounds.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                     var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
-                    yPos = container.window.y + e.getStageY().intValue() - e.getY().intValue() + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight) - 1;
+                    yPos = bounds.y + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
                     instance.frame = WidgetFrame {
                         instance: instance
                         x: xPos, y: yPos
                     }
                     initialScreenPosX += xPos;
                     initialScreenPosY += yPos;
-                } else {
-                    xPos = e.getScreenX().intValue();
-                    yPos = e.getScreenY().intValue();
                 }
-                var hoverOffset = container.hover(instance, xPos, yPos, e.getX(), e.getY(), not instance.docked);
+                var hoverOffset = container.hover(instance, e.getScreenX().intValue(), e.getScreenY().intValue(), e.getX(), e.getY(), not instance.docked);
                 instance.docked = false;
                 instance.frame.x = e.getStageX().intValue() + initialScreenPosX + hoverOffset[0];
                 instance.frame.y = e.getStageY().intValue() + initialScreenPosY + hoverOffset[1];
@@ -208,7 +215,7 @@ public class WidgetView extends Group {
                 var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
                 if (targetBounds != null) {
                     docking = true;
-                    instance.frame.dock(targetBounds.x, targetBounds.y);
+                    instance.frame.dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
                 } else {
                     if (instance.widget.onResize != null) {
                         instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);

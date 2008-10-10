@@ -20,13 +20,18 @@
  */
 package org.widgetfx.ui;
 
+import java.awt.Point;
+import java.awt.Rectangle;
+import javafx.lang.Sequences;
 import javafx.scene.Group;
+import javafx.scene.Node;
+import javax.swing.SwingUtilities;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
-public abstract class GapBox extends Group {
+public abstract class GapBox extends Group, Constrained {
     
     public static attribute UNBOUNDED = -1;
     
@@ -34,33 +39,50 @@ public abstract class GapBox extends Group {
         impl_requestLayout();
     }
     
-    public attribute width:Integer = 300;
+    override attribute maxWidth = 300;
     
-    public attribute height:Integer = 300;
+    override attribute maxHeight = 300;
     
-    public attribute nodeWidth:Number = UNBOUNDED;
+    protected attribute gapIndex:Integer = -1;
     
-    public attribute nodeHeight:Number = UNBOUNDED;
-    
-    private attribute gapIndex:Integer = -1;
-    
-    private attribute gapSize:Number;
-    
-    public function getGapIndex():Integer {
+    public function getGapIndex() {
         return gapIndex;
     }
-
-    public function getGapSize():Number {
-        return gapSize;
+    
+    public function containsScreenXY(screenX:Integer, screenY:Integer):Boolean {
+        var point = new Point(screenX, screenY);
+        SwingUtilities.convertPointFromScreen(point, impl_getSGNode().getPanel());
+        impl_getSGNode().globalToLocal(point, point);
+        return (new Rectangle(0, 0, maxWidth, maxHeight)).contains(new Point(point.x, point.y));
     }
     
-    public abstract function getGapLocation():Number;
+    protected abstract function getBounds(index:Integer):Rectangle;
+    
+    private function getScreenBounds(index:Integer):Rectangle {
+        var bounds = getBounds(index);
+        var location = bounds.getLocation();
+        impl_getSGNode().localToGlobal(location, location);
+        SwingUtilities.convertPointToScreen(location, impl_getSGNode().getPanel());
+        return new Rectangle(location.x, location.y, bounds.width, bounds.height);
+    }
+    
+    public function getScreenBounds(node:Node):Rectangle {
+        return getScreenBounds(Sequences.indexOf(content, node));
+    }
+    
+    public function getGapScreenBounds():Rectangle {
+        return getScreenBounds(gapIndex);
+    }
     
     public function clearGap(animate:Boolean):Void {
         setGap(-1, -1, animate);
     }
-        
+    
     public abstract function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void;
     
     public abstract function setGap(index:Integer, size:Number, animate:Boolean):Void;
+    
+    public function doLayout():Void {
+        impl_layout(this);
+    }
 }

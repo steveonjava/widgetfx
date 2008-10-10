@@ -31,15 +31,16 @@ import javafx.scene.paint.*;
 WidgetManager.createPortalInstance();
 WidgetFXConfiguration.getInstance().mergeProperties = true;
 WidgetFXConfiguration.getInstance().load();
-var width:Integer = 500;
-var height:Integer = 500;
-var frame:Frame = Frame {
+Frame {
     closeAction: function() {java.lang.System.exit(0)}
-    width: bind width with inverse
-    height: bind height with inverse
+    width: 500
+    height: 500
     stage: Stage {
+        var width:Integer;
+        var height:Integer;
+        width: bind width with inverse
+        height: bind height with inverse
         content: WidgetContainer {
-            window: bind frame
             widgets: bind WidgetManager.getInstance().widgets[w|w.docked];
             width: bind width
             height: bind height
@@ -48,3 +49,23 @@ var frame:Frame = Frame {
     }
     visible: true
 }
+// todo - get multiple windows working:
+//Frame {
+//    closeAction: function() {java.lang.System.exit(0)}
+//    width: 500
+//    height: 500
+//    stage: Stage {
+//        var widgetList:WidgetInstance[];
+//        var width:Integer;
+//        var height:Integer;
+//        width: bind width with inverse
+//        height: bind height with inverse
+//        content: WidgetContainer {
+//            widgets: bind widgetList
+//            width: bind width
+//            height: bind height
+//            layout: GapGridBox {rows: 2, columns: 2, spacing: 5}
+//        }
+//    }
+//    visible: true
+//}
