@@ -23,6 +23,7 @@ package org.widgetfx.ui;
 import com.sun.scenario.scenegraph.SGNode;
 import com.sun.scenario.scenegraph.SGGroup;
 import java.awt.Point;
+import java.awt.Rectangle;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Interpolator;
@@ -34,22 +35,28 @@ import javax.swing.SwingUtilities;
  * @author Keith Combs
  */
 public class GapVBox extends GapBox {
-
-    override attribute nodeWidth = bind width;
+    
+    private attribute gapHeight:Number;
         
     private attribute timeline:Timeline;
-    
-    public function getGapLocation():Number {
+
+    protected function getBounds(index:Integer):Rectangle {
         var y:Number = 0;
         for (node in content) {
             if (indexof node == gapIndex) {
-                return y;
+                if (gapIndex == index) {
+                    return new Rectangle(0, y, maxWidth, gapHeight);
+                }
+                y += gapHeight;
+            }
+            if (indexof node == index) {
+                return new Rectangle(0, y, maxWidth, node.getBoundsHeight());
             }
             if (node.visible) {
                 y += node.getBoundsHeight() + spacing;
             }
         }
-        return y;
+        return null;
     }
 
     public function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
@@ -74,9 +81,9 @@ public class GapVBox extends GapBox {
      */
     public function setGap(index:Integer, size:Number, animate:Boolean):Void {
         size = if (size == -1) 0 else size + spacing;
-        if (gapIndex != index or gapSize != size) {
+        if (gapIndex != index or gapHeight != size) {
             gapIndex = index;
-            gapSize = size;
+            gapHeight = size;
             if (animate) {
                 animateGapVBoxLayout();
             } else {
@@ -98,8 +105,13 @@ public class GapVBox extends GapBox {
         var x:Number = 0;
         var y:Number = 0;
         for (node in content) {
+            if (node instanceof Constrained) {
+                var constrained = node as Constrained;
+                constrained.maxWidth = maxWidth;
+                constrained.maxHeight = Constrained.UNBOUNDED;
+            }
             if (indexof node == gapIndex) {
-                y += gapSize;
+                y += gapHeight;
             }
             if (node.visible) {
                 node.impl_layoutX = x;
@@ -120,7 +132,7 @@ public class GapVBox extends GapBox {
                 time: 500ms
                 values: for (node in content) {
                     if (indexof node == gapIndex) {
-                        y += gapSize;
+                        y += gapHeight;
                     }
                     if (node.visible) {
                         var values = [

@@ -34,8 +34,6 @@ public class WidgetContainer extends Group {
     
     public static attribute containers:WidgetContainer[];
     
-    public attribute window:Window;
-    
     public attribute widgets:WidgetInstance[];
     
     // if this is set, copy widget when dropped on a new container, but place the original
@@ -43,50 +41,32 @@ public class WidgetContainer extends Group {
     public attribute copyOnContainerDrop:Boolean;
     
     public attribute layout:GapBox on replace {
-        layout.width = width;
-        layout.height = height;
+        layout.maxWidth = width;
+        layout.maxHeight = height;
         layout.content = widgetViews;
         content = [layout];
     }
     
     public attribute width:Integer on replace {
-        layout.width = width;
-        for (widget in widgets) {
-            updateWidth(widget);
-        }
+        layout.maxWidth = width;
     }
     
-    public attribute columnWidth = bind layout.nodeWidth.intValue();
-    
     public attribute height:Integer on replace {
-        layout.height = height;
+        layout.maxHeight = height;
     }
     
     public attribute resizing:Boolean;
     
     public attribute dragging:Boolean;
     
-    // todo - this needs to be calculated off the globalToLocal transform (then this parameter goes away)
-    public attribute headerHeight;
-    
-    private attribute widgetViews:Node[] = bind for (instance in widgets) createWidgetView(instance) on replace {
+    private attribute widgetViews:WidgetView[] = bind for (instance in widgets) createWidgetView(instance) on replace {
         layout.content = widgetViews;
     }
     
     private function createWidgetView(instance:WidgetInstance):WidgetView {
-        updateWidth(instance);
         return WidgetView {
             container: this
             instance: instance
-        }
-    }
-    
-    private function updateWidth(instance:WidgetInstance):Void {
-        if (instance.widget.resizable) {
-            instance.widget.stage.width = columnWidth;
-            if (instance.widget.aspectRatio != 0) {
-                instance.widget.stage.height = (instance.widget.stage.width / instance.widget.aspectRatio).intValue();
-            }
         }
     }
     
@@ -140,7 +120,7 @@ public class WidgetContainer extends Group {
     
     public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, localX:Integer, localY:Integer, animate:Boolean) {
         setupHoverAnimation(instance, localX, localY);
-        if (visible and screenX >= window.x and screenX < window.x + width and screenY >= window.y and screenY < window.y + height) {
+        if (layout.containsScreenXY(screenX, screenY)) {
             var dockedHeight = if (instance.dockedHeight == 0) instance.widget.stage.height else instance.dockedHeight;
             layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
             if (animateHover != null and not animateDocked) {
@@ -158,17 +138,12 @@ public class WidgetContainer extends Group {
     }
     
     public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):java.awt.Rectangle {
-        if (visible and screenX >= window.x and screenX < window.x + width and screenY >= window.y and screenY < window.y + height) {
+        if (layout.containsScreenXY(screenX, screenY)) {
             animateHover.stop();
             animateHover = null;
             instance.undockedWidth = saveUndockedWidth;
             instance.undockedHeight = saveUndockedHeight;
-            return new java.awt.Rectangle(
-                window.x + (width - instance.widget.stage.width) / 2,
-                window.y + layout.getGapLocation() + headerHeight + WidgetView.TOP_BORDER,
-                instance.widget.stage.width,
-                instance.widget.stage.height
-            );
+            return layout.getGapScreenBounds();
         } else {
             if (animateHover != null and animateDocked) {
                 animateDocked = false;
@@ -189,5 +164,6 @@ public class WidgetContainer extends Group {
             insert instance before WidgetManager.getInstance().widgets[index];
         }
         layout.clearGap(false);
+        layout.doLayout();
     }
 }

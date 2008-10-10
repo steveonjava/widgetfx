@@ -23,10 +23,12 @@ package org.widgetfx.ui;
 import com.sun.scenario.scenegraph.SGNode;
 import com.sun.scenario.scenegraph.SGGroup;
 import java.awt.Point;
+import java.awt.Rectangle;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Interpolator;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javax.swing.SwingUtilities;
 
 /**
@@ -39,31 +41,27 @@ public class GapGridBox extends GapBox {
 
     public attribute columns:Integer = 1;
     
-    override attribute nodeWidth = bind (width - (columns - 1) * spacing) / columns;
+    private attribute nodeWidth = bind (maxWidth - (columns - 1) * spacing) / columns;
     
-    override attribute nodeHeight = bind (height - (rows - 1) * spacing) / rows;
+    private attribute nodeHeight = bind (maxHeight - (rows - 1) * spacing) / rows;
     
     private attribute timeline:Timeline;
-    
-    public function getGapLocation():Number {
-        var y:Number = 0;
-        for (node in content) {
-            if (indexof node == gapIndex) {
-                return y;
-            }
-            if (node.visible) {
-                y += node.getBoundsHeight() + spacing;
-            }
-        }
-        return y;
+
+    protected function getBounds(index:Integer):Rectangle {
+        return new Rectangle(
+            (index mod columns) * (nodeWidth + spacing),
+            index / rows * (nodeHeight + spacing),
+            nodeWidth,
+            nodeHeight
+        );
     }
     
     public function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
         var point = new Point(screenX, screenY);
         SwingUtilities.convertPointFromScreen(point, impl_getSGNode().getPanel());
         impl_getSGNode().globalToLocal(point, point);
-        var xCell = point.x * columns / width;
-        var yCell = point.y * rows / height;
+        var xCell = (point.x * columns / maxWidth).intValue();
+        var yCell = (point.y * rows / maxHeight).intValue();
         var index = yCell * columns + xCell;
         setGap(index, size, animate);
     }
@@ -91,6 +89,11 @@ public class GapGridBox extends GapBox {
         var y:Number = 0;
         var gap = 0;
         for (node in content where node.visible) {
+            if (node instanceof Constrained) {
+                var constrained = node as Constrained;
+                constrained.maxWidth = nodeWidth;
+                constrained.maxHeight = nodeHeight;
+            }
             if (indexof node == gapIndex) {
                 if (indexof node mod columns == columns - 1) {
                     x = 0;
