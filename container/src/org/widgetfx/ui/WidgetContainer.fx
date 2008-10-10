@@ -121,6 +121,7 @@ public class WidgetContainer extends Group {
     public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, localX:Integer, localY:Integer, animate:Boolean) {
         setupHoverAnimation(instance, localX, localY);
         if (layout.containsScreenXY(screenX, screenY)) {
+            delete instance from widgets;
             var dockedHeight = if (instance.dockedHeight == 0) instance.widget.stage.height else instance.dockedHeight;
             layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
             if (animateHover != null and not animateDocked) {
@@ -155,14 +156,8 @@ public class WidgetContainer extends Group {
     }
     
     public function dockAfterHover(instance:WidgetInstance) {
-        delete instance from WidgetManager.getInstance().widgets;
         instance.docked = true;
-        if (layout.getGapIndex() >= widgets.size()) {
-            insert instance into WidgetManager.getInstance().widgets;
-        } else {
-            var index = Sequences.indexOf(WidgetManager.getInstance().widgets, widgets[layout.getGapIndex()]);
-            insert instance before WidgetManager.getInstance().widgets[index];
-        }
+        insert instance before widgets[layout.getGapIndex()];
         layout.clearGap(false);
         layout.doLayout();
     }
