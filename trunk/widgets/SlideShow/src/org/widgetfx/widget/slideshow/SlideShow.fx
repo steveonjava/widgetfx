@@ -53,7 +53,7 @@ var defaultDirectories:File[] = [
 var directoryName = (defaultDirectories[0]).getAbsolutePath();
 var directory:File;
 var status = "Loading Images...";
-var imageFiles:File[];
+var imageFiles:String[];
 var shuffle = true;
 var duration:Integer = 10;
 var keywords : String;
@@ -61,7 +61,7 @@ var width = 300;
 var height = 200;
 var imageIndex:Integer;
 var imageHeight:Integer;
-var currentFile:File;
+var currentFile:String;
 var currentImage:Image;
 var nextImage:Image;
 var worker:JavaFXWorker;
@@ -89,17 +89,17 @@ private function initTimeline() {
 }
 
 private function updateImage():Void {
-    if (not currentFile.exists()) {
-        currentImage = null;
-        status = "Missing File: {currentFile}";
-        return;
-    }
+//    if (not (new File(currentFile)).exists()) {
+//        currentImage = null;
+//        status = "Missing File: {currentFile}";
+//        return;
+//    }
     if (worker != null) {
         worker.cancel();
     }
     worker = JavaFXWorker {
         inBackground: function() {
-            var image = Image {url: currentFile.toURL().toString(), height: imageHeight};
+            var image = Image {url: currentFile, height: imageHeight};
             if (image.size == 0) {
                 throw new RuntimeException("Image has empty size: {currentFile}");
             }
@@ -108,6 +108,8 @@ private function updateImage():Void {
         onDone: function(result) {
             currentImage = result as Image;
             status = null;
+            System.runFinalization();
+            System.gc();
         }
         onFailure: function(e) {
             currentImage = null;
@@ -140,7 +142,7 @@ private function loadDirectory() {
         }
         if (imageFiles.size() > 0) {
             if (shuffle) {
-                imageFiles = Sequences.shuffle(imageFiles) as File[];
+                imageFiles = Sequences.shuffle(imageFiles) as String[];
             }
             initTimeline();
             timeline.start();
@@ -159,8 +161,8 @@ private function excludesFile(name:String):Boolean {
     return false;
 }
 
-private function getImageFiles(directory:File):File[] {
-    var emptyFile:File[] = [];
+private function getImageFiles(directory:File):String[] {
+    var emptyFile:String[] = [];
     if (folderCount++ >= maxFolders or fileCount >= maxFiles) {
         return emptyFile;
     }
@@ -180,7 +182,7 @@ private function getImageFiles(directory:File):File[] {
                 getImageFiles(file);
             } else if (extension != null and ImageIO.getImageReadersBySuffix(extension).hasNext()) {
                 fileCount++;
-                file;
+                file.toURL().toString();
             } else {
                 emptyFile;
             }

@@ -349,8 +349,10 @@ public class WidgetFrame extends BaseDialog {
                 if (dragging and not docking) {
                     var hoverOffset = [0, 0];
                     for (container in WidgetContainer.containers) {
-                        // todo - don't let the last container win...
-                        hoverOffset = container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
+                        var offset = container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
+                        if (offset != [0, 0]) {
+                            hoverOffset = offset;
+                        }
                     }
                     mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                         x = initialX + xDelta + hoverOffset[0];
