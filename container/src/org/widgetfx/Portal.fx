@@ -48,7 +48,7 @@ Frame {
             widgets: WidgetManager.getInstance().widgets[w|w.docked];
             width: bind width
             height: bind height
-            layout: GapGridBox {rows: 2, columns: 2, spacing: 5}
+            layout: GapGridBox {rows: 2, columns: 3, spacing: 5}
         }
     }
     visible: true
@@ -58,7 +58,7 @@ Frame {
     closeAction: function() {java.lang.System.exit(0)}
     x: 700
     y: 200
-    width: 500
+    width: 200
     height: 500
     title: "Portal 2"
     stage: Stage {
@@ -72,7 +72,7 @@ Frame {
             widgets: widgetList
             width: bind width
             height: bind height
-            layout: GapGridBox {rows: 2, columns: 2, spacing: 5}
+            layout: GapGridBox {rows: 4, columns: 1, spacing: 5}
         }
     }
     visible: true

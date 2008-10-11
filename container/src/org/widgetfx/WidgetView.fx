@@ -23,6 +23,7 @@ package org.widgetfx;
 import org.widgetfx.toolbar.WidgetToolbar;
 import org.widgetfx.ui.Constrained;
 import org.widgetfx.ui.WidgetContainer;
+import java.lang.*;
 import javafx.animation.*;
 import javafx.input.*;
 import javafx.lang.DeferredTask;
@@ -53,10 +54,13 @@ public class WidgetView extends Group, Constrained {
     private attribute scale:Number = bind calculateScale();
     
     private bound function calculateScale():Number {
-        return if (widget.resizable or widget.stage.width < maxWidth) {
-            1.0;
+        return if (not widget.resizable) {
+            var widthScale = if (maxWidth == Constrained.UNBOUNDED) 1.0 else maxWidth / widget.stage.width;
+            var heightScale = if (maxHeight == Constrained.UNBOUNDED) 1.0 else maxHeight / widget.stage.height;
+            var scale = Math.min(widthScale, heightScale);
+            return if (scale > 1) 1 else scale;
         } else {
-            maxWidth / widget.stage.width;
+            1.0;
         }
     }
     
@@ -88,13 +92,31 @@ public class WidgetView extends Group, Constrained {
         keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
     }
     
-    override attribute maxWidth on replace {
+    private function resize() {
         if (instance.widget.resizable) {
-            instance.widget.stage.width = maxWidth.intValue();
+            if (maxWidth != Constrained.UNBOUNDED) {
+                instance.widget.stage.width = maxWidth.intValue();
+            }
+            if (maxHeight != Constrained.UNBOUNDED) {
+                instance.widget.stage.height = maxHeight.intValue();
+            }
             if (instance.widget.aspectRatio != 0) {
-                instance.widget.stage.height = (instance.widget.stage.width / instance.widget.aspectRatio).intValue();
+                var currentRatio = (instance.widget.stage.width as Number) / instance.widget.stage.height;
+                if (currentRatio > instance.widget.aspectRatio) {
+                    instance.widget.stage.width = (instance.widget.aspectRatio * instance.widget.stage.height).intValue();                
+                } else {
+                    instance.widget.stage.height = (instance.widget.stage.width / instance.widget.aspectRatio).intValue();
+                }
             }
         }
+    }
+    
+    override attribute maxWidth on replace {
+        resize();
+    }
+    
+    override attribute maxHeight on replace {
+        resize();
     }
     
     init {
@@ -204,10 +226,12 @@ public class WidgetView extends Group, Constrained {
                     initialScreenPosX += xPos;
                     initialScreenPosY += yPos;
                 }
-                var hoverOffset:Integer[];
+                var hoverOffset = [0, 0];
                 for (container in WidgetContainer.containers) {
-                    // todo - don't let the last container win...
-                    hoverOffset = container.hover(instance, e.getScreenX().intValue(), e.getScreenY().intValue(), e.getX(), e.getY(), not instance.docked);
+                    var offset = container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), not instance.docked);
+                    if (offset != [0, 0]) {
+                        hoverOffset = offset;
+                    }
                 }
                 instance.docked = false;
                 instance.frame.x = e.getStageX().intValue() + initialScreenPosX + hoverOffset[0];

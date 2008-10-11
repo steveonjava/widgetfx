@@ -50,7 +50,7 @@ public class GapGridBox extends GapBox {
     protected function getBounds(index:Integer):Rectangle {
         return new Rectangle(
             (index mod columns) * (nodeWidth + spacing),
-            index / rows * (nodeHeight + spacing),
+            index / columns * (nodeHeight + spacing),
             nodeWidth,
             nodeHeight
         );
@@ -63,6 +63,9 @@ public class GapGridBox extends GapBox {
         var xCell = (point.x * columns / maxWidth).intValue();
         var yCell = (point.y * rows / maxHeight).intValue();
         var index = yCell * columns + xCell;
+        if (index > content.size()) {
+            index = content.size();
+        }
         setGap(index, size, animate);
     }
     
