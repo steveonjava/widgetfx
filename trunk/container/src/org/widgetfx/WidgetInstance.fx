@@ -32,40 +32,36 @@ import java.io.File;
 import java.lang.*;
 import java.net.URL;
 import java.util.Arrays;
-import javafx.application.Stage;
-import javafx.ext.swing.BorderPanel;
-import javafx.ext.swing.Button;
-import javafx.ext.swing.SwingDialog;
-import javafx.scene.HorizontalAlignment;
-import javafx.ext.swing.FlowPanel;
+import javafx.scene.*;
+import javafx.ext.swing.*;
 import javax.jnlp.*;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPathFactory;
-import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.*;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class WidgetInstance {
-    public static attribute MIN_WIDTH = 100;
-    public static attribute MIN_HEIGHT = 50;
-    
-    private static attribute JARS_TO_SKIP = ["widgetfx-api.jar", "widgetfx.jar",
+public var MIN_WIDTH = 100;
+public var MIN_HEIGHT = 50;
+
+var JARS_TO_SKIP = ["widgetfx-api.jar", "widgetfx.jar",
         "Scenario.jar", "gluegen-rt.jar", "javafx-swing.jar", "javafxc.jar",
         "javafxdoc.jar", "javafxgui.jar", "javafxrt.jar", "jmc.jar", "jogl.jar"];
     
-    private static attribute loadedResources:URL[] = [];
+var loadedResources:URL[] = [];
 
-    public attribute id:Integer;
+public class WidgetInstance {
 
-    private bound function getPropertyFile():File {
+    public-init var id:Integer;
+
+    bound function getPropertyFile():File {
         var filename = if (id == 0) jnlpUrl.replaceAll("[^a-zA-Z0-9]", "_") else id;
         return new File(WidgetFXConfiguration.getInstance().configFolder, "widgets/{filename}.config");
     }
     
     // todo - possibly prevent widgets from loading if they define user properties that start with "widget."
-    private attribute properties = [
+    var properties = [
         StringProperty {
             name: "widget.jnlpUrl"
             value: bind jnlpUrl with inverse
@@ -106,13 +102,13 @@ public class WidgetInstance {
         }
     ];
     
-    private attribute persister = ConfigPersister {properties: bind [properties, widget.configuration.properties], file: bind getPropertyFile()}
+    var persister = ConfigPersister {properties: bind [properties, widget.configuration.properties], file: getPropertyFile()}
     
-    private function resolve(url:String):String {
+    function resolve(url:String):String {
         return (new URL(WidgetManager.getInstance().codebase, url)).toString();
     }
 
-    public attribute jnlpUrl:String on replace {
+    public-init var jnlpUrl:String on replace {
         if (jnlpUrl.length() == 0) {
             mainClass = "";
         } else {
@@ -133,15 +129,15 @@ public class WidgetInstance {
                         var url = new URL(codeBase, jarUrl);
                         if (javafx.lang.Sequences.indexOf(loadedResources, url) == -1) {
                             ds.loadResource(url, null, DownloadServiceListener {
-                                function downloadFailed(url, version) {
+                                override function downloadFailed(url, version) {
                                     System.out.println("download failed");
                                 }
-                                function progress(url, version, readSoFar, total, overallPercent) {
+                                override function progress(url, version, readSoFar, total, overallPercent) {
                                 }
-                                function upgradingArchive(url, version, patchPercent, overallPercent) {
+                                override function upgradingArchive(url, version, patchPercent, overallPercent) {
                                     System.out.println("upgradingArchive");
                                 }
-                                function validating(url, version, entry, total, overallPercent) {
+                                override function validating(url, version, entry, total, overallPercent) {
                                 }
                             });
                             insert url into loadedResources;
@@ -159,7 +155,7 @@ public class WidgetInstance {
         }
     }
     
-    public attribute mainClass:String on replace {
+    public-init var mainClass:String on replace {
         if (mainClass.length() > 0) {
             try {
                 var widgetClass:Class = Class.forName(mainClass);
@@ -176,7 +172,7 @@ public class WidgetInstance {
         }
     }
     
-    private function createError(e:Throwable) {
+    function createError(e:Throwable) {
         if (title == null) {
             title = "Error";
         }
@@ -190,64 +186,64 @@ public class WidgetInstance {
         e.printStackTrace();
     }
 
-    public attribute opacity:Integer = 80;
-    public attribute docked:Boolean = true;
-    public attribute dockedWidth:Integer;
-    public attribute dockedHeight:Integer;
-    public attribute undockedX:Integer;
-    public attribute undockedY:Integer;
-    public attribute undockedWidth:Integer;
-    public attribute undockedHeight:Integer;
+    public var opacity:Integer = 80;
+    public var docked:Boolean = true;
+    public var dockedWidth:Integer;
+    public var dockedHeight:Integer;
+    public var undockedX:Integer;
+    public var undockedY:Integer;
+    public var undockedWidth:Integer;
+    public var undockedHeight:Integer;
     
-    public attribute widget:Widget on replace {
+    public-init var widget:Widget on replace {
         if (widget != null) {
-            if (widget.stage.width < MIN_WIDTH) {
-                widget.stage.width = MIN_WIDTH;
+            if (widget.width < MIN_WIDTH) {
+                widget.width = MIN_WIDTH;
             }
-            if (widget.stage.height < MIN_HEIGHT) {
-                widget.stage.height = MIN_HEIGHT;
+            if (widget.height < MIN_HEIGHT) {
+                widget.height = MIN_HEIGHT;
             }
-            undockedWidth = widget.stage.width;
-            undockedHeight = widget.stage.height;
+            undockedWidth = widget.width;
+            undockedHeight = widget.height;
         }
     }
-    public attribute title:String;
-    public attribute frame:WidgetFrame;
+    public var title:String;
+    public var frame:WidgetFrame;
     
-    private attribute stageWidth = bind widget.stage.width on replace {
-        if (widget.stage.width > 0) {
+    public var stageWidth = bind widget.width on replace {
+        if (widget.width > 0) {
             if (docked) {
-                dockedWidth = widget.stage.width;
+                dockedWidth = widget.width;
             } else {
-                undockedWidth = widget.stage.width;
+                undockedWidth = widget.width;
             }
         }
     }
     
-    private attribute stageHeight = bind widget.stage.height on replace {
-        if (widget.stage.height > 0) {
+    public var stageHeight = bind widget.height on replace {
+        if (widget.height > 0) {
             if (docked) {
-                dockedHeight = widget.stage.height;
+                dockedHeight = widget.height;
             } else {
-                undockedHeight = widget.stage.height;
+                undockedHeight = widget.height;
             }
         }
     }
     
-    function saveWithoutNotification() {
+    package function saveWithoutNotification() {
         persister.save();
     }
 
-    private function initializeDimensions() {
+    function initializeDimensions() {
         if (docked) {
             if (widget.resizable) {
-                widget.stage.width = dockedWidth;
-                widget.stage.height = dockedHeight;
+                widget.width = dockedWidth;
+                widget.height = dockedHeight;
             }
         } else {
             if (widget.resizable) {
-                widget.stage.width = undockedWidth;
-                widget.stage.height = undockedHeight;
+                widget.width = undockedWidth;
+                widget.height = undockedHeight;
             }
             frame = WidgetFrame {
                 instance: this
@@ -282,11 +278,6 @@ public class WidgetInstance {
             persister.save(); // initial save
         }
         initializeDimensions();
-        try {
-            if (widget.onStart != null) widget.onStart();
-        } catch (e:Throwable) {
-            e.printStackTrace();
-        }
         if (widget.configuration.onLoad != null) {
             try {
                 widget.configuration.onLoad();
@@ -296,7 +287,7 @@ public class WidgetInstance {
         }
     }
     
-    private attribute configDialog:SwingDialog;
+    var configDialog:SwingDialog;
     
     public function save() {
         persister.save();
@@ -335,7 +326,7 @@ public class WidgetInstance {
         }
     }
 
-    function deleteConfig() {
+    package function deleteConfig() {
         getPropertyFile().<<delete>>();
     }
 }

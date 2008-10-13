@@ -24,9 +24,9 @@ package org.widgetfx.ui;
  * @author Stephen Chin
  * @author Keith Combs
  */
+public var UNBOUNDED:Number = -1;
+
 public abstract class Constrained {
-    public static attribute UNBOUNDED:Number = -1;
-    
-    public attribute maxWidth:Number = UNBOUNDED;
-    public attribute maxHeight:Number = UNBOUNDED;
+    public var maxWidth:Number = UNBOUNDED;
+    public var maxHeight:Number = UNBOUNDED;
 }

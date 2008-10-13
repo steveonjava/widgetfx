@@ -6,11 +6,10 @@
 
 package org.widgetfx;
 
-import javafx.application.*;
 import javafx.scene.*;
 import javafx.animation.*;
 import javafx.scene.paint.Color;
-import javafx.scene.geometry.Rectangle;
+import javafx.scene.shape.Rectangle;
 
 /**
  * Simple test case to exercise the scenegraph cache.

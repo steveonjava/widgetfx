@@ -21,8 +21,7 @@
 package org.widgetfx;
 
 import org.widgetfx.ui.*;
-import javafx.application.*;
-import javafx.scene.geometry.*;
+import javafx.scene.shape.*;
 import javafx.scene.paint.*;
 
 /**

@@ -21,11 +21,10 @@
 package org.widgetfx.widget.clock;
 
 import org.widgetfx.*;
-import javafx.application.*;
 import javafx.ext.swing.*;
 import javafx.async.*;
 import javafx.scene.*;
-import javafx.scene.geometry.*;
+import javafx.scene.shape.*;
 import javafx.animation.*;
 import javafx.scene.effect.*;
 import javafx.scene.paint.*;
@@ -36,33 +35,30 @@ import java.lang.*;
 /**
  * @author Stephen Chin
  */
+var width = 105;
+var height = 105;
+
+var date = java.util.Date {};
+var bounce : Boolean; // Provides a little analog "jerk"
+var seconds = bind date.getSeconds();
+var minutes = bind date.getMinutes();
+var hours = bind date.getHours();
+
+var timeline = Timeline {
+    repeatCount: Timeline.INDEFINITE
+    keyFrames: [
+        KeyFrame {time: 0.96s, values: bounce => true, action: function():Void {
+                date = java.util.Date {}
+            }
+        },
+        KeyFrame {time: 1s, values: bounce => false}]
+}
+timeline.play();
+
 Widget {
-    var width = 105;
-    var height = 105;
-
-    var date = java.util.Date {};
-    var bounce : Boolean; // Provides a little analog "jerk"
-    var seconds = bind date.getSeconds();
-    var minutes = bind date.getMinutes();
-    var hours = bind date.getHours();
-
-    var timeline = Timeline {
-        repeatCount: Timeline.INDEFINITE
-        keyFrames: [
-            KeyFrame {time: 0.96s, values: bounce => true, action: function():Void {
-                    date = java.util.Date {}
-                }
-            },
-            KeyFrame {time: 1s, values: bounce => false}]
-    }
-    
-    onStart: function():Void {
-        timeline.start();
-    }
-        
-    stage: Stage {
-        width: bind width;
-        height: bind height;
+    width: bind width;
+    height: bind height;
+    scene: Scene {
         content: [
             Group { // Static Content
                 cache: true
@@ -105,8 +101,7 @@ Widget {
                                 content: "{i}"
                                 font: Font {name: "SansSerif", size: 9}
                                 textOrigin: TextOrigin.TOP
-                                verticalAlignment: VerticalAlignment.CENTER
-                                horizontalAlignment: HorizontalAlignment.CENTER
+                                textAlignment: TextAlignment.CENTER
                                 fill: Color.WHITE
                             }
                     },

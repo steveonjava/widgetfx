@@ -35,34 +35,34 @@ import java.util.Properties;
  * @author Keith Combs
  */
 public class ConfigPersister {
-    public attribute properties:Property[] on replace [i..j]=newProperties {
+    public var properties:Property[] on replace [i..j]=newProperties {
         for (property in newProperties) {
             property.onChange = changeListener;
         }
     }
     
-    public attribute file:File;
+    public-init var file:File;
     
-    public attribute autoSave = false;
+    public-init var autoSave = false;
     
-    public attribute mergeProperties = false;
+    public-init var mergeProperties = false;
     
-    private attribute disableAutoSave = true;
+    var disableAutoSave = true;
     
-    private attribute savedProperties:Properties;
+    var savedProperties:Properties;
     
-    private function changeListener(changedProperty:Property):Void {
+    function changeListener(changedProperty:Property):Void {
         if (not disableAutoSave and (autoSave or changedProperty.autoSave)) {
             save();
         }
     }
     
-    private function validateRequiredAttributes() {
+    function validateRequiredAttributes() {
         if (file == null) {
-            throw new IllegalStateException("File attribute is required but missing");
+            throw new IllegalStateException("File var is required but missing");
         }
         if (properties == null) {
-            throw new IllegalStateException("Properties attribute is required but missing");
+            throw new IllegalStateException("Properties var is required but missing");
         }
     }
     

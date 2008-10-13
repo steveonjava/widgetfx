@@ -26,9 +26,8 @@ import java.awt.*;
  * @author Stephen Chin
  */
 public class NativePopupMenu extends NativeMenu {
-    public attribute parent:Component on replace oldComponent=newComponent {
-        oldComponent.remove(getPopupMenu());
-        newComponent.add(getPopupMenu());
+    public-init var parent:Component on replace {
+        parent.add(getPopupMenu());
     }
     
     public function show(origin:Component, x:Integer, y:Integer) {
@@ -39,7 +38,7 @@ public class NativePopupMenu extends NativeMenu {
         return getMenuItem() as PopupMenu;
     }
 
-    protected function createMenuItem():MenuItem {
+    override function createMenuItem():MenuItem {
         return PopupMenu{};
     }
 }

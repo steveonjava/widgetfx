@@ -22,7 +22,7 @@ package org.widgetfx.toolbar;
 
 import org.widgetfx.*;
 import javafx.scene.*;
-import javafx.scene.geometry.*;
+import javafx.scene.shape.*;
 import javafx.scene.paint.*;
 import javafx.scene.transform.*;
 
@@ -32,13 +32,13 @@ import javafx.scene.transform.*;
  */
 public class ConfigButton extends ToolbarButton {
     
-    override attribute name = "Configuration";
+    override var name = "Configuration";
     
-    protected function performAction() {
+    override function performAction() {
         toolbar.instance.showConfigDialog();
     }
     
-    protected function getShape() {
+    override function getShape() {
         [Group {// Border
             translateX: 1.4, translateY: -0.4
             transform: [Rotate {angle: 45}, Scale {x: 0.48, y: 0.48}]

@@ -33,17 +33,17 @@ public class StringProperty extends Property {
      * value: bind someVar with inverse
      * </blockquote></pre>
      */
-    public attribute value:String on replace {
+    public var value:String on replace {
         fireOnChange();
     }
     
     /** {@inheritDoc} */
-    public function getStringValue():String {
+    override function getStringValue():String {
         return value;
     }
     
     /** {@inheritDoc} */
-    public function setStringValue(value:String):Void {
+    override function setStringValue(value:String):Void {
         this.value = value;
     }
 }

@@ -21,7 +21,7 @@
 package org.widgetfx;
 
 import org.widgetfx.ui.AddWidgetDialog;
-import javafx.lang.DeferredTask;
+import javafx.lang.*;
 import javax.swing.UIManager;
 import java.lang.System;
 

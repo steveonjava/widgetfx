@@ -23,19 +23,18 @@ package org.widgetfx.widget.webfeed;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
-import org.widgetfx.util.*;
-import javafx.application.*;
 import javafx.ext.swing.*;
+import javafx.animation.*;
 import javafx.async.*;
 import javafx.scene.*;
-import javafx.scene.geometry.*;
-import javafx.animation.*;
 import javafx.scene.effect.*;
 import javafx.scene.effect.light.*;
-import javafx.scene.paint.*;
-import javafx.scene.transform.*;
-import javafx.scene.text.*;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.*;
+import javafx.scene.shape.*;
+import javafx.scene.text.*;
+import javafx.scene.transform.*;
 import java.awt.Desktop;
 import java.lang.*;
 import java.net.URI;
@@ -61,18 +60,18 @@ var entrySequence:SyndEntryImpl[];
 var error:String;
 
 var border = 6;
-var width = 300;
-var height = 200;
+var width:Number = 300;
+var height:Number = 200;
 var entryWidth = bind width - border * 2;
 var entryHeight = 25; // todo - don't hardcode the height of the entries
 
-private function updateFeed():Void {
+function updateFeed():Void {
     var feedInfoCache = HashMapFeedInfoCache.getInstance();
     var feedFetcher:FeedFetcher = new HttpURLFeedFetcher(feedInfoCache);
     try {
         feed = feedFetcher.retrieveFeed(new URL(feedUrl));
         var entries = feed.getEntries();
-        entrySequence = Sequences.make(SyndEntryImpl.<<class>>, entries);
+        entrySequence = for (entry in entries) entry as SyndEntryImpl;
         error = null;
     } catch (e) {
         entrySequence = null;
@@ -80,7 +79,7 @@ private function updateFeed():Void {
     }
 }
 
-private function dateSince(date:Date):String {
+function dateSince(date:Date):String {
     var offset:Number = System.currentTimeMillis() - date.getTime();
     var minutes = (offset / 60000).intValue();
     var hours = minutes / 60;
@@ -94,7 +93,7 @@ private function dateSince(date:Date):String {
     }
 }
 
-private function launchUri(uri:URI) {
+function launchUri(uri:URI) {
     if (Desktop.isDesktopSupported()) {
         var desktop = Desktop.getDesktop();
         if (desktop.isSupported(Desktop.Action.BROWSE )) {
@@ -103,7 +102,7 @@ private function launchUri(uri:URI) {
     }
 }
 
-private function createEntryDisplay(entry:SyndEntryImpl):Node {
+function createEntryDisplay(entry:SyndEntryImpl):Node {
     Group {
         var groupOpacity = 0.0;
         var groupFill = Color.BLACK;
@@ -116,28 +115,28 @@ private function createEntryDisplay(entry:SyndEntryImpl):Node {
             },
             VBox {
                 content: [
-                    BoundedText {
+                    Text {
                         font: Font {size: 11}
                         fill: Color.WHITE
                         textOrigin: TextOrigin.TOP
-                        text: StringEscapeUtils.unescapeHtml(entry.getTitle());
-                        width: bind entryWidth - border * 2
+                        content: StringEscapeUtils.unescapeHtml(entry.getTitle());
+                        wrappingWidth: bind entryWidth - border * 2
                     },
                     Group {content: [
-                        BoundedText {
+                        Text {
                             font: Font {size: 9}
                             fill: Color.CYAN
                             textOrigin: TextOrigin.TOP
-                            horizontalAlignment: HorizontalAlignment.LEADING
-                            text: feed.getTitle()
-                            width: bind entryWidth - 55
+                            textAlignment: TextAlignment.LEFT
+                            content: feed.getTitle()
+                            wrappingWidth: bind entryWidth - 55
                         },
                         Text {
                             font: Font {size: 9}
                             content: dateSince(entry.getPublishedDate())
                             fill: Color.CYAN
                             textOrigin: TextOrigin.TOP
-                            horizontalAlignment: HorizontalAlignment.TRAILING
+                            textAlignment: TextAlignment.RIGHT
                             translateX: bind entryWidth
                         }
                     ]}
@@ -157,7 +156,7 @@ private function createEntryDisplay(entry:SyndEntryImpl):Node {
             groupOpacity = 0.6;
         }
         onMouseClicked: function(event):Void {
-            if (event.getButton() == 1) {
+            if (event.button == MouseButton.PRIMARY) {
                 groupFill = Color.SLATEGRAY;
                 launchUri(new URI(entry.getLink()));
                 groupOpacity = 0.6;
@@ -172,7 +171,7 @@ Timeline {
         KeyFrame {time: 0s, action: updateFeed},
         KeyFrame {time: 15m}
     ]
-}.start();
+}.play();
 
 Widget {
     resizable: true
@@ -184,25 +183,25 @@ Widget {
             }
         ]
 
-        component: ClusterPanel {
-            var label = Label {text: "RSS Feed:"};
-            var textField = TextField {text: bind feedUrl with inverse, hpref: 300};
-            vcluster: ParallelCluster { content: [
-                label,
-                textField
-            ]}
-            hcluster: SequentialCluster { content: [
-                label,
-                textField
-            ]}
+        scene: Scene {
+            var label = SwingLabel {text: "RSS Feed:"};
+            var textField = SwingTextField {text: bind feedUrl with inverse, columns: 40};
+            content: [
+                HBox {
+                    content: [
+                        label,
+                        textField
+                    ]
+                }
+            ]
         }
         onSave: function() {
             updateFeed();
         }
     }
-    stage: Stage {
-        width: bind width with inverse
-        height: bind height with inverse
+    width: bind width with inverse
+    height: bind height with inverse
+    scene: Scene {
         content: [
             Group {
                 cache: true
@@ -217,17 +216,16 @@ Widget {
             VBox {
                 visible: bind error != null
                 translateY: bind height / 2
-                verticalAlignment: VerticalAlignment.CENTER
                 content: [
                     Text {
                         translateX: bind width / 2
-                        horizontalAlignment: HorizontalAlignment.CENTER
+                        textAlignment: TextAlignment.CENTER
                         content: bind error
                         fill: Color.WHITE
                     },
                     Text {
                         translateX: bind width / 2
-                        horizontalAlignment: HorizontalAlignment.CENTER
+                        textAlignment: TextAlignment.CENTER
                         content: bind feedUrl
                         font: Font {size: 11}
                         fill: Color.LIGHTSTEELBLUE
