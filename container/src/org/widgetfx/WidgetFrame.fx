@@ -20,98 +20,83 @@
  */
 package org.widgetfx;
 
-import org.widgetfx.toolbar.WidgetToolbar;
-import org.widgetfx.ui.BaseDialog;
-import org.widgetfx.ui.WidgetContainer;
-import javafx.application.WindowStyle;
-import javafx.application.Stage;
-import javafx.scene.Group;
-import javafx.scene.Cursor;
-import javafx.scene.paint.Color;
-import javafx.animation.Timeline;
-import javafx.animation.KeyFrame;
-import javafx.animation.Interpolator;
-import javafx.ext.swing.ComponentView;
-import javafx.ext.swing.Slider;
-import javafx.input.MouseEvent;
-import javafx.lang.DeferredTask;
-import javafx.scene.HorizontalAlignment;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.Glow;
-import javafx.scene.geometry.Circle;
-import javafx.scene.geometry.DelegateShape;
-import javafx.scene.geometry.Line;
-import javafx.scene.geometry.Rectangle;
-import javafx.scene.geometry.ShapeSubtract;
-import javafx.scene.paint.RadialGradient;
-import javafx.scene.paint.Stop;
-import javafx.scene.transform.Rotate;
-import javafx.scene.transform.Scale;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseMotionAdapter;
-import javax.swing.RootPaneContainer;
+import org.widgetfx.toolbar.*;
+import org.widgetfx.ui.*;
+import java.awt.event.*;
+import javafx.animation.*;
+import javafx.ext.swing.*;
+import javafx.lang.*;
+import javafx.scene.*;
+import javafx.scene.effect.*;
+import javafx.scene.input.*;
+import javafx.scene.paint.*;
+import javafx.scene.shape.*;
+import javafx.scene.transform.*;
+import javafx.stage.*;
+import javax.swing.*;
 
 /**
  * @author Stephen Chin
  */
-public class WidgetFrame extends BaseDialog {
-    public static attribute BORDER = 5;
-    public static attribute RESIZABLE_TOOLBAR_HEIGHT = 18;
-    public static attribute NONRESIZABLE_TOOLBAR_HEIGHT = RESIZABLE_TOOLBAR_HEIGHT - BORDER;
-    public static attribute DS_RADIUS = 5;
+public var BORDER = 5;
+public var RESIZABLE_TOOLBAR_HEIGHT = 18;
+public var NONRESIZABLE_TOOLBAR_HEIGHT = RESIZABLE_TOOLBAR_HEIGHT - BORDER;
+public var DS_RADIUS = 5;
+
+// todo - figure out a way to create a dialog out of a stage
+public class WidgetFrame extends Stage {
+    var toolbarHeight = bind if (instance.widget.configuration == null) NONRESIZABLE_TOOLBAR_HEIGHT else RESIZABLE_TOOLBAR_HEIGHT;
     
-    private attribute toolbarHeight = bind if (instance.widget.configuration == null) NONRESIZABLE_TOOLBAR_HEIGHT else RESIZABLE_TOOLBAR_HEIGHT;
+    public-init var instance:WidgetInstance;
     
-    public attribute instance:WidgetInstance;
+    var widget = bind instance.widget;
     
-    private attribute widget = bind instance.widget;
-    
-    private attribute xSync = bind x on replace {
+    var xSync = bind x on replace {
         instance.undockedX = x;
     }
     
-    private attribute ySync = bind y on replace {
+    var ySync = bind y on replace {
         instance.undockedY = y;
     }
     
-    private attribute widgetWidth = bind widget.stage.width + BORDER * 2 + 1 on replace {
+    var widgetWidth = bind widget.width + BORDER * 2 + 1 on replace {
         width = widgetWidth;
     }
     
-    private attribute boxHeight = bind widget.stage.height + BORDER * 2 + 1;
+    var boxHeight = bind widget.height + BORDER * 2 + 1;
     
-    private attribute widgetHeight = bind boxHeight + toolbarHeight on replace {
+    var widgetHeight = bind boxHeight + toolbarHeight on replace {
         height = widgetHeight;
     }
 
-    public attribute resizing:Boolean on replace {
+    var resizing:Boolean on replace {
         updateFocus();
     }
-    private attribute dragging:Boolean on replace {
+    var dragging:Boolean on replace {
         updateFocus();
     }
-    private attribute changingOpacity:Boolean on replace {
+    var changingOpacity:Boolean on replace {
         updateFocus();
     }
-    private attribute docking:Boolean;
+    var docking:Boolean;
     
-    private attribute initialX:Integer;
-    private attribute initialY:Integer;
-    private attribute initialWidth:Integer;
-    private attribute initialHeight:Integer;
-    private attribute initialScreenX;
-    private attribute initialScreenY;
+    var initialX:Integer;
+    var initialY:Integer;
+    var initialWidth:Integer;
+    var initialHeight:Integer;
+    var initialScreenX;
+    var initialScreenY;
         
-    private attribute saveInitialPos = function(e:MouseEvent):Void {
+    var saveInitialPos = function(e:MouseEvent):Void {
         initialX = x;
         initialY = y;
-        initialWidth = widget.stage.width;
-        initialHeight = widget.stage.height;
+        initialWidth = widget.width;
+        initialHeight = widget.height;
         initialScreenX = e.getStageX().intValue() + x;
         initialScreenY = e.getStageY().intValue() + y;
     }
     
-    private function mouseDelta(deltaFunction:function(a:Integer, b:Integer):Void):function(c:MouseEvent):Void {
+    function mouseDelta(deltaFunction:function(a:Integer, b:Integer):Void):function(c:MouseEvent):Void {
         return function (e:MouseEvent):Void {
             var xDelta = e.getStageX().intValue() + x - initialScreenX;
             var yDelta = e.getStageY().intValue() + y - initialScreenY;
@@ -119,14 +104,14 @@ public class WidgetFrame extends BaseDialog {
         }
     }
     
-    private attribute startResizing = function(e:MouseEvent):Void {
+    var startResizing = function(e:MouseEvent):Void {
         resizing = true;
         saveInitialPos(e);
     }
     
-    private attribute doneResizing = function(e:MouseEvent):Void {
+    var doneResizing = function(e:MouseEvent):Void {
         if (widget.onResize != null) {
-            widget.onResize(widget.stage.width, widget.stage.height);
+            widget.onResize(widget.width, widget.height);
         }
         instance.saveWithoutNotification();
         resizing = false;
@@ -150,12 +135,12 @@ public class WidgetFrame extends BaseDialog {
                         container.dockAfterHover(instance);
                     }
                     if (instance.widget.onResize != null) {
-                        instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                        instance.widget.onResize(instance.widget.width, instance.widget.height);
                     }
                     instance.dock();
                 }
             }
-        }.start();
+        }.play();
     }
     
     /**
@@ -163,12 +148,12 @@ public class WidgetFrame extends BaseDialog {
      * and close this Frame.
      * This can be overriden to provide custom behavior.
      */
-    public attribute onClose = function(frame:WidgetFrame) {
+    public-init var onClose = function(frame:WidgetFrame) {
         WidgetManager.getInstance().removeWidget(instance);
         frame.close();
     }
     
-    private function resize(widthDelta:Integer, heightDelta:Integer, updateX:Boolean, updateY:Boolean, widthOnly:Boolean, heightOnly:Boolean) {
+    function resize(widthDelta:Integer, heightDelta:Integer, updateX:Boolean, updateY:Boolean, widthOnly:Boolean, heightOnly:Boolean) {
         if (initialWidth + widthDelta < WidgetInstance.MIN_WIDTH) {
             widthDelta = WidgetInstance.MIN_WIDTH - initialWidth;
         }
@@ -189,19 +174,19 @@ public class WidgetFrame extends BaseDialog {
         if (updateY) {
             y = initialY + initialHeight - newHeight;
         }
-        widget.stage.width = newWidth;
-        widget.stage.height = newHeight;
+        widget.width = newWidth;
+        widget.height = newHeight;
     }
     
-    private attribute rolloverOpacity = 0.0;
-    private attribute rolloverTimeline = Timeline {
+    var rolloverOpacity = 0.0;
+    var rolloverTimeline = Timeline {
         autoReverse: true, toggle: true
         keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
     }
     
-    private attribute firstRollover = true;
+    var firstRollover = true;
         
-    private attribute hasFocus:Boolean on replace {
+    var hasFocus:Boolean on replace {
         if (firstRollover) {
             firstRollover = false;
         } else {
@@ -209,15 +194,15 @@ public class WidgetFrame extends BaseDialog {
         }
     }
     
-    private attribute needsFocus:Boolean;
+    var needsFocus:Boolean;
     
     // this is a workaround for the issue with toggle timelines that are stopped and started immediately triggering a full animation
-    private function requestFocus(focus:Boolean):Void {
+    function requestFocus(focus:Boolean):Void {
         needsFocus = focus;
         updateFocus();
     }
     
-    private function updateFocus():Void {
+    function updateFocus():Void {
         DeferredTask {
             action: function() {
                 hasFocus = needsFocus or dragging or resizing or changingOpacity;
@@ -392,14 +377,14 @@ public class WidgetFrame extends BaseDialog {
                                 effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                                 content: Group { // Clip Group
                                     content: bind widget.stage.content[0]
-                                    clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                                    clip: Rectangle {width: bind widget.width, height: bind widget.height}
                                 }
                             }
                         },
                         Group { // Front Slices
                             cache: true
                             content: bind widget.stage.content[1..]
-                            clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                            clip: Rectangle {width: bind widget.width, height: bind widget.height}
                         },
                     ]
                     opacity: bind (instance.opacity as Number) / 100
@@ -443,24 +428,24 @@ public class WidgetFrame extends BaseDialog {
             fill: null
         }
         (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
-            public function mouseEntered(e) {
+            override function mouseEntered(e) {
                 requestFocus(true);
             }
-            public function mouseExited(e) {
+            override function mouseExited(e) {
                 requestFocus(false);
             }
         });
         slider.getJSlider().addMouseListener(MouseAdapter {
-            public function mouseEntered(e) {
+            override function mouseEntered(e) {
                 requestFocus(true);
             }
-            public function mouseExited(e) {
+            override function mouseExited(e) {
                 requestFocus(false);
             }
-            public function mousePressed(e) {
+            override function mousePressed(e) {
                 changingOpacity = true;
             }
-            public function mouseReleased(e) {
+            override function mouseReleased(e) {
                 changingOpacity = false;
                 instance.saveWithoutNotification();
             }

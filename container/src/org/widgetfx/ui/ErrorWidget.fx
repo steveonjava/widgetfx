@@ -20,9 +20,8 @@
  */
 package org.widgetfx.ui;
 
-import javafx.application.Stage;
 import javafx.scene.*;
-import javafx.scene.geometry.*;
+import javafx.scene.shape.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.text.*;
@@ -31,17 +30,19 @@ import org.widgetfx.Widget;
 /**
  * @author Stephen Chin
  */
+public var LINE_HEIGHT = 20;
+
+var X_COLOR = Color.rgb(70, 50, 50);
+
 public class ErrorWidget extends Widget {
-    private static attribute X_COLOR = Color.rgb(70, 50, 50);
-    public static attribute LINE_HEIGHT = 20;
     
-    public attribute errorLines:String[] = "uninitialized error";
+    public-init var errorLines:String[] = "uninitialized error";
     
-    override attribute autoLaunch = false;
+    override var autoLaunch = false;
     
-    override attribute resizable = true;
+    override var resizable = true;
     
-    override attribute stage = Stage {
+    override var stage = Stage {
         width: 300
         height: 150
         content: [

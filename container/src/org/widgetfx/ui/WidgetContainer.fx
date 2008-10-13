@@ -21,7 +21,6 @@
 package org.widgetfx.ui;
 
 import javafx.animation.*;
-import javafx.application.*;
 import javafx.lang.*;
 import javafx.scene.*;
 import org.widgetfx.*;
@@ -30,56 +29,56 @@ import org.widgetfx.*;
  * @author Stephen Chin
  * @author Keith Combs
  */
+public var containers:WidgetContainer[];
+
 public class WidgetContainer extends Group {
     
-    public static attribute containers:WidgetContainer[];
-    
-    public attribute widgets:WidgetInstance[];
+    public var widgets:WidgetInstance[];
     
     // if this is set, copy widget when dropped on a new container, but place the original
     // widget back in the source container
-    public attribute copyOnContainerDrop:Boolean;
+    public-init var copyOnContainerDrop:Boolean;
     
-    public attribute layout:GapBox on replace {
+    public-init var layout:GapBox on replace {
         layout.maxWidth = width;
         layout.maxHeight = height;
         layout.content = widgetViews;
         content = [layout];
     }
     
-    public attribute width:Integer on replace {
+    public var width:Integer on replace {
         layout.maxWidth = width;
     }
     
-    public attribute height:Integer on replace {
+    public var height:Integer on replace {
         layout.maxHeight = height;
     }
     
-    public attribute resizing:Boolean;
+    public-read var resizing:Boolean;
     
-    public attribute dragging:Boolean;
+    public-read var dragging:Boolean;
     
-    private attribute widgetViews:WidgetView[] = bind for (instance in widgets) createWidgetView(instance) on replace {
+    var widgetViews:WidgetView[] = bind for (instance in widgets) createWidgetView(instance) on replace {
         layout.content = widgetViews;
     }
     
-    private function createWidgetView(instance:WidgetInstance):WidgetView {
+    function createWidgetView(instance:WidgetInstance):WidgetView {
         return WidgetView {
             container: this
             instance: instance
         }
     }
     
-    private attribute animateHover:Timeline;
-    private attribute animatingInstance:WidgetInstance;
-    private attribute animating = bind if (animateHover == null) false else animateHover.running on replace {
+    var animateHover:Timeline;
+    var animatingInstance:WidgetInstance;
+    var animating = bind if (animateHover == null) false else animateHover.running on replace {
         animatingInstance.frame.resizing = animating;
     }
-    private attribute animateDocked:Boolean;
-    private attribute saveUndockedWidth:Integer;
-    private attribute saveUndockedHeight:Integer;
-    private attribute xHoverOffset;
-    private attribute yHoverOffset;
+    var animateDocked:Boolean;
+    var saveUndockedWidth:Integer;
+    var saveUndockedHeight:Integer;
+    var xHoverOffset;
+    var yHoverOffset;
     
     init {
         insert this into containers;
@@ -100,14 +99,14 @@ public class WidgetContainer extends Group {
                     time: 300ms
                     values: [
                         if (newWidth > 0) {[
-                            instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH,
-                            xHoverOffset => localX - localX * newWidth / instance.widget.stage.width tween Interpolator.EASEBOTH
+                            instance.widget.width => newWidth tween Interpolator.EASEBOTH,
+                            xHoverOffset => localX - localX * newWidth / instance.widget.width tween Interpolator.EASEBOTH
                         ]} else {
                             []
                         },
                         if (newHeight > 0) {[
-                            instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH,
-                            yHoverOffset => localY - localY * newHeight / instance.widget.stage.height tween Interpolator.EASEBOTH
+                            instance.widget.height => newHeight tween Interpolator.EASEBOTH,
+                            yHoverOffset => localY - localY * newHeight / instance.widget.height tween Interpolator.EASEBOTH
                         ]} else {
                             []
                         }
@@ -122,7 +121,7 @@ public class WidgetContainer extends Group {
         setupHoverAnimation(instance, localX, localY);
         if (layout.containsScreenXY(screenX, screenY)) {
             delete instance from widgets;
-            var dockedHeight = if (instance.dockedHeight == 0) instance.widget.stage.height else instance.dockedHeight;
+            var dockedHeight = if (instance.dockedHeight == 0) instance.widget.height else instance.dockedHeight;
             layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
             if (animateHover != null and not animateDocked) {
                 animateDocked = true;

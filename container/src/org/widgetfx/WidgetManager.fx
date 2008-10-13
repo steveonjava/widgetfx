@@ -23,8 +23,8 @@ package org.widgetfx;
 import java.lang.System;
 import java.util.Arrays;
 import java.net.URL;
-import javafx.lang.DeferredTask;
-import javafx.lang.Sequences;
+import javafx.lang.*;
+import javafx.util.*;
 import javax.jnlp.*;
 import org.widgetfx.config.IntegerSequenceProperty;
 import org.widgetfx.config.StringSequenceProperty;
@@ -34,32 +34,32 @@ import org.widgetfx.ui.ErrorWidget;
  * @author Stephen Chin
  * @author Keith Combs
  */
+var instance:WidgetManager;
+    
+public function createWidgetRunnerInstance() {
+    instance = WidgetManager {widgetRunner: true};
+}
+
+public function createPortalInstance() {
+    instance = WidgetManager {portal: true};
+}
+
+public function getInstance() {
+    if (instance == null) {
+        instance = WidgetManager {};
+    }
+    return instance;
+}
+    
 public class WidgetManager {
     
-    private static attribute instance:WidgetManager;
+    public var widgetRunner = false;
     
-    public attribute widgetRunner = false;
+    public var portal = false;
     
-    public static function createWidgetRunnerInstance() {
-        instance = WidgetManager {widgetRunner: true};
-    }
+    var codebase = WidgetFXConfiguration.getInstance().codebase;
     
-    public attribute portal = false;
-    
-    public static function createPortalInstance() {
-        instance = WidgetManager {portal: true};
-    }
-    
-    public static function getInstance() {
-        if (instance == null) {
-            instance = WidgetManager {};
-        }
-        return instance;
-    }
-    
-    public attribute codebase = WidgetFXConfiguration.getInstance().codebase;
-    
-    private attribute initialWidgets = if (WidgetFXConfiguration.getInstance().devMode) [
+    var initialWidgets = if (WidgetFXConfiguration.getInstance().devMode) [
         "../../widgets/Clock/dist/launch.jnlp",
         "../../widgets/SlideShow/dist/launch.jnlp",
         "../../widgets/WebFeed/dist/launch.jnlp"
@@ -69,9 +69,9 @@ public class WidgetManager {
         "{codebase}widgets/WebFeed/launch.jnlp"
     ];
     
-    public attribute recentWidgets:String[] = [];
+    public-read var recentWidgets:String[] = [];
     
-    private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
+    var configuration = WidgetFXConfiguration.getInstanceWithProperties([
         IntegerSequenceProperty {
             name: "widgets"
             value: bind widgetIds with inverse
@@ -82,9 +82,9 @@ public class WidgetManager {
         }
     ]);
 
-    private attribute updating:Boolean;
+    var updating:Boolean;
 
-    private attribute widgetIds:Integer[] on replace [i..j]=newWidgetIds {
+    var widgetIds:Integer[] on replace [i..j]=newWidgetIds {
         if (not widgetRunner and not updating) {
             try {
                 updating = true;
@@ -95,7 +95,7 @@ public class WidgetManager {
         }
     }
     
-    public attribute widgets:WidgetInstance[] = [] on replace [i..j]=newWidgets {
+    public var widgets:WidgetInstance[] = [] on replace [i..j]=newWidgets {
         if (not updating) {
             try {
                 updating = true;
@@ -115,15 +115,15 @@ public class WidgetManager {
         }
     }
     
-    private attribute sis = ServiceManager.lookup("javax.jnlp.SingleInstanceService") as SingleInstanceService;
-    private attribute sil = SingleInstanceListener {
-        public function newActivation(params) {
-            DeferredTask {
-                action: function() {
+    var sis = ServiceManager.lookup("javax.jnlp.SingleInstanceService") as SingleInstanceService;
+    var sil = SingleInstanceListener {
+        override function newActivation(params) {
+            FX.deferAction(
+                function():Void {
                     Dock.getInstance().showDockAndWidgets();
                     loadParams(for (s in Arrays.asList(params)) s);
                 }
-            }
+            );
         }
     };
 
@@ -161,7 +161,7 @@ public class WidgetManager {
         }
     }
     
-    private function loadWidget(id:Integer):WidgetInstance {
+    function loadWidget(id:Integer):WidgetInstance {
         var instance = WidgetInstance{id: id};
         instance.load();
         return instance;
@@ -175,7 +175,7 @@ public class WidgetManager {
     public function addWidget(jnlpUrl:String):WidgetInstance {
         for (widget in widgets) {
             if (widget.jnlpUrl.equals(jnlpUrl)) {
-                System.out.println("Widget already loaded: " + jnlpUrl);
+                System.out.println("Widget already loaded: {jnlpUrl}");
                 return null;
             }
         }

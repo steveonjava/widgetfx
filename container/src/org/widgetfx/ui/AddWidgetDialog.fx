@@ -22,8 +22,7 @@ package org.widgetfx.ui;
 
 import org.widgetfx.*;
 import java.io.File;
-import javafx.application.*;
-import javafx.scene.HorizontalAlignment;
+import javafx.scene.*;
 import javafx.ext.swing.*;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -33,37 +32,37 @@ import javax.swing.filechooser.FileFilter;
  */
 public class AddWidgetDialog {
     
-    public attribute addHandler:function(jnlpUrl:String):Void;
+    public-init var addHandler:function(jnlpUrl:String):Void;
     
-    public attribute cancelHandler:function():Void;
+    public-init var cancelHandler:function():Void;
     
-    private attribute jnlpUrl:String;
+    var jnlpUrl:String;
     
-    private attribute dialog:Dialog;
+    var dialog:Dialog;
     
     postinit {
         showDialog();
     }
     
-    private attribute selected:ListItem on replace {
+    var selected:ListItem on replace {
         jnlpUrl = selected.text;
     }
     
-    private function add() {
+    function add() {
         dialog.close();
         if (addHandler != null) {
             addHandler(jnlpUrl);
         }
     }
     
-    private function cancel() {
+    function cancel() {
         dialog.close();
         if (cancelHandler != null) {
             cancelHandler();
         }
     }
     
-    private function showDialog() {
+    function showDialog() {
         var widgetList = List {
             selectedItem: bind selected with inverse
             items: for (url in WidgetManager.getInstance().recentWidgets) ListItem {
@@ -78,10 +77,10 @@ public class AddWidgetDialog {
             action: function() {
                 var chooser = new JFileChooser(jnlpUrl);
                 chooser.setFileFilter(FileFilter {
-                    public function accept(f:File):Boolean {
+                    override function accept(f:File):Boolean {
                         return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp");
                     }
-                    public function getDescription():String {
+                    override function getDescription():String {
                         return "Java Network Launch Protocol (JNLP)"
                     }
                 });

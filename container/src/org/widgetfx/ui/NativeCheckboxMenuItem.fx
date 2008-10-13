@@ -27,7 +27,7 @@ import java.awt.event.*;
  * @author Stephen Chin
  */
 public class NativeCheckboxMenuItem extends NativeMenuItem {
-    public attribute selected:Boolean on replace {
+    public var selected:Boolean on replace {
         getCheckboxMenuItem().setState(selected);
     }
     
@@ -37,13 +37,13 @@ public class NativeCheckboxMenuItem extends NativeMenuItem {
     
     postinit {
         getCheckboxMenuItem().addItemListener(ItemListener {
-            public function itemStateChanged(e:ItemEvent):Void {
+            override function itemStateChanged(e:ItemEvent):Void {
                 selected = e.getStateChange() == ItemEvent.SELECTED;
             }
         });
     }
 
-    protected function createMenuItem():MenuItem {
+    override function createMenuItem():MenuItem {
         return CheckboxMenuItem{};
     }
 }

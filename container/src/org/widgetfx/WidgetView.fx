@@ -25,38 +25,37 @@ import org.widgetfx.ui.Constrained;
 import org.widgetfx.ui.WidgetContainer;
 import java.lang.*;
 import javafx.animation.*;
-import javafx.input.*;
-import javafx.lang.DeferredTask;
 import javafx.scene.*;
 import javafx.scene.effect.*;
-import javafx.scene.geometry.*;
+import javafx.scene.input.*;
+import javafx.scene.shape.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 
 /**
  * @author Stephen Chin
  */
-public class WidgetView extends Group, Constrained {
-    public static attribute TOP_BORDER = 3;
-    public static attribute BOTTOM_BORDER = 7;
+public var TOP_BORDER = 3;
+public var BOTTOM_BORDER = 7;
+
+public class WidgetView extends Group, Constrained {    
+    public-init var container:WidgetContainer;
+    public-init var instance:WidgetInstance;
+    public-init var widget = bind instance.widget;
     
-    public attribute container:WidgetContainer;
-    public attribute instance:WidgetInstance;
-    private attribute widget = bind instance.widget;
+    var resizing = false;
+    public-read var docking = false;
     
-    private attribute resizing = false;
-    public attribute docking = false;
+    var dockedParent:Group;
+    var initialScreenPosX:Integer;
+    var initialScreenPosY:Integer;
     
-    private attribute dockedParent:Group;
-    private attribute initialScreenPosX:Integer;
-    private attribute initialScreenPosY:Integer;
+    var scale:Number = bind calculateScale();
     
-    private attribute scale:Number = bind calculateScale();
-    
-    private bound function calculateScale():Number {
+    bound function calculateScale():Number {
         return if (not widget.resizable) {
-            var widthScale = if (maxWidth == Constrained.UNBOUNDED) 1.0 else maxWidth / widget.stage.width;
-            var heightScale = if (maxHeight == Constrained.UNBOUNDED) 1.0 else maxHeight / widget.stage.height;
+            var widthScale = if (maxWidth == Constrained.UNBOUNDED) 1.0 else maxWidth / widget.width;
+            var heightScale = if (maxHeight == Constrained.UNBOUNDED) 1.0 else maxHeight / widget.height;
             var scale = Math.min(widthScale, heightScale);
             return if (scale > 1) 1 else scale;
         } else {
@@ -64,9 +63,9 @@ public class WidgetView extends Group, Constrained {
         }
     }
     
-    private attribute firstRollover = true;
+    var firstRollover = true;
         
-    private attribute hasFocus:Boolean on replace {
+    var hasFocus:Boolean on replace {
         if (firstRollover) {
             firstRollover = false;
         } else {
@@ -74,10 +73,10 @@ public class WidgetView extends Group, Constrained {
         }
     }
     
-    private attribute needsFocus:Boolean;
+    var needsFocus:Boolean;
     
     // this is a workaround for the issue with toggle timelines that are stopped and started immediately triggering a full animation
-    private function requestFocus(focus:Boolean):Void {
+    function requestFocus(focus:Boolean):Void {
         needsFocus = focus;
         DeferredTask {
             action: function() {
@@ -86,36 +85,36 @@ public class WidgetView extends Group, Constrained {
         }
     }
     
-    private attribute rolloverOpacity = 0.0;
-    private attribute rolloverTimeline = Timeline {
+    var rolloverOpacity = 0.0;
+    var rolloverTimeline = Timeline {
         autoReverse: true, toggle: true
         keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
     }
     
-    private function resize() {
+    function resize() {
         if (instance.widget.resizable) {
             if (maxWidth != Constrained.UNBOUNDED) {
-                instance.widget.stage.width = maxWidth.intValue();
+                instance.widget.width = maxWidth.intValue();
             }
             if (maxHeight != Constrained.UNBOUNDED) {
-                instance.widget.stage.height = maxHeight.intValue();
+                instance.widget.height = maxHeight.intValue();
             }
             if (instance.widget.aspectRatio != 0) {
-                var currentRatio = (instance.widget.stage.width as Number) / instance.widget.stage.height;
+                var currentRatio = (instance.widget.width as Number) / instance.widget.height;
                 if (currentRatio > instance.widget.aspectRatio) {
-                    instance.widget.stage.width = (instance.widget.aspectRatio * instance.widget.stage.height).intValue();                
+                    instance.widget.width = (instance.widget.aspectRatio * instance.widget.height).intValue();                
                 } else {
-                    instance.widget.stage.height = (instance.widget.stage.width / instance.widget.aspectRatio).intValue();
+                    instance.widget.height = (instance.widget.width / instance.widget.aspectRatio).intValue();
                 }
             }
         }
     }
     
-    override attribute maxWidth on replace {
+    override var maxWidth on replace {
         resize();
     }
     
-    override attribute maxHeight on replace {
+    override var maxHeight on replace {
         resize();
     }
     
@@ -123,13 +122,13 @@ public class WidgetView extends Group, Constrained {
         cache = true;
         content = [
             Rectangle { // Invisible Spacer
-                height: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER
+                height: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER
                 width: bind maxWidth
                 fill: Color.rgb(0, 0, 0, 0.0)
             },
             Group { // Widget with DropShadow
                 translateY: TOP_BORDER
-                translateX: bind (maxWidth - widget.stage.width * scale) / 2
+                translateX: bind (maxWidth - widget.width * scale) / 2
                 content: [
                     Group { // Rear Slice
                         cache: true
@@ -137,7 +136,7 @@ public class WidgetView extends Group, Constrained {
                             effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
                             content: Group { // Clip Group
                                 content: bind widget.stage.content[0]
-                                clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                                clip: Rectangle {width: bind widget.width, height: bind widget.height}
                                 scaleX: bind scale, scaleY: bind scale
                             }
                         }
@@ -145,14 +144,14 @@ public class WidgetView extends Group, Constrained {
                     Group { // Front Slices
                         cache: true
                         content: bind widget.stage.content[1..]
-                        clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                        clip: Rectangle {width: bind widget.width, height: bind widget.height}
                         scaleX: bind scale, scaleY: bind scale
                     },
                 ]
             },
             WidgetToolbar {
                 blocksMouse: true
-                translateX: bind (maxWidth + widget.stage.width * scale) / 2
+                translateX: bind (maxWidth + widget.width * scale) / 2
                 opacity: bind rolloverOpacity
                 instance: instance
                 onMouseEntered: function(e) {requestFocus(true)}
@@ -163,7 +162,7 @@ public class WidgetView extends Group, Constrained {
             },
             Group { // Drag Bar
                 blocksMouse: true
-                translateY: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER - 3
+                translateY: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER - 3
                 content: [
                     Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 4},
                     Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity, translateY: 1},
@@ -175,21 +174,21 @@ public class WidgetView extends Group, Constrained {
                 onMousePressed: function(e:MouseEvent) {
                     if (widget.resizable) {
                         resizing = true;
-                        initialHeight = widget.stage.height * scale;
+                        initialHeight = widget.height * scale;
                         initialY = e.getStageY().intValue();
                     }
                 }
                 onMouseDragged: function(e:MouseEvent) {
                     if (resizing) {
-                        widget.stage.height = (initialHeight + (e.getStageY().intValue() - initialY) / scale).intValue();
-                        if (widget.stage.height < WidgetInstance.MIN_HEIGHT) {
-                            widget.stage.height = WidgetInstance.MIN_HEIGHT;
+                        widget.height = (initialHeight + (e.getStageY().intValue() - initialY) / scale).intValue();
+                        if (widget.height < WidgetInstance.MIN_HEIGHT) {
+                            widget.height = WidgetInstance.MIN_HEIGHT;
                         }
                         if (widget.aspectRatio != 0) {
-                            widget.stage.width = (widget.stage.height * widget.aspectRatio).intValue();
-                            if (widget.stage.width > maxWidth) {
-                                widget.stage.width = maxWidth.intValue();
-                                widget.stage.height = (widget.stage.width / widget.aspectRatio).intValue();
+                            widget.width = (widget.height * widget.aspectRatio).intValue();
+                            if (widget.width > maxWidth) {
+                                widget.width = maxWidth.intValue();
+                                widget.height = (widget.width / widget.aspectRatio).intValue();
                             }
                         }
                     }
@@ -197,7 +196,7 @@ public class WidgetView extends Group, Constrained {
                 onMouseReleased: function(e) {
                     if (resizing) {
                         if (widget.onResize != null) {
-                            widget.onResize(widget.stage.width, widget.stage.height);
+                            widget.onResize(widget.width, widget.height);
                         }
                         instance.saveWithoutNotification();
                         resizing = false;
@@ -216,7 +215,7 @@ public class WidgetView extends Group, Constrained {
                 if (instance.docked) {
                     container.dragging = true;
                     var bounds = container.layout.getScreenBounds(this);
-                    xPos = (bounds.x + (bounds.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
+                    xPos = (bounds.x + (bounds.width - widget.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                     var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
                     yPos = bounds.y + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
                     instance.frame = WidgetFrame {
@@ -244,11 +243,11 @@ public class WidgetView extends Group, Constrained {
                     var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
                     if (targetBounds != null) {
                         docking = true;
-                        instance.frame.dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
+                        instance.frame.dock(targetBounds.x + (targetBounds.width - widget.width) / 2, targetBounds.y);
                     } else {
                         // todo - don't call onResize multiple times
                         if (instance.widget.onResize != null) {
-                            instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                            instance.widget.onResize(instance.widget.width, instance.widget.height);
                         }
                     }
                 }

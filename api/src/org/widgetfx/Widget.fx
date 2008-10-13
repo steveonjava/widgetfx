@@ -26,16 +26,16 @@ import java.lang.Runnable;
 import java.lang.System;
 import java.lang.Throwable;
 import java.net.URL;
-import javafx.application.Application;
+import javafx.stage.Stage;
 import javax.jnlp.BasicService;
 import javax.jnlp.ServiceManager;
 
 /**
  * Instance class for Widgets that can be deployed in the WidgetFX container.
- * This class extends Application so that any valid Widget can also be easily
+ * This class extends Stage so that any valid Widget can also be easily
  * tested or deployed as an Applet.
  * <p>
- * In addition to the functionality provided by the Application base class,
+ * In addition to the functionality provided by the Stage base class,
  * this class also supports additional properties specific to widgets to
  * control resizing, aspectRatio, and configuration.  There are also event
  * handler callbacks for resize and dock operations.
@@ -47,14 +47,14 @@ import javax.jnlp.ServiceManager;
  * Sample JavaFX file for an ellipse widget:
  * <blockquote><pre>
  * import org.widgetfx.Widget;
- * import javafx.application.Stage;
- * import javafx.scene.geometry.Ellipse;
+ * import javafx.scene.Scene;
+ * import javafx.scene.shape.Ellipse;
  * import javafx.scene.paint.Color;
+ * import javafx.stage.Stage;
  * var width = 100;
  * var height = 100;
  * widget = Widget {
- *     resizable: true
- *     stage: Stage {
+ *     scene: Scene {
  *         width: bind width with inverse;
  *         height: bind height with inverse;
  *         content: Ellipse {
@@ -87,15 +87,7 @@ import javax.jnlp.ServiceManager;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class Widget extends Application {
-    /**
-     * Whether or not this widget supports resizing.  Default is false to prevent
-     * fixed size widgets from being resized.
-     * <p>
-     * To enable resizing of a widget, set this to true when instantiating your
-     * widget instance.
-     */
-    public attribute resizable:Boolean = false;
+public class Widget extends Stage {
     
     /**
      * Used to give widgets a fixed aspectRatio.  The default value of 0 allows
@@ -109,14 +101,14 @@ public class Widget extends Application {
      * aspectRatio: 4.0/3.0</pre></blockquote>
      * In this example, the width will be 4/3 greater than the height.
      */
-    public attribute aspectRatio:Number = 0;
+    public var aspectRatio:Number = 0;
     
     /**
      * Configuration object for widgets.  This must be set in order to persist
      * state between invocations of the widget container.  See the {@link Configuration}
      * class for more information.
      */
-    public attribute configuration:Configuration;
+    public-init var configuration:Configuration;
     
     /**
      * Event handler called on resize of a widget.  This method is always
@@ -128,21 +120,21 @@ public class Widget extends Application {
      * to be called only once per resize operation regardless of the intermediate
      * values of stage.width and stage.height.
      */
-    public attribute onResize:function(width:Integer, height:Integer):Void;
+    public-init var onResize:function(width:Integer, height:Integer):Void;
     
     /**
      * Event handler called when a widget is docked.  This can be used to change
      * the presentation of a widget to something more suitable to a space limited
      * dock.
      */
-    public attribute onDock:function():Void;
+    public-init var onDock:function():Void;
 
     /**
      * Event handler called when a widget is undocked.  This can be used to change
      * the presentation of a widget to reflect the larger space available for
      * display.
      */
-    public attribute onUndock:function():Void;
+    public-init var onUndock:function():Void;
     
     /**
      * Enables or disabled auto launch facility for testing widgets.  The default value
@@ -153,18 +145,18 @@ public class Widget extends Application {
      * parameters to the Widget Runner.  Once the Widget Runner has been started, this
      * process will exit.
      */
-    protected attribute autoLaunch = true;
+    protected var autoLaunch = true;
     
     /**
      * The href used to launch the Widget Runner process.  The default value is "launch.jnlp",
      * and must be updated if you use a different jnlp filename.
      */
-    protected attribute launchHref = "launch.jnlp";
+    protected var launchHref = "launch.jnlp";
     
     postinit {
         // todo - replace with DeferredTask when it is safe to call it from the sandbox
         EventQueue.invokeLater(Runnable {
-            public function run() {
+            override function run() {
                 if (autoLaunch) {
                     try {
                         var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;

@@ -20,8 +20,8 @@
  */
 package org.widgetfx;
 
-import javafx.lang.DeferredTask;
 import javax.swing.UIManager;
+import javafx.lang.FX;
 
 /**
  * @author Stephen Chin
@@ -34,7 +34,7 @@ try { // try nimbus look and feel first
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 }
 
-for (arg in __ARGS__) {
+for (arg in FX.getArguments()) {
     if (arg.equals("no-transparency")) {
         WidgetFXConfiguration.TRANSPARENT = false;
     }
@@ -42,8 +42,8 @@ for (arg in __ARGS__) {
 
 Dock.createInstance();
 
-DeferredTask {
-    action: function() {
-        WidgetManager.getInstance().loadParams(__ARGS__);
+FX.deferAction(
+    function() {
+        WidgetManager.getInstance().loadParams(FX.getArguments());
     }
-}
+);

@@ -26,7 +26,7 @@ import java.awt.*;
  * @author Stephen Chin
  */
 public class NativeMenu extends NativeMenuItem {
-    public attribute items:NativeMenuEntry[] on replace oldItems[i..j]=newItems {
+    public-init var items:NativeMenuEntry[] on replace oldItems[i..j]=newItems {
         var menu = getMenu();
         for (ind in reverse [i..j]) {
             menu.remove(ind);
@@ -40,7 +40,7 @@ public class NativeMenu extends NativeMenuItem {
         return getMenuItem() as Menu;
     }
 
-    protected function createMenuItem():MenuItem {
+    override function createMenuItem():MenuItem {
         return Menu{};
     }
 }

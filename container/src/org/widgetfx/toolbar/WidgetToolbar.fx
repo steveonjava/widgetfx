@@ -21,44 +21,39 @@
 package org.widgetfx.toolbar;
 
 import org.widgetfx.WidgetInstance;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.input.MouseEvent;
+import javafx.animation.*;
 import javafx.scene.*;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.geometry.Circle;
-import javafx.scene.geometry.Line;
-import javafx.scene.geometry.Rectangle;
-import javafx.scene.geometry.ShapeSubtract;
-import javafx.scene.paint.Color;
+import javafx.scene.effect.*;
+import javafx.scene.input.*;
+import javafx.scene.shape.*;
+import javafx.scene.paint.*;
 import javafx.scene.text.*;
-import javafx.scene.transform.Rotate;
-import javafx.scene.transform.Scale;
+import javafx.scene.transform.*;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
+public var BUTTON_SIZE = 10;
+public var BUTTON_SPACING = 3;
+public var BUTTON_BORDER = 3;
+public var TOOLBAR_HEIGHT = BUTTON_SIZE + BUTTON_BORDER * 2;
+
+public var BACKGROUND = Color.rgb(163, 184, 203);
+
 public class WidgetToolbar extends Group {
-    public static attribute BUTTON_SIZE = 10;
-    public static attribute BUTTON_SPACING = 3;
-    public static attribute BUTTON_BORDER = 3;
-    public static attribute TOOLBAR_HEIGHT = BUTTON_SIZE + BUTTON_BORDER * 2;
     
-    public static attribute BACKGROUND = Color.rgb(163, 184, 203);
+    public-init var instance:WidgetInstance;
     
-    public attribute instance:WidgetInstance;
-    
-    private attribute selectedName:String = null;
+    public-init var selectedName:String = null;
     
     public function setName(name:String):Void {
         selectedName = name;
     }
     
-    public attribute onClose:function():Void;
+    public-init var onClose:function():Void;
     
-    public attribute buttons = bind [
+    public-init var buttons = bind [
         ConfigButton {
             toolbar: this
         },
@@ -70,11 +65,11 @@ public class WidgetToolbar extends Group {
         }
     ];
     
-    public attribute visibleButtons = bind buttons[b|b.visible];
+    var visibleButtons = bind buttons[b|b.visible];
 
-    public attribute toolbarWidth = bind visibleButtons.size() * (BUTTON_SIZE + BUTTON_SPACING) - BUTTON_SPACING + BUTTON_BORDER * 2;
+    public-read var toolbarWidth = bind visibleButtons.size() * (BUTTON_SIZE + BUTTON_SPACING) - BUTTON_SPACING + BUTTON_BORDER * 2;
     
-    private attribute text = Text {
+    var text = Text {
         visible: bind selectedName != null
         translateX: bind -toolbarWidth - BUTTON_BORDER * 2
         translateY: BUTTON_BORDER
@@ -85,7 +80,7 @@ public class WidgetToolbar extends Group {
         font: Font {size: 10}
     }
 
-    override attribute content = bind [
+    override var content = bind [
         Group { // Buttons
             translateX: bind -toolbarWidth - 1
             clip: Rectangle { // Clip

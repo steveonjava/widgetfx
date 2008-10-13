@@ -19,71 +19,61 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.widgetfx;
+
+import com.sun.javafx.stage.WindowStageDelegate;
 import org.widgetfx.ui.*;
 import org.widgetfx.config.*;
 import org.widgetfx.install.InstallUtil;
 import javafx.lang.*;
-import javafx.scene.paint.*;
-import javafx.application.Stage;
-import javafx.application.WindowStyle;
 import javafx.scene.*;
-import javafx.scene.geometry.*;
+import javafx.scene.shape.*;
 import javafx.scene.effect.*;
 import javafx.scene.image.*;
-import javafx.input.*;
-import javax.swing.*;
-import javafx.scene.text.*;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.*;
+import javafx.scene.text.*;
+import javafx.stage.*;
+import javax.swing.*;
 import javafx.ext.swing.*;
 import javafx.animation.*;
-import java.awt.AWTException;
-import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
-import java.awt.Point;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.GraphicsEnvironment;
-import java.awt.geom.Ellipse2D;
-import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.Properties;
+import java.awt.event.*;
+import java.awt.geom.*;
+import java.awt.image.*;
 import java.io.*;
 import java.lang.*;
-import java.net.URL;
+import java.net.*;
+import java.util.*;
 
 /**
  * @author Stephen Chin
  */
-public class Dock extends BaseDialog {
-    private static attribute menuHeight = if (WidgetFXConfiguration.IS_MAC) 22 else 0;
-    private static attribute DEFAULT_WIDTH = 180;
-    private static attribute MIN_WIDTH = 120;
-    private static attribute MAX_WIDTH = 400;
-    static attribute BORDER = 5;
-    public static attribute DS_RADIUS = 5;
-    private static attribute BG_OPACITY = 0.7;
-    private static attribute BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
-    private static attribute BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
+var menuHeight = if (WidgetFXConfiguration.IS_MAC) 22 else 0;
+var DEFAULT_WIDTH = 180;
+var MIN_WIDTH = 120;
+var MAX_WIDTH = 400;
+var BORDER = 5;
+var DS_RADIUS = 5;
+public var BG_OPACITY = 0.7;
+var BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
+var BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
+var instance;
+
+public function createInstance() {
+    instance = Dock {};
+}
+
+public function getInstance() {
+    return instance;
+}
+
+// todo - create a StageDelegate for Dialogs
+public class Dock extends Stage {
+    var logoUrl:String;
+    var backgroundStartColor = [0.0, 0.0, 0.0];
+    var backgroundEndColor = [0.0, 0.0, 0.0];
     
-    private static attribute instance;
-    
-    public static function createInstance() {
-        instance = Dock {};
-    }
-    
-    public static function getInstance() {
-        return instance;
-    }
-    
-    private attribute logoUrl:String;
-    private attribute backgroundStartColor = [0.0, 0.0, 0.0];
-    private attribute backgroundEndColor = [0.0, 0.0, 0.0];
-    
-    private attribute themeProperties = [
+    var themeProperties = [
         StringProperty {
             name: "logoUrl"
             value: bind logoUrl with inverse;
@@ -98,7 +88,7 @@ public class Dock extends BaseDialog {
         }
     ];
     
-    public attribute theme:String on replace {
+    public var theme:String on replace {
         if (not theme.isEmpty()) {
             var savedProperties = Properties {};
             savedProperties.load((new URL(theme)).openStream());
@@ -110,7 +100,7 @@ public class Dock extends BaseDialog {
         }
     }
     
-    private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
+    var configuration = WidgetFXConfiguration.getInstanceWithProperties([
         StringProperty {
             name: "displayId"
             value: bind displayId with inverse;
@@ -119,7 +109,7 @@ public class Dock extends BaseDialog {
             name: "dockLeft"
             value: bind dockLeft with inverse;
         },
-        IntegerProperty {
+        NumberProperty {
             name: "width"
             value: bind width with inverse;
         },
@@ -137,17 +127,18 @@ public class Dock extends BaseDialog {
         }
     ]);
     
-    private attribute mainMenu = createNativeMainMenu(window);
-    private attribute logo:Node = bind if (logoUrl.isEmpty()) {
+    // todo - figure out a way to get the enclosing window
+    var mainMenu = createNativeMainMenu(null);
+    var logo:Node = bind if (logoUrl.isEmpty()) {
         createWidgetFXLogo()
     } else {
         ImageView { // resolve the logoUrl against the theme
             image: Image {url: (new URL(new URL(theme), logoUrl)).toString()}
         }
     }
-    private attribute headerHeight:Integer = bind BORDER * 2 + logo.getHeight().intValue();
-    private attribute dockedWidgets = bind WidgetManager.getInstance().widgets[w|w.docked];
-    attribute container:WidgetContainer = WidgetContainer {
+    var headerHeight:Integer = bind BORDER * 2 + logo.getHeight().intValue();
+    var dockedWidgets = bind WidgetManager.getInstance().widgets[w|w.docked];
+    var container:WidgetContainer = WidgetContainer {
         resizing: bind resizing
         translateX: BORDER
         translateY: bind headerHeight
@@ -157,11 +148,11 @@ public class Dock extends BaseDialog {
         layout: GapVBox {}
     }
     
-    private attribute currentGraphics:java.awt.GraphicsConfiguration;
-    private attribute screenBounds = bind currentGraphics.getBounds() on replace {
+    var currentGraphics:java.awt.GraphicsConfiguration;
+    var screenBounds = bind currentGraphics.getBounds() on replace {
         updateDockLocation();
     }
-    private attribute displayId:String on replace {
+    var displayId:String on replace {
         var newGraphics = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
         for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) where gd.getIDstring().equals(displayId)) {
             newGraphics = gd.getDefaultConfiguration();
@@ -169,45 +160,45 @@ public class Dock extends BaseDialog {
         }
         currentGraphics = newGraphics;
     }
-    private attribute dockLeft:Boolean on replace {
+    var dockLeft:Boolean on replace {
         dockRight = not dockLeft;
         updateDockLocation();
     };
-    private attribute dockRight:Boolean on replace {
+    var dockRight:Boolean on replace {
         dockLeft = not dockRight;
         updateDockLocation();
     };
 
-    private attribute widthTrigger = bind width on replace {
+    var widthTrigger = bind width on replace {
         updateDockLocation();
     }
 
-    private attribute alwaysOnTop:Boolean on replace {
+    var alwaysOnTop:Boolean on replace {
         window.setAlwaysOnTop(alwaysOnTop);
     }
     
-    attribute resizing:Boolean;
+    package var resizing:Boolean;
     
-    private function updateDockLocation() {
+    function updateDockLocation():Void {
         height = screenBounds.height - menuHeight;
         x = screenBounds.x + (if (dockLeft) 0 else screenBounds.width - width);
         y = screenBounds.y + menuHeight;
     }
     
-    //private attribute backgroundImage : Image = Image {url:getClass().getResource("Inovis_SidebarBackground1.jpg").toString(), height: 1200};
+    //var backgroundImage : Image = Image {url:getClass().getResource("Inovis_SidebarBackground1.jpg").toString(), height: 1200};
     
-    private attribute transparentBG = bind if (dockLeft) leftBG else rightBG;
-    private attribute bgOpacity = BG_OPACITY;
-    private attribute startColor = bind Color.color(backgroundStartColor[0], backgroundStartColor[1], backgroundStartColor[2], 0);
-    private attribute endColor = bind Color.color(backgroundEndColor[0], backgroundEndColor[1], backgroundEndColor[2], bgOpacity);
-    private attribute leftBG = bind LinearGradient {
+    var transparentBG = bind if (dockLeft) leftBG else rightBG;
+    var bgOpacity = BG_OPACITY;
+    var startColor = bind Color.color(backgroundStartColor[0], backgroundStartColor[1], backgroundStartColor[2], 0);
+    var endColor = bind Color.color(backgroundEndColor[0], backgroundEndColor[1], backgroundEndColor[2], bgOpacity);
+    var leftBG = bind LinearGradient {
         endY: 0
         stops: [
             Stop {offset: 0.0, color: endColor},
             Stop {offset: 1.0, color: startColor}
         ]
     }
-    private attribute rightBG = bind LinearGradient {
+    var rightBG = bind LinearGradient {
         endY: 0
         stops: [
             Stop {offset: 0.0, color: startColor},
@@ -215,7 +206,7 @@ public class Dock extends BaseDialog {
         ]
     }
     
-    private attribute launchOnStartup:Boolean = true on replace {
+    var launchOnStartup:Boolean = true on replace {
         if (launchOnStartup) {
             InstallUtil.copyStartupFile();
         } else {
@@ -223,10 +214,10 @@ public class Dock extends BaseDialog {
         }
     }
 
-    override attribute title = "WidgetFX";
-    override attribute visible = true;
-    override attribute windowStyle = if (WidgetFXConfiguration.TRANSPARENT) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
-    override attribute width = DEFAULT_WIDTH + BORDER * 2;
+    override var title = "WidgetFX";
+    override var visible = true;
+    override var windowStyle = if (WidgetFXConfiguration.TRANSPARENT) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
+    override var width = DEFAULT_WIDTH + BORDER * 2;
 
     postinit {
         configuration.load();
@@ -235,15 +226,13 @@ public class Dock extends BaseDialog {
         WidgetManager.getInstance().dockOffscreenWidgets();
     }
     
-    private function hideDock() {
+    function hideDock() {
         visible = false;
     }
     
     public function showDock() {
         visible = true;
-        DeferredTask { // workaround for defect where dock moves to center on show
-            action: function() {updateDockLocation();}
-        }
+        FX.deferAction(function() {updateDockLocation();});
         toFront();
         WidgetManager.getInstance().dockOffscreenWidgets();
     }
@@ -255,7 +244,7 @@ public class Dock extends BaseDialog {
         }
     }
     
-    private function createTrayIcon() {
+    function createTrayIcon() {
         var tray:TrayIcon = new TrayIcon(createImage());
         tray.setPopupMenu(createNativeMainMenu(null).getPopupMenu());
         tray.setToolTip("WidgetFX");
@@ -345,13 +334,13 @@ public class Dock extends BaseDialog {
         }
     }
     
-    attribute rolloverOpacity = 0.01;
-    attribute rolloverTimeline = Timeline {
+    package var rolloverOpacity = 0.01;
+    package var rolloverTimeline = Timeline {
         autoReverse: true, toggle: true
         keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY * 1.2 tween Interpolator.EASEBOTH]}
     }
     
-    private function createWidgetFXLogo():Group {
+    function createWidgetFXLogo():Group {
         return Group {
             cache: true
             content: HBox {
@@ -363,19 +352,19 @@ public class Dock extends BaseDialog {
                         image: WidgetFXConfiguration.getInstance().widgetFXIcon16
                     },
                     Text {
-                        font: Font {style: FontStyle.BOLD_ITALIC}
+                        font: Font {oblique: true}
                         fill: Color.WHITE
                         content: " Widget"
                     },
                     Text {
                         x: -3
-                        font: Font {style: FontStyle.BOLD_ITALIC}
+                        font: Font {embolden: true, oblique: true}
                         fill: Color.ORANGE
                         content: "FX"
                     },
                     Text {
                         x: -3
-                        font: Font {style: FontStyle.ITALIC, size: 9}
+                        font: Font {oblique: true, size: 9}
                         fill: Color.WHITE
                         content: "v{WidgetFXConfiguration.VERSION}"
                     }
@@ -384,7 +373,7 @@ public class Dock extends BaseDialog {
         }
     }
     
-    private function loadContent():Void {
+    function loadContent():Void {
         closeAction = function() {WidgetManager.getInstance().exit()};
         var addWidgetButton = Group {
             var color = BUTTON_COLOR;
@@ -514,7 +503,7 @@ public class Dock extends BaseDialog {
                         for (instance in dockedWidgets) {
                             if (instance.widget.resizable) {
                                 if (instance.widget.onResize != null) {
-                                    instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                                    instance.widget.onResize(instance.widget.width, instance.widget.height);
                                 }
                                 instance.saveWithoutNotification();
                             }
@@ -540,7 +529,7 @@ public class Dock extends BaseDialog {
         });
     }
     
-    private function getGraphicsConfiguration(location:Point) {
+    function getGraphicsConfiguration(location:Point) {
         if (not container.dragging and not resizing) {
             if (not screenBounds.contains(location)) {
                 for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {

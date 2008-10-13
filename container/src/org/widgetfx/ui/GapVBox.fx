@@ -36,11 +36,11 @@ import javax.swing.SwingUtilities;
  */
 public class GapVBox extends GapBox {
     
-    private attribute gapHeight:Number;
+    var gapHeight:Number;
         
-    private attribute timeline:Timeline;
+    var timeline:Timeline;
 
-    protected function getBounds(index:Integer):Rectangle {
+    override function getBounds(index:Integer):Rectangle {
         var y:Number = 0;
         for (node in content) {
             if (indexof node == gapIndex) {
@@ -59,7 +59,7 @@ public class GapVBox extends GapBox {
         return null;
     }
 
-    public function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
+    override function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
         var point = new Point(screenX, screenY);
         SwingUtilities.convertPointFromScreen(point, impl_getSGNode().getPanel());
         impl_getSGNode().globalToLocal(point, point);
@@ -79,7 +79,7 @@ public class GapVBox extends GapBox {
      * Set the index and size of the gap.  The gap will get inserted before the component at this index.
      * The actual gap size will also include spacing if it is set.
      */
-    public function setGap(index:Integer, size:Number, animate:Boolean):Void {
+    override function setGap(index:Integer, size:Number, animate:Boolean):Void {
         size = if (size == -1) 0 else size + spacing;
         if (gapIndex != index or gapHeight != size) {
             gapIndex = index;
@@ -98,7 +98,7 @@ public class GapVBox extends GapBox {
         impl_layout = doGapVBoxLayout;
     }
 
-    private function doGapVBoxLayout(g:Group):Void {
+    function doGapVBoxLayout(g:Group):Void {
         if (timeline.running) {
             return;
         }
@@ -121,7 +121,7 @@ public class GapVBox extends GapBox {
         }
     }
 
-    private function animateGapVBoxLayout():Void {
+    function animateGapVBoxLayout():Void {
         if (timeline != null) {
             timeline.pause();
         }

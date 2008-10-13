@@ -20,7 +20,6 @@
  */
 package org.widgetfx.ui;
 
-import javafx.application.Dialog;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -34,18 +33,21 @@ import java.awt.event.WindowEvent;
  *
  * @author Stephen Chin
  */
-public class BaseDialog extends Dialog {
-        
-    function createWindow(): java.awt.Window {
-        owner = new javafx.application.Frame();
-        var window = super.createWindow();
-        var listener:WindowAdapter = WindowAdapter {
-            public function windowClosed(e:WindowEvent):Void {
-                window.removeWindowListener(listener);
-                owner.window.dispose();
-            }
-        };
-        window.addWindowListener(listener);
-        return window;
-    }
+public class BaseDialog {
 }
+// todo - fix this later (there is no longer a concept of dialogs in javafx)
+//extends Dialog {
+//        
+//    function createWindow(): java.awt.Window {
+//        owner = new javafx.application.Frame();
+//        var window = super.createWindow();
+//        var listener:WindowAdapter = WindowAdapter {
+//            public function windowClosed(e:WindowEvent):Void {
+//                window.removeWindowListener(listener);
+//                owner.window.dispose();
+//            }
+//        };
+//        window.addWindowListener(listener);
+//        return window;
+//    }
+//}
