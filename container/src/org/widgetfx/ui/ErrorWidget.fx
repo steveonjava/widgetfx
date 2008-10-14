@@ -41,45 +41,47 @@ public class ErrorWidget extends Widget {
     override var autoLaunch = false;
     
     override var resizable = true;
+
+    override var width = 300;
     
-    override var stage = Stage {
-        width: 300
-        height: 150
+    override var height = 150;
+    
+    override var scene = Scene {
         content: [
             Group {
                 clip: Rectangle {
-                    width: bind stage.width
-                    height: bind stage.height
+                    width: bind scene.width
+                    height: bind scene.height
                     arcWidth: 16
                     arcHeight: 16
                 }
                 content: [
                     Rectangle {
-                        width: bind stage.width
-                        height: bind stage.height
+                        width: bind scene.width
+                        height: bind scene.height
                         fill: Color.BLACK
                     },
                     Line {
-                        endX: bind stage.width
-                        endY: bind stage.height
+                        endX: bind scene.width
+                        endY: bind scene.height
                         stroke: X_COLOR
                         strokeWidth: 40
                     },
                     Line {
-                        startX: bind stage.width
-                        endY: bind stage.height
+                        startX: bind scene.width
+                        endY: bind scene.height
                         stroke: X_COLOR
                         strokeWidth: 40
                     },
                     Group {
-                        translateX: bind stage.width / 2
-                        translateY: bind stage.height / 2 - LINE_HEIGHT * (errorLines.size().doubleValue() / 2 - 0.5)
+                        translateX: bind scene.width / 2
+                        translateY: bind scene.height / 2 - LINE_HEIGHT * (errorLines.size().doubleValue() / 2 - 0.5)
                         content: bind for (error in errorLines) {
                             Text {
                                 translateY: indexof error * LINE_HEIGHT
                                 content: error
                                 fill: Color.WHITE
-                                horizontalAlignment: HorizontalAlignment.CENTER
+                                textAlignment: TextAlignment.CENTER
                             }
                         }
                     }

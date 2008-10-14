@@ -26,6 +26,7 @@ import java.lang.Runnable;
 import java.lang.System;
 import java.lang.Throwable;
 import java.net.URL;
+import javafx.lang.FX;
 import javafx.stage.Stage;
 import javax.jnlp.BasicService;
 import javax.jnlp.ServiceManager;
@@ -120,7 +121,7 @@ public class Widget extends Stage {
      * to be called only once per resize operation regardless of the intermediate
      * values of stage.width and stage.height.
      */
-    public-init var onResize:function(width:Integer, height:Integer):Void;
+    public-init var onResize:function(width:Number, height:Number):Void;
     
     /**
      * Event handler called when a widget is docked.  This can be used to change
@@ -154,14 +155,14 @@ public class Widget extends Stage {
     protected var launchHref = "launch.jnlp";
     
     postinit {
-        // todo - replace with DeferredTask when it is safe to call it from the sandbox
+        // todo - replace with deferAction when it is safe to call it from the sandbox
         EventQueue.invokeLater(Runnable {
             override function run() {
                 if (autoLaunch) {
                     try {
                         var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
                         basicService.showDocument(new URL("http://widgetfx.org/dock/runner.jnlp?arg={basicService.getCodeBase()}{launchHref}"));
-                        System.exit(0);
+                        FX.exit();
                     } catch (e:Throwable) {
                         // not running in Web Start, continue running the applet
                     }

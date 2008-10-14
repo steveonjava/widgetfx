@@ -382,7 +382,7 @@ Widget {
             }
         ]
     }
-    onResize: function(width:Integer, height:Integer) {
+    onResize: function(width:Number, height:Number) {
         if (imageHeight != height) {
             imageHeight = height;
             if (status == null) {

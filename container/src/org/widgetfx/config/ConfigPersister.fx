@@ -45,7 +45,7 @@ public class ConfigPersister {
     
     public-init var autoSave = false;
     
-    public-init var mergeProperties = false;
+    public var mergeProperties = false;
     
     var disableAutoSave = true;
     

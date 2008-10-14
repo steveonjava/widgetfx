@@ -21,8 +21,11 @@
 package org.widgetfx;
 
 import org.widgetfx.ui.*;
+import javafx.lang.FX;
+import javafx.scene.*;
 import javafx.scene.shape.*;
 import javafx.scene.paint.*;
+import javafx.stage.*;
 
 /**
  * @author Stephen Chin
@@ -30,49 +33,43 @@ import javafx.scene.paint.*;
 WidgetManager.createPortalInstance();
 WidgetFXConfiguration.getInstance().mergeProperties = true;
 WidgetFXConfiguration.getInstance().load();
-Frame {
-    closeAction: function() {java.lang.System.exit(0)}
+Stage {
+    onClose: function() {FX.exit()}
     x: 100
     y: 200
     width: 500
     height: 500
     title: "Portal 1"
-    stage: Stage {
-        var width:Integer;
-        var height:Integer;
+    var scene:Scene = Scene {
         fill: Color.SLATEGRAY
-        width: bind width with inverse
-        height: bind height with inverse
         content: WidgetContainer {
             widgets: WidgetManager.getInstance().widgets[w|w.docked];
-            width: bind width
-            height: bind height
+            width: bind scene.width
+            height: bind scene.height
             layout: GapGridBox {rows: 2, columns: 3, spacing: 5}
         }
     }
+    scene: scene
     visible: true
 }
 
-Frame {
-    closeAction: function() {java.lang.System.exit(0)}
+Stage {
+    onClose: function() {FX.exit()}
     x: 700
     y: 200
     width: 200
     height: 500
     title: "Portal 2"
-    stage: Stage {
+    var scene:Scene = Scene {
         var widgetList:WidgetInstance[];
-        var width:Integer;
-        var height:Integer;
         fill: Color.SLATEGRAY
-        width: bind width with inverse
-        height: bind height with inverse
         content: WidgetContainer {
             widgets: widgetList
-            width: bind width
-            height: bind height
+            width: bind scene.width
+            height: bind scene.height
             layout: GapGridBox {rows: 4, columns: 1, spacing: 5}
         }
     }
+    scene: scene
     visible: true
 }

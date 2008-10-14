@@ -25,6 +25,7 @@ import org.widgetfx.ui.Constrained;
 import org.widgetfx.ui.WidgetContainer;
 import java.lang.*;
 import javafx.animation.*;
+import javafx.lang.*;
 import javafx.scene.*;
 import javafx.scene.effect.*;
 import javafx.scene.input.*;
@@ -57,7 +58,7 @@ public class WidgetView extends Group, Constrained {
             var widthScale = if (maxWidth == Constrained.UNBOUNDED) 1.0 else maxWidth / widget.width;
             var heightScale = if (maxHeight == Constrained.UNBOUNDED) 1.0 else maxHeight / widget.height;
             var scale = Math.min(widthScale, heightScale);
-            return if (scale > 1) 1 else scale;
+            if (scale > 1) 1.0 else scale;
         } else {
             1.0;
         }
@@ -69,7 +70,7 @@ public class WidgetView extends Group, Constrained {
         if (firstRollover) {
             firstRollover = false;
         } else {
-            rolloverTimeline.start();
+            rolloverTimeline.play();
         }
     }
     
@@ -78,16 +79,16 @@ public class WidgetView extends Group, Constrained {
     // this is a workaround for the issue with toggle timelines that are stopped and started immediately triggering a full animation
     function requestFocus(focus:Boolean):Void {
         needsFocus = focus;
-        DeferredTask {
-            action: function() {
+        FX.deferAction(
+            function():Void {
                 hasFocus = needsFocus;
             }
-        }
+        );
     }
     
     var rolloverOpacity = 0.0;
     var rolloverTimeline = Timeline {
-        autoReverse: true, toggle: true
+        autoReverse: true
         keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
     }
     
@@ -135,7 +136,7 @@ public class WidgetView extends Group, Constrained {
                         content: Group { // Drop Shadow
                             effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
                             content: Group { // Clip Group
-                                content: bind widget.stage.content[0]
+                                content: bind widget.scene.content[0]
                                 clip: Rectangle {width: bind widget.width, height: bind widget.height}
                                 scaleX: bind scale, scaleY: bind scale
                             }
@@ -143,7 +144,7 @@ public class WidgetView extends Group, Constrained {
                     },
                     Group { // Front Slices
                         cache: true
-                        content: bind widget.stage.content[1..]
+                        content: bind widget.scene.content[1..]
                         clip: Rectangle {width: bind widget.width, height: bind widget.height}
                         scaleX: bind scale, scaleY: bind scale
                     },
@@ -175,12 +176,12 @@ public class WidgetView extends Group, Constrained {
                     if (widget.resizable) {
                         resizing = true;
                         initialHeight = widget.height * scale;
-                        initialY = e.getStageY().intValue();
+                        initialY = e.sceneY.intValue();
                     }
                 }
                 onMouseDragged: function(e:MouseEvent) {
                     if (resizing) {
-                        widget.height = (initialHeight + (e.getStageY().intValue() - initialY) / scale).intValue();
+                        widget.height = (initialHeight + (e.sceneY.intValue() - initialY) / scale).intValue();
                         if (widget.height < WidgetInstance.MIN_HEIGHT) {
                             widget.height = WidgetInstance.MIN_HEIGHT;
                         }
@@ -205,8 +206,8 @@ public class WidgetView extends Group, Constrained {
             }
         ];
         onMousePressed = function(e:MouseEvent):Void {
-            initialScreenPosX = -e.getStageX().intValue();
-            initialScreenPosY = -e.getStageY().intValue();
+            initialScreenPosX = -e.sceneX.intValue();
+            initialScreenPosY = -e.sceneY.intValue();
         };
         onMouseDragged = function(e:MouseEvent):Void {
             if (not docking) {
@@ -225,22 +226,22 @@ public class WidgetView extends Group, Constrained {
                     initialScreenPosX += xPos;
                     initialScreenPosY += yPos;
                 }
-                var hoverOffset = [0, 0];
+                var hoverOffset:Number[] = [0, 0];
                 for (container in WidgetContainer.containers) {
-                    var offset = container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), not instance.docked);
+                    var offset = container.hover(instance, e.screenX, e.screenY, e.x, e.y, not instance.docked);
                     if (offset != [0, 0]) {
                         hoverOffset = offset;
                     }
                 }
                 instance.docked = false;
-                instance.frame.x = e.getStageX().intValue() + initialScreenPosX + hoverOffset[0];
-                instance.frame.y = e.getStageY().intValue() + initialScreenPosY + hoverOffset[1];
+                instance.frame.x = e.sceneX.intValue() + initialScreenPosX + hoverOffset[0];
+                instance.frame.y = e.sceneY.intValue() + initialScreenPosY + hoverOffset[1];
             }
         };
         onMouseReleased = function(e:MouseEvent):Void {
             if (not docking and not instance.docked) {
                 for (container in WidgetContainer.containers) {
-                    var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
+                    var targetBounds = container.finishHover(instance, e.screenX, e.screenY);
                     if (targetBounds != null) {
                         docking = true;
                         instance.frame.dock(targetBounds.x + (targetBounds.width - widget.width) / 2, targetBounds.y);

@@ -46,17 +46,17 @@ public class WidgetContainer extends Group {
         content = [layout];
     }
     
-    public var width:Integer on replace {
+    public var width:Number on replace {
         layout.maxWidth = width;
     }
     
-    public var height:Integer on replace {
+    public var height:Number on replace {
         layout.maxHeight = height;
     }
     
-    public-read var resizing:Boolean;
+    public var resizing:Boolean;
     
-    public-read var dragging:Boolean;
+    public var dragging:Boolean;
     
     var widgetViews:WidgetView[] = bind for (instance in widgets) createWidgetView(instance) on replace {
         layout.content = widgetViews;
@@ -75,10 +75,10 @@ public class WidgetContainer extends Group {
         animatingInstance.frame.resizing = animating;
     }
     var animateDocked:Boolean;
-    var saveUndockedWidth:Integer;
-    var saveUndockedHeight:Integer;
-    var xHoverOffset;
-    var yHoverOffset;
+    var saveUndockedWidth:Number;
+    var saveUndockedHeight:Number;
+    var xHoverOffset:Number;
+    var yHoverOffset:Number;
     
     init {
         insert this into containers;
@@ -94,7 +94,7 @@ public class WidgetContainer extends Group {
             var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
             var newHeight = if (instance.docked) instance.undockedHeight else instance.dockedHeight;
             animateHover = Timeline {
-                autoReverse: true, toggle: true
+                autoReverse: true
                 keyFrames: KeyFrame {
                     time: 300ms
                     values: [
@@ -125,13 +125,13 @@ public class WidgetContainer extends Group {
             layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
             if (animateHover != null and not animateDocked) {
                 animateDocked = true;
-                animateHover.start();
+                animateHover.play();
             }
         } else {
             layout.clearGap(animate);
             if (animateHover != null and animateDocked) {
                 animateDocked = false;
-                animateHover.start();
+                animateHover.play();
             }
         }
         return [xHoverOffset, yHoverOffset];
@@ -147,7 +147,7 @@ public class WidgetContainer extends Group {
         } else {
             if (animateHover != null and animateDocked) {
                 animateDocked = false;
-                animateHover.start();
+                animateHover.play();
             }
             animateHover = null;
             return null;

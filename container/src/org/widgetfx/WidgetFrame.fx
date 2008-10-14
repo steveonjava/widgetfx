@@ -29,6 +29,7 @@ import javafx.lang.*;
 import javafx.scene.*;
 import javafx.scene.effect.*;
 import javafx.scene.input.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
 import javafx.scene.transform.*;
@@ -69,7 +70,7 @@ public class WidgetFrame extends Stage {
         height = widgetHeight;
     }
 
-    var resizing:Boolean on replace {
+    public var resizing:Boolean on replace {
         updateFocus();
     }
     var dragging:Boolean on replace {
@@ -80,26 +81,26 @@ public class WidgetFrame extends Stage {
     }
     var docking:Boolean;
     
-    var initialX:Integer;
-    var initialY:Integer;
-    var initialWidth:Integer;
-    var initialHeight:Integer;
-    var initialScreenX;
-    var initialScreenY;
+    var initialX:Number;
+    var initialY:Number;
+    var initialWidth:Number;
+    var initialHeight:Number;
+    var initialScreenX:Number;
+    var initialScreenY:Number;
         
     var saveInitialPos = function(e:MouseEvent):Void {
         initialX = x;
         initialY = y;
         initialWidth = widget.width;
         initialHeight = widget.height;
-        initialScreenX = e.getStageX().intValue() + x;
-        initialScreenY = e.getStageY().intValue() + y;
+        initialScreenX = e.sceneX.intValue() + x;
+        initialScreenY = e.sceneY.intValue() + y;
     }
     
     function mouseDelta(deltaFunction:function(a:Integer, b:Integer):Void):function(c:MouseEvent):Void {
         return function (e:MouseEvent):Void {
-            var xDelta = e.getStageX().intValue() + x - initialScreenX;
-            var yDelta = e.getStageY().intValue() + y - initialScreenY;
+            var xDelta = e.sceneX.intValue() + x - initialScreenX;
+            var yDelta = e.sceneY.intValue() + y - initialScreenY;
             deltaFunction(xDelta, yDelta);
         }
     }
@@ -117,10 +118,8 @@ public class WidgetFrame extends Stage {
         resizing = false;
     }
     
-    init {
-        windowStyle = if (WidgetFXConfiguration.TRANSPARENT) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
-        title = instance.title;
-    }
+    override var style = if (WidgetFXConfiguration.TRANSPARENT) StageStyle.TRANSPARENT else StageStyle.UNDECORATED;
+    override var title = instance.title;
     
     public function dock(dockX:Integer, dockY:Integer):Void {
         docking = true;
@@ -143,25 +142,9 @@ public class WidgetFrame extends Stage {
         }.play();
     }
     
-    /**
-     * WidgetFrame close hook that has a default implementation to remove the widget
-     * and close this Frame.
-     * This can be overriden to provide custom behavior.
-     */
-    public-init var onClose = function(frame:WidgetFrame) {
-        WidgetManager.getInstance().removeWidget(instance);
-        frame.close();
-    }
-    
-    function resize(widthDelta:Integer, heightDelta:Integer, updateX:Boolean, updateY:Boolean, widthOnly:Boolean, heightOnly:Boolean) {
-        if (initialWidth + widthDelta < WidgetInstance.MIN_WIDTH) {
-            widthDelta = WidgetInstance.MIN_WIDTH - initialWidth;
-        }
-        if (initialHeight + heightDelta < WidgetInstance.MIN_HEIGHT) {
-            heightDelta = WidgetInstance.MIN_HEIGHT - initialHeight;
-        }
-        var newWidth = initialWidth + widthDelta;
-        var newHeight = initialHeight + heightDelta;
+    function resize(widthDelta:Number, heightDelta:Number, updateX:Boolean, updateY:Boolean, widthOnly:Boolean, heightOnly:Boolean) {
+        var newWidth = if (initialWidth + widthDelta < WidgetInstance.MIN_WIDTH) then WidgetInstance.MIN_WIDTH else initialWidth + widthDelta;
+        var newHeight = if (initialHeight + heightDelta < WidgetInstance.MIN_HEIGHT) then WidgetInstance.MIN_HEIGHT else initialHeight + heightDelta;
         if (widget.aspectRatio != 0) {
             var aspectHeight = (newWidth / widget.aspectRatio).intValue();
             var aspectWidth = (newHeight * widget.aspectRatio).intValue();
@@ -180,7 +163,7 @@ public class WidgetFrame extends Stage {
     
     var rolloverOpacity = 0.0;
     var rolloverTimeline = Timeline {
-        autoReverse: true, toggle: true
+        autoReverse: true
         keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
     }
     
@@ -190,7 +173,7 @@ public class WidgetFrame extends Stage {
         if (firstRollover) {
             firstRollover = false;
         } else {
-            rolloverTimeline.start();
+            rolloverTimeline.play();
         }
     }
     
@@ -203,11 +186,11 @@ public class WidgetFrame extends Stage {
     }
     
     function updateFocus():Void {
-        DeferredTask {
-            action: function() {
+        FX.deferAction (
+            function():Void {
                 hasFocus = needsFocus or dragging or resizing or changingOpacity;
             }
-        }
+        );
     }
     
     postinit {
@@ -325,16 +308,16 @@ public class WidgetFrame extends Stage {
                 }
             ]
             onMousePressed: function(e) {
-                if (e.getButton() == 1) {
+                if (e.button == MouseButton.PRIMARY) {
                     dragging = true;
                     saveInitialPos(e);
                 }
             }
             onMouseDragged: function(e) {
                 if (dragging and not docking) {
-                    var hoverOffset = [0, 0];
+                    var hoverOffset:Number[] = [0, 0];
                     for (container in WidgetContainer.containers) {
-                        var offset = container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
+                        var offset = container.hover(instance, e.screenX, e.screenY, e.x, e.y, true);
                         if (offset != [0, 0]) {
                             hoverOffset = offset;
                         }
@@ -346,10 +329,10 @@ public class WidgetFrame extends Stage {
                 }
             }
             onMouseReleased: function(e) {
-                if (e.getButton() == 1 and not docking) {
+                if (e.button == MouseButton.PRIMARY and not docking) {
                     dragging = false;
                     for (container in WidgetContainer.containers) {
-                        var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
+                        var targetBounds = container.finishHover(instance, e.screenX, e.screenY);
                         if (targetBounds != null) {
                             dock(targetBounds.x, targetBounds.y);
                         }
@@ -359,13 +342,13 @@ public class WidgetFrame extends Stage {
             }
             opacity: bind if (widget.resizable) rolloverOpacity * 0.8 else 0.0;
         }
-        var slider = Slider {
+        var slider = SwingSlider {
             minimum: 20
             maximum: 99 // todo - hack to prevent swing component defect -- needs further investigation
             value: bind instance.opacity with inverse
-            preferredSize: bind [width * 2 / 5, 16]
+            width: width * 2 / 5
         }
-        stage = Stage {
+        scene = Scene {
             content: [
                 dragRect,
                 Group { // Widget with DropShadow
@@ -376,14 +359,14 @@ public class WidgetFrame extends Stage {
                             content: Group { // Drop Shadow
                                 effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                                 content: Group { // Clip Group
-                                    content: bind widget.stage.content[0]
+                                    content: bind widget.scene.content[0]
                                     clip: Rectangle {width: bind widget.width, height: bind widget.height}
                                 }
                             }
                         },
                         Group { // Front Slices
                             cache: true
-                            content: bind widget.stage.content[1..]
+                            content: bind widget.scene.content[1..]
                             clip: Rectangle {width: bind widget.width, height: bind widget.height}
                         },
                     ]
@@ -409,9 +392,9 @@ public class WidgetFrame extends Stage {
                             fill: WidgetToolbar.BACKGROUND
                             opacity: 0.7
                         },
-                        ComponentView { // Slider
+                        Group { // Slider
                             translateX: 1
-                            component: slider
+                            content: slider
                         }
                     ]
                     opacity: bind rolloverOpacity
@@ -421,35 +404,38 @@ public class WidgetFrame extends Stage {
                     opacity: bind rolloverOpacity
                     instance: instance
                     onClose: function() {
-                        onClose(this);
+                        // todo - this will remove widgets from the WidgetRunner, but should be fixed when we refactor the widget lists
+                        WidgetManager.getInstance().removeWidget(instance);
+                        close();
                     }
                 }
             ]
             fill: null
         }
-        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
-            override function mouseEntered(e) {
-                requestFocus(true);
-            }
-            override function mouseExited(e) {
-                requestFocus(false);
-            }
-        });
-        slider.getJSlider().addMouseListener(MouseAdapter {
-            override function mouseEntered(e) {
-                requestFocus(true);
-            }
-            override function mouseExited(e) {
-                requestFocus(false);
-            }
-            override function mousePressed(e) {
-                changingOpacity = true;
-            }
-            override function mouseReleased(e) {
-                changingOpacity = false;
-                instance.saveWithoutNotification();
-            }
-        });
+        // todo - find a way to get the window
+//        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
+//            override function mouseEntered(e) {
+//                requestFocus(true);
+//            }
+//            override function mouseExited(e) {
+//                requestFocus(false);
+//            }
+//        });
+//        slider.getJSlider().addMouseListener(MouseAdapter {
+//            override function mouseEntered(e) {
+//                requestFocus(true);
+//            }
+//            override function mouseExited(e) {
+//                requestFocus(false);
+//            }
+//            override function mousePressed(e) {
+//                changingOpacity = true;
+//            }
+//            override function mouseReleased(e) {
+//                changingOpacity = false;
+//                instance.saveWithoutNotification();
+//            }
+//        });
         visible = true;
     }
 

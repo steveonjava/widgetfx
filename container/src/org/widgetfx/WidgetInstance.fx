@@ -32,8 +32,9 @@ import java.io.File;
 import java.lang.*;
 import java.net.URL;
 import java.util.Arrays;
-import javafx.scene.*;
 import javafx.ext.swing.*;
+import javafx.reflect.*;
+import javafx.scene.*;
 import javax.jnlp.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.*;
@@ -76,27 +77,27 @@ public class WidgetInstance {
             value: bind docked with inverse
             autoSave: true
         },
-        IntegerProperty {
+        NumberProperty {
             name: "widget.dockedWidth"
             value: bind dockedWidth with inverse
         },
-        IntegerProperty {
+        NumberProperty {
             name: "widget.dockedHeight"
             value: bind dockedHeight with inverse
         },
-        IntegerProperty {
+        NumberProperty {
             name: "widget.undockedX"
             value: bind undockedX with inverse
         },
-        IntegerProperty {
+        NumberProperty {
             name: "widget.undockedY"
             value: bind undockedY with inverse
         },
-        IntegerProperty {
+        NumberProperty {
             name: "widget.undockedWidth"
             value: bind undockedWidth with inverse;
         },
-        IntegerProperty {
+        NumberProperty {
             name: "widget.undockedHeight"
             value: bind undockedHeight with inverse;
         }
@@ -127,7 +128,7 @@ public class WidgetInstance {
                     var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
                     if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
                         var url = new URL(codeBase, jarUrl);
-                        if (javafx.lang.Sequences.indexOf(loadedResources, url) == -1) {
+                        if (javafx.util.Sequences.indexOf(loadedResources, url) == -1) {
                             ds.loadResource(url, null, DownloadServiceListener {
                                 override function downloadFailed(url, version) {
                                     System.out.println("download failed");
@@ -160,7 +161,9 @@ public class WidgetInstance {
             try {
                 var widgetClass:Class = Class.forName(mainClass);
                 var name = Entry.entryMethodName();
-                var args = Sequences.make(String.<<class>>) as Object;
+                var ctx = FXContext.getInstance();
+                var emptyValue:FXValue[] = [];
+                var args = ctx.makeSequence(ctx.findClass("java.lang.String"), emptyValue);
                 widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
             } catch (e:Throwable) {
                 createError(e);
@@ -188,12 +191,12 @@ public class WidgetInstance {
 
     public var opacity:Integer = 80;
     public var docked:Boolean = true;
-    public var dockedWidth:Integer;
-    public var dockedHeight:Integer;
-    public var undockedX:Integer;
-    public var undockedY:Integer;
-    public var undockedWidth:Integer;
-    public var undockedHeight:Integer;
+    public var dockedWidth:Number;
+    public var dockedHeight:Number;
+    public var undockedX:Number;
+    public var undockedY:Number;
+    public var undockedWidth:Number;
+    public var undockedHeight:Number;
     
     public-init var widget:Widget on replace {
         if (widget != null) {
@@ -287,7 +290,7 @@ public class WidgetInstance {
         }
     }
     
-    var configDialog:SwingDialog;
+//    var configDialog:SwingDialog;
     
     public function save() {
         persister.save();
@@ -298,32 +301,33 @@ public class WidgetInstance {
                 e.printStackTrace();
             }
         }
-        configDialog.close();
+        //configDialog.close();
     }
     
     public function showConfigDialog():Void {
-        if (widget.configuration != null) {
-            configDialog = SwingDialog {
-                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
-                title: "{title} Configuration"
-                resizable: false
-                closeAction: save
-                content: BorderPanel {
-                    center: widget.configuration.component
-                    bottom: FlowPanel {
-                        alignment: HorizontalAlignment.RIGHT
-                        content: Button {
-                            text: "Done"
-                            action: function() {
-                                save();
-                                configDialog.close();
-                            }
-                        }
-                    }
-                }
-                visible: true
-            }
-        }
+        // todo - figure out how to show dialogs
+//        if (widget.configuration != null) {
+//            configDialog = SwingDialog {
+//                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
+//                title: "{title} Configuration"
+//                resizable: false
+//                closeAction: save
+//                content: BorderPanel {
+//                    center: widget.configuration.component
+//                    bottom: FlowPanel {
+//                        alignment: HorizontalAlignment.RIGHT
+//                        content: Button {
+//                            text: "Done"
+//                            action: function() {
+//                                save();
+//                                configDialog.close();
+//                            }
+//                        }
+//                    }
+//                }
+//                visible: true
+//            }
+//        }
     }
 
     package function deleteConfig() {
