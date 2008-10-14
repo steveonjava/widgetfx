@@ -57,7 +57,7 @@ public class WidgetManager {
     
     public var portal = false;
     
-    var codebase = WidgetFXConfiguration.getInstance().codebase;
+    public-read var codebase = WidgetFXConfiguration.getInstance().codebase;
     
     var initialWidgets = if (WidgetFXConfiguration.getInstance().devMode) [
         "../../widgets/Clock/dist/launch.jnlp",
@@ -139,14 +139,14 @@ public class WidgetManager {
         var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
         sis.removeSingleInstanceListener(sil);
         basicService.showDocument(new URL(basicService.getCodeBase(), "launch.jnlp"));
-        System.exit(0);
+        FX.exit();
     }
     
     public function exit() {
         if (sis != null) {
             sis.removeSingleInstanceListener(sil);
         }
-        System.exit(0);
+        FX.exit();
     }
     
     public function dockOffscreenWidgets() {

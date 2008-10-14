@@ -39,7 +39,7 @@ public class NativeMenuItem extends NativeMenuEntry {
         if (menuItem == null) {
             menuItem = createMenuItem();
             menuItem.addActionListener(ActionListener {
-                public function actionPerformed(e:ActionEvent):Void {
+                override function actionPerformed(e:ActionEvent):Void {
                     if (action != null) {
                         action();
                     }

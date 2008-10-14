@@ -50,10 +50,10 @@ public class GapVBox extends GapBox {
                 y += gapHeight;
             }
             if (indexof node == index) {
-                return new Rectangle(0, y, maxWidth, node.getBoundsHeight());
+                return new Rectangle(0, y, maxWidth, node.boundsInLocal.height);
             }
             if (node.visible) {
-                y += node.getBoundsHeight() + spacing;
+                y += node.boundsInLocal.height + spacing;
             }
         }
         return null;
@@ -65,8 +65,8 @@ public class GapVBox extends GapBox {
         impl_getSGNode().globalToLocal(point, point);
         var index = content.size();
         for (node in content) {
-            var viewY = node.getBoundsY();
-            var viewHeight = node.getBoundsHeight();
+            var viewY = node.boundsInLocal.minY;
+            var viewHeight = node.boundsInLocal.height;
             if (point.y < viewY + viewHeight / 2) {
                 index = indexof node;
                 break;
@@ -80,15 +80,14 @@ public class GapVBox extends GapBox {
      * The actual gap size will also include spacing if it is set.
      */
     override function setGap(index:Integer, size:Number, animate:Boolean):Void {
-        size = if (size == -1) 0 else size + spacing;
-        if (gapIndex != index or gapHeight != size) {
+        var adjustedSize = if (size == -1) 0 else size + spacing;
+        if (gapIndex != index or gapHeight != adjustedSize) {
             gapIndex = index;
-            gapHeight = size;
+            gapHeight = adjustedSize;
             if (animate) {
                 animateGapVBoxLayout();
             } else {
                 timeline.stop();
-                timeline.running = false; // set running false synchronously to unblock layout
                 impl_requestLayout();
             }
         }
@@ -116,7 +115,7 @@ public class GapVBox extends GapBox {
             if (node.visible) {
                 node.impl_layoutX = x;
                 node.impl_layoutY = y;
-                y += node.getBoundsHeight() + spacing;
+                y += node.boundsInLocal.height + spacing;
             }
         }
     }
@@ -139,7 +138,7 @@ public class GapVBox extends GapBox {
                             node.impl_layoutX => x tween Interpolator.EASEIN,
                             node.impl_layoutY => y tween Interpolator.EASEIN
                         ];
-                        y += node.getBoundsHeight() + spacing;
+                        y += node.boundsInLocal.height + spacing;
                         values;
                     } else {
                         [];
@@ -150,8 +149,7 @@ public class GapVBox extends GapBox {
                 }
             }
         }
-        newTimeline.start();
-        newTimeline.running = true; // make sure there are no gaps between animation swapping
+        newTimeline.play();
         timeline = newTimeline;
     }
 }

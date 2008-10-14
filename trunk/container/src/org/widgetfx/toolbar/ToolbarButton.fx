@@ -47,7 +47,7 @@ public abstract class ToolbarButton extends Group {
     
     var dsColor = Color.BLACK;
     var dsTimeline = Timeline {
-        toggle: true, autoReverse: true
+        autoReverse: true
         keyFrames: KeyFrame {
             time: 300ms
             values: [
@@ -66,24 +66,12 @@ public abstract class ToolbarButton extends Group {
         getShape()
     ];
     
-    var hover = false on replace {
-        dsTimeline.start();
-    }
-    override var onMouseEntered = function(e) {
-        hover = true;
-        toolbar.setName(name);
-    }
-    override var onMouseExited = function(e) {
-        hover = false;
-        toolbar.setName(null);
+    override var hover on replace {
+        dsTimeline.play();
+        toolbar.setName(if (hover) then name else null);
     }
     
-    var pressed = false;
-    override var onMousePressed = function(e) {
-        pressed = true;
-    }
     override var onMouseReleased = function(e:MouseEvent) {
-        pressed = false;
         if (hover) {
             performAction();
         }

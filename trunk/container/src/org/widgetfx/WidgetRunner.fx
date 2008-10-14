@@ -35,17 +35,16 @@ try { // try nimbus look and feel first
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 }
 
-for (arg in __ARGS__ where arg.equals("no-transparency")) {
+for (arg in FX.getArguments() where arg.equals("no-transparency")) {
     WidgetFXConfiguration.TRANSPARENT = false;
 }
 
 var widgetCount = 0;
 
-function closeHook(frame:WidgetFrame) {
+function closeHook() {
     widgetCount--;
-    frame.close();
     if (widgetCount == 0) {
-        System.exit(0);
+        FX.exit();
     }
 }
 
@@ -65,7 +64,7 @@ WidgetManager.createWidgetRunnerInstance();
 WidgetFXConfiguration.getInstance().mergeProperties = true;
 WidgetFXConfiguration.getInstance().load();
 
-for (arg in __ARGS__ where arg.toLowerCase().endsWith(".jnlp")) {
+for (arg in FX.getArguments() where arg.toLowerCase().endsWith(".jnlp")) {
     runWidget(arg);
 }
 
@@ -75,7 +74,7 @@ if (widgetCount == 0) {
             runWidget(jnlpFile);
         }
         cancelHandler: function() {
-            System.exit(0);
+            FX.exit();
         }
     }
 }

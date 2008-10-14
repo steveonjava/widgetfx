@@ -43,7 +43,7 @@ for (arg in FX.getArguments()) {
 Dock.createInstance();
 
 FX.deferAction(
-    function() {
+    function():Void {
         WidgetManager.getInstance().loadParams(FX.getArguments());
     }
 );

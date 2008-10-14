@@ -37,9 +37,16 @@ import javafx.stage.*;
 import javax.swing.*;
 import javafx.ext.swing.*;
 import javafx.animation.*;
-import java.awt.event.*;
+import java.awt.AWTException;
+import java.awt.Point;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.*;
 import java.awt.image.*;
+import java.awt.GraphicsEnvironment;
 import java.io.*;
 import java.lang.*;
 import java.net.*;
@@ -53,8 +60,8 @@ var DEFAULT_WIDTH = 180;
 var MIN_WIDTH = 120;
 var MAX_WIDTH = 400;
 var BORDER = 5;
-var DS_RADIUS = 5;
-public var BG_OPACITY = 0.7;
+public var DS_RADIUS = 5;
+var BG_OPACITY = 0.7;
 var BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
 var BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
 var instance;
@@ -136,7 +143,7 @@ public class Dock extends Stage {
             image: Image {url: (new URL(new URL(theme), logoUrl)).toString()}
         }
     }
-    var headerHeight:Integer = bind BORDER * 2 + logo.getHeight().intValue();
+    var headerHeight:Integer = bind BORDER * 2 + logo.boundsInLocal.height.intValue();
     var dockedWidgets = bind WidgetManager.getInstance().widgets[w|w.docked];
     var container:WidgetContainer = WidgetContainer {
         resizing: bind resizing
@@ -154,9 +161,11 @@ public class Dock extends Stage {
     }
     var displayId:String on replace {
         var newGraphics = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-        for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) where gd.getIDstring().equals(displayId)) {
-            newGraphics = gd.getDefaultConfiguration();
-            break;
+        for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {
+            if (gd.getIDstring().equals(displayId)) {
+                newGraphics = gd.getDefaultConfiguration();
+                break;
+            }
         }
         currentGraphics = newGraphics;
     }
@@ -173,8 +182,9 @@ public class Dock extends Stage {
         updateDockLocation();
     }
 
+    // todo - find a way to get the window reference to call alwaysOnTop
     var alwaysOnTop:Boolean on replace {
-        window.setAlwaysOnTop(alwaysOnTop);
+        //window.setAlwaysOnTop(alwaysOnTop);
     }
     
     package var resizing:Boolean;
@@ -216,7 +226,7 @@ public class Dock extends Stage {
 
     override var title = "WidgetFX";
     override var visible = true;
-    override var windowStyle = if (WidgetFXConfiguration.TRANSPARENT) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
+    override var style = if (WidgetFXConfiguration.TRANSPARENT) StageStyle.TRANSPARENT else StageStyle.UNDECORATED;
     override var width = DEFAULT_WIDTH + BORDER * 2;
 
     postinit {
@@ -249,7 +259,7 @@ public class Dock extends Stage {
         tray.setPopupMenu(createNativeMainMenu(null).getPopupMenu());
         tray.setToolTip("WidgetFX");
         tray.addActionListener(ActionListener {
-                public function actionPerformed(e) {
+                override function actionPerformed(e) {
                     showDockAndWidgets();
                 }
         });
@@ -261,7 +271,7 @@ public class Dock extends Stage {
     }
     
     function createImage():java.awt.Image {
-        return WidgetFXConfiguration.getInstance().widgetFXIcon16t.getBufferedImage();
+        return WidgetFXConfiguration.getInstance().widgetFXIcon16t.bufferedImage;
     }
     
     public function addWidget():Void {
@@ -336,7 +346,7 @@ public class Dock extends Stage {
     
     package var rolloverOpacity = 0.01;
     package var rolloverTimeline = Timeline {
-        autoReverse: true, toggle: true
+        autoReverse: true
         keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY * 1.2 tween Interpolator.EASEBOTH]}
     }
     
@@ -374,7 +384,7 @@ public class Dock extends Stage {
     }
     
     function loadContent():Void {
-        closeAction = function() {WidgetManager.getInstance().exit()};
+        onClose = function() {WidgetManager.getInstance().exit()};
         var addWidgetButton = Group {
             var color = BUTTON_COLOR;
             translateY: 7
@@ -435,7 +445,8 @@ public class Dock extends Stage {
                 color = BUTTON_COLOR;
             }
             onMouseReleased: function(e:MouseEvent) {
-                mainMenu.show(window, e.getStageX().intValue(), e.getStageY().intValue());
+                // todo - figure out a way to get the window
+                mainMenu.show(null, e.sceneX, e.sceneY);
             }
         }
         var hideButton = Group {
@@ -467,8 +478,8 @@ public class Dock extends Stage {
         }
         var menus = HBox { // Menu Buttons
             translateX: bind width, translateY: 4
+            // todo - fix horizontal alignment
             spacing: 4
-            horizontalAlignment: HorizontalAlignment.TRAILING
             content: [
                 addWidgetButton,
                 mainMenuButton,
@@ -476,7 +487,7 @@ public class Dock extends Stage {
             ]
 
         }
-        stage = Stage {
+        scene = Scene {
             content: [
                 Group {
                     content: bind logo
@@ -490,13 +501,14 @@ public class Dock extends Stage {
                         Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity, translateX: 1},
                         Line {endY: bind height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity / 3, translateX: 2}
                     ]
-                    horizontalAlignment: bind if (dockLeft) HorizontalAlignment.TRAILING else HorizontalAlignment.LEADING
+                    // todo - fix alignment
+                    //horizontalAlignment: bind if (dockLeft) HorizontalAlignment.TRAILING else HorizontalAlignment.LEADING
                     translateX: bind if (dockLeft) width else 0
                     cursor: Cursor.H_RESIZE
                     onMouseDragged: function(e:MouseEvent) {
                         resizing = true;
-                        var draggedWidth = if (dockLeft) e.getScreenX().intValue() - screenBounds.x
-                                else screenBounds.x + screenBounds.width - e.getScreenX().intValue();
+                        var draggedWidth = if (dockLeft) e.screenX.intValue() - screenBounds.x
+                                else screenBounds.x + screenBounds.width - e.screenX.intValue();
                         width = if (draggedWidth < MIN_WIDTH) MIN_WIDTH else if (draggedWidth > MAX_WIDTH) MAX_WIDTH else draggedWidth;
                     }
                     onMouseReleased: function(e) {
@@ -514,19 +526,20 @@ public class Dock extends Stage {
             ],
             fill: bind transparentBG;
         };
-        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
-            public function mouseEntered(e) {
-                rolloverTimeline.start();
-            }
-            public function mouseExited(e) {
-                rolloverTimeline.start();
-            }
-        });
-        (window as RootPaneContainer).getContentPane().addMouseMotionListener(MouseMotionAdapter {
-            public function mouseDragged(e) {
-                getGraphicsConfiguration(e.getLocationOnScreen());
-            }
-        });
+        // todo - figure out a way to get the window
+//        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
+//            override function mouseEntered(e) {
+//                rolloverTimeline.play();
+//            }
+//            override function mouseExited(e) {
+//                rolloverTimeline.play();
+//            }
+//        });
+//        (window as RootPaneContainer).getContentPane().addMouseMotionListener(MouseMotionAdapter {
+//            override function mouseDragged(e) {
+//                getGraphicsConfiguration(e.getLocationOnScreen());
+//            }
+//        });
     }
     
     function getGraphicsConfiguration(location:Point) {
