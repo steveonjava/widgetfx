@@ -95,17 +95,18 @@ public class WidgetView extends Group, Constrained {
     function resize() {
         if (instance.widget.resizable) {
             if (maxWidth != Constrained.UNBOUNDED) {
-                instance.widget.width = maxWidth.intValue();
+                instance.setWidth(maxWidth);
+        System.out.println("setting width: {maxWidth}")
             }
             if (maxHeight != Constrained.UNBOUNDED) {
-                instance.widget.height = maxHeight.intValue();
+                instance.setHeight(maxHeight);
             }
             if (instance.widget.aspectRatio != 0) {
                 var currentRatio = (instance.widget.width as Number) / instance.widget.height;
                 if (currentRatio > instance.widget.aspectRatio) {
-                    instance.widget.width = (instance.widget.aspectRatio * instance.widget.height).intValue();                
+                    instance.setWidth(instance.widget.aspectRatio * instance.widget.height);                
                 } else {
-                    instance.widget.height = (instance.widget.width / instance.widget.aspectRatio).intValue();
+                    instance.setHeight(instance.widget.width / instance.widget.aspectRatio);
                 }
             }
         }
@@ -113,10 +114,33 @@ public class WidgetView extends Group, Constrained {
     
     override var maxWidth on replace {
         resize();
+        System.out.println("width: {maxWidth}")
     }
     
     override var maxHeight on replace {
         resize();
+    }
+    
+    function wrapContent(content:Node[]):Node[] {
+        return [
+            Group { // Rear Slice
+                cache: true
+                content: Group { // Drop Shadow
+                    effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
+                    content: Group { // Clip Group
+                        content: widget.content[0]
+                        clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                        scaleX: bind scale, scaleY: bind scale
+                    }
+                }
+            },
+            Group { // Front Slices
+                cache: true
+                content: widget.content[1..]
+                clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                scaleX: bind scale, scaleY: bind scale
+            },
+        ]
     }
     
     init {
@@ -125,30 +149,13 @@ public class WidgetView extends Group, Constrained {
             Rectangle { // Invisible Spacer
                 height: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER
                 width: bind maxWidth
-                fill: Color.rgb(0, 0, 0, 0.0)
+                fill: Color.PINK
+                //fill: Color.rgb(0, 0, 0, 0.0)
             },
             Group { // Widget with DropShadow
                 translateY: TOP_BORDER
                 translateX: bind (maxWidth - widget.width * scale) / 2
-                content: [
-                    Group { // Rear Slice
-                        cache: true
-                        content: Group { // Drop Shadow
-                            effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
-                            content: Group { // Clip Group
-                                content: bind widget.scene.content[0]
-                                clip: Rectangle {width: bind widget.width, height: bind widget.height}
-                                scaleX: bind scale, scaleY: bind scale
-                            }
-                        }
-                    },
-                    Group { // Front Slices
-                        cache: true
-                        content: bind widget.scene.content[1..]
-                        clip: Rectangle {width: bind widget.width, height: bind widget.height}
-                        scaleX: bind scale, scaleY: bind scale
-                    },
-                ]
+                content: bind wrapContent(widget.content)
             },
             WidgetToolbar {
                 blocksMouse: true
@@ -181,15 +188,15 @@ public class WidgetView extends Group, Constrained {
                 }
                 onMouseDragged: function(e:MouseEvent) {
                     if (resizing) {
-                        widget.height = (initialHeight + (e.sceneY.intValue() - initialY) / scale).intValue();
+                        instance.setHeight(initialHeight + (e.sceneY.intValue() - initialY) / scale);
                         if (widget.height < WidgetInstance.MIN_HEIGHT) {
-                            widget.height = WidgetInstance.MIN_HEIGHT;
+                            instance.setHeight(WidgetInstance.MIN_HEIGHT);
                         }
                         if (widget.aspectRatio != 0) {
-                            widget.width = (widget.height * widget.aspectRatio).intValue();
+                            instance.setWidth(widget.height * widget.aspectRatio);
                             if (widget.width > maxWidth) {
-                                widget.width = maxWidth.intValue();
-                                widget.height = (widget.width / widget.aspectRatio).intValue();
+                                instance.setWidth(maxWidth);
+                                instance.setHeight(widget.width / widget.aspectRatio);
                             }
                         }
                     }

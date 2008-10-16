@@ -60,10 +60,6 @@ var entrySequence:SyndEntryImpl[];
 var error:String;
 
 var border = 6;
-var width:Number = 300;
-var height:Number = 200;
-var entryWidth = bind width - border * 2;
-var entryHeight = 25; // todo - don't hardcode the height of the entries
 
 function updateFeed():Void {
     var feedInfoCache = HashMapFeedInfoCache.getInstance();
@@ -72,7 +68,7 @@ function updateFeed():Void {
         feed = feedFetcher.retrieveFeed(new URL(feedUrl));
         var entries = feed.getEntries();
         entrySequence = for (entry in entries) entry as SyndEntryImpl;
-        error = null;
+        error = "";
     } catch (e) {
         entrySequence = null;
         error = "Unable to Load Feed";
@@ -173,8 +169,9 @@ Timeline {
     ]
 }.play();
 
-Widget {
-    resizable: true
+var webFeed:Widget = Widget {
+    width: 300;
+    height: 200;
     configuration: Configuration {
         properties: [
             StringProperty {
@@ -182,7 +179,6 @@ Widget {
                 value: bind feedUrl with inverse;
             }
         ]
-
         scene: Scene {
             var label = SwingLabel {text: "RSS Feed:"};
             var textField = SwingTextField {text: bind feedUrl with inverse, columns: 40};
@@ -199,47 +195,48 @@ Widget {
             updateFeed();
         }
     }
-    width: bind width with inverse
-    height: bind height with inverse
-    scene: Scene {
-        content: [
-            Group {
-                cache: true
-                content: Rectangle {
-                    // todo - this is too slow, figure out something else
+    content: [
+        Group {
+            cache: true
+            content: Rectangle {
+                // todo - this is too slow, figure out something else
 //                    effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
-                    width: bind width, height: bind height
-                    fill: Color.BLACK
-                    arcHeight: 7, arcWidth: 7
-                }
-            },
-            VBox {
-                visible: bind error != null
-                translateY: bind height / 2
-                content: [
-                    Text {
-                        translateX: bind width / 2
-                        textAlignment: TextAlignment.CENTER
-                        content: bind error
-                        fill: Color.WHITE
-                    },
-                    Text {
-                        translateX: bind width / 2
-                        textAlignment: TextAlignment.CENTER
-                        content: bind feedUrl
-                        font: Font {size: 11}
-                        fill: Color.LIGHTSTEELBLUE
-                    }
-                ]
-
-            },
-            VBox {
-                translateX: border, translateY: border
-                clip: Rectangle {width: bind entryWidth, height: bind height - border * 2}
-                content: bind for (entry in entrySequence) {
-                    createEntryDisplay(entry);
-                }
+                width: bind webFeed.width, height: bind webFeed.height
+                fill: Color.BLACK
+                arcHeight: 7, arcWidth: 7
             }
-        ]
-    }
+        },
+        VBox {
+            visible: bind not error.isEmpty()
+            translateY: bind webFeed.height / 2
+            content: [
+                Text {
+                    translateX: bind webFeed.width / 2
+                    textAlignment: TextAlignment.CENTER
+                    content: bind error
+                    fill: Color.WHITE
+                },
+                Text {
+                    translateX: bind webFeed.width / 2
+                    textAlignment: TextAlignment.CENTER
+                    content: bind feedUrl
+                    font: Font {size: 11}
+                    fill: Color.LIGHTSTEELBLUE
+                }
+            ]
+
+        },
+        VBox {
+            translateX: border, translateY: border
+            clip: Rectangle {width: bind entryWidth, height: bind webFeed.height - border * 2}
+            content: bind for (entry in entrySequence) {
+                createEntryDisplay(entry);
+            }
+        }
+    ]
 }
+
+var entryWidth = bind webFeed.width - border * 2;
+var entryHeight = 25; // todo - don't hardcode the height of the entries
+    
+return webFeed;

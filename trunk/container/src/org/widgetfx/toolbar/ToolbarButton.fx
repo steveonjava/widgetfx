@@ -55,7 +55,6 @@ public abstract class ToolbarButton extends Group {
             ]
         }
     }
-    override var effect = DropShadow {color: bind dsColor};
     
     override var content = [
         Rectangle { // Bounding Rect (for rollover)
@@ -68,12 +67,16 @@ public abstract class ToolbarButton extends Group {
     
     override var hover on replace {
         dsTimeline.play();
-        toolbar.setName(if (hover) then name else null);
+        toolbar.setName(if (hover) then name else "");
     }
     
     override var onMouseReleased = function(e:MouseEvent) {
         if (hover) {
             performAction();
         }
+    }
+    
+    init {
+        effect = DropShadow {color: bind dsColor};
     }
 }

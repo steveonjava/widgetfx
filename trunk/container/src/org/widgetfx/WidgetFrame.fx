@@ -60,15 +60,11 @@ public class WidgetFrame extends Stage {
         instance.undockedY = y;
     }
     
-    var widgetWidth = bind widget.width + BORDER * 2 + 1 on replace {
-        width = widgetWidth;
-    }
+    override var width = bind widget.width + BORDER * 2 + 1;
     
     var boxHeight = bind widget.height + BORDER * 2 + 1;
     
-    var widgetHeight = bind boxHeight + toolbarHeight on replace {
-        height = widgetHeight;
-    }
+    override var height = bind boxHeight + toolbarHeight;
 
     public var resizing:Boolean on replace {
         updateFocus();
@@ -157,8 +153,8 @@ public class WidgetFrame extends Stage {
         if (updateY) {
             y = initialY + initialHeight - newHeight;
         }
-        widget.width = newWidth;
-        widget.height = newHeight;
+        instance.setWidth(newWidth);
+        instance.setHeight(newHeight);
     }
     
     var rolloverOpacity = 0.0;
@@ -359,14 +355,14 @@ public class WidgetFrame extends Stage {
                             content: Group { // Drop Shadow
                                 effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                                 content: Group { // Clip Group
-                                    content: bind widget.scene.content[0]
+                                    content: bind widget.content[0]
                                     clip: Rectangle {width: bind widget.width, height: bind widget.height}
                                 }
                             }
                         },
                         Group { // Front Slices
                             cache: true
-                            content: bind widget.scene.content[1..]
+                            content: bind widget.content[1..]
                             clip: Rectangle {width: bind widget.width, height: bind widget.height}
                         },
                     ]

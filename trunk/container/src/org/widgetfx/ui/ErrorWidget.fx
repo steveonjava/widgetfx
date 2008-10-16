@@ -40,53 +40,49 @@ public class ErrorWidget extends Widget {
     
     override var autoLaunch = false;
     
-    override var resizable = true;
-
     override var width = 300;
     
     override var height = 150;
     
-    override var scene = Scene {
-        content: [
-            Group {
-                clip: Rectangle {
-                    width: bind scene.width
-                    height: bind scene.height
-                    arcWidth: 16
-                    arcHeight: 16
-                }
-                content: [
-                    Rectangle {
-                        width: bind scene.width
-                        height: bind scene.height
-                        fill: Color.BLACK
-                    },
-                    Line {
-                        endX: bind scene.width
-                        endY: bind scene.height
-                        stroke: X_COLOR
-                        strokeWidth: 40
-                    },
-                    Line {
-                        startX: bind scene.width
-                        endY: bind scene.height
-                        stroke: X_COLOR
-                        strokeWidth: 40
-                    },
-                    Group {
-                        translateX: bind scene.width / 2
-                        translateY: bind scene.height / 2 - LINE_HEIGHT * (errorLines.size().doubleValue() / 2 - 0.5)
-                        content: bind for (error in errorLines) {
-                            Text {
-                                translateY: indexof error * LINE_HEIGHT
-                                content: error
-                                fill: Color.WHITE
-                                textAlignment: TextAlignment.CENTER
-                            }
+    override var content = [
+        Group {
+            clip: Rectangle {
+                width: bind width
+                height: bind height
+                arcWidth: 16
+                arcHeight: 16
+            }
+            content: [
+                Rectangle {
+                    width: bind width
+                    height: bind height
+                    fill: Color.BLACK
+                },
+                Line {
+                    endX: bind width
+                    endY: bind height
+                    stroke: X_COLOR
+                    strokeWidth: 40
+                },
+                Line {
+                    startX: bind width
+                    endY: bind height
+                    stroke: X_COLOR
+                    strokeWidth: 40
+                },
+                Group {
+                    translateX: bind width / 2
+                    translateY: bind height / 2 - LINE_HEIGHT * (errorLines.size().doubleValue() / 2 - 0.5)
+                    content: bind for (error in errorLines) {
+                        Text {
+                            translateY: indexof error * LINE_HEIGHT
+                            content: error
+                            fill: Color.WHITE
+                            textAlignment: TextAlignment.CENTER
                         }
                     }
-                ]
-            }
-        ]
-    }
+                }
+            ]
+        }
+    ]
 }

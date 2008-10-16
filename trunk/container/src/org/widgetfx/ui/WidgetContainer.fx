@@ -93,19 +93,25 @@ public class WidgetContainer extends Group {
             saveUndockedHeight = instance.undockedHeight;
             var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
             var newHeight = if (instance.docked) instance.undockedHeight else instance.dockedHeight;
+            var width = instance.widget.width on replace {
+                animatingInstance.setWidth(width);
+            }
+            var height = instance.widget.height on replace {
+                animatingInstance.setHeight(height);
+            }
             animateHover = Timeline {
                 autoReverse: true
                 keyFrames: KeyFrame {
                     time: 300ms
                     values: [
                         if (newWidth > 0) {[
-                            instance.widget.width => newWidth tween Interpolator.EASEBOTH,
+                            width => newWidth tween Interpolator.EASEBOTH,
                             xHoverOffset => localX - localX * newWidth / instance.widget.width tween Interpolator.EASEBOTH
                         ]} else {
                             []
                         },
                         if (newHeight > 0) {[
-                            instance.widget.height => newHeight tween Interpolator.EASEBOTH,
+                            height => newHeight tween Interpolator.EASEBOTH,
                             yHoverOffset => localY - localY * newHeight / instance.widget.height tween Interpolator.EASEBOTH
                         ]} else {
                             []
