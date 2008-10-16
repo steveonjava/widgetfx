@@ -24,6 +24,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.NodeList;
 import org.widgetfx.config.*;
 import org.widgetfx.ui.ErrorWidget;
+import com.sun.javafx.runtime.TypeInfo;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
 import com.sun.javafx.runtime.Entry;
@@ -161,10 +162,7 @@ public class WidgetInstance {
             try {
                 var widgetClass:Class = Class.forName(mainClass);
                 var name = Entry.entryMethodName();
-                var ctx = FXContext.getInstance();
-                var emptyValue:FXValue[] = [];
-                var args = ctx.makeSequence(ctx.findClass("java.lang.String"), emptyValue);
-                widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
+                widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, TypeInfo.String.emptySequence as Object) as Widget;
             } catch (e:Throwable) {
                 createError(e);
             } finally {
@@ -198,13 +196,21 @@ public class WidgetInstance {
     public var undockedWidth:Number;
     public var undockedHeight:Number;
     
+    public function setWidth(width:Number) {
+        widget.impl_setWidth(width);
+    }
+    
+    public function setHeight(height:Number) {
+        widget.impl_setHeight(height);
+    }
+    
     public-init var widget:Widget on replace {
         if (widget != null) {
             if (widget.width < MIN_WIDTH) {
-                widget.width = MIN_WIDTH;
+                setWidth(MIN_WIDTH);
             }
             if (widget.height < MIN_HEIGHT) {
-                widget.height = MIN_HEIGHT;
+                setHeight(MIN_HEIGHT);
             }
             undockedWidth = widget.width;
             undockedHeight = widget.height;
@@ -240,13 +246,13 @@ public class WidgetInstance {
     function initializeDimensions() {
         if (docked) {
             if (widget.resizable) {
-                widget.width = dockedWidth;
-                widget.height = dockedHeight;
+                setWidth(dockedWidth);
+                widget.impl_setHeight(dockedHeight);
             }
         } else {
             if (widget.resizable) {
-                widget.width = undockedWidth;
-                widget.height = undockedHeight;
+                setWidth(undockedWidth);
+                widget.impl_setHeight(undockedHeight);
             }
             frame = WidgetFrame {
                 instance: this

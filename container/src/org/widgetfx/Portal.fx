@@ -37,10 +37,10 @@ Stage {
     onClose: function() {FX.exit()}
     x: 100
     y: 200
-    width: 500
-    height: 500
     title: "Portal 1"
     var scene:Scene = Scene {
+        width: 500
+        height: 500
         fill: Color.SLATEGRAY
         content: WidgetContainer {
             widgets: WidgetManager.getInstance().widgets[w|w.docked];
@@ -57,10 +57,10 @@ Stage {
     onClose: function() {FX.exit()}
     x: 700
     y: 200
-    width: 200
-    height: 500
     title: "Portal 2"
     var scene:Scene = Scene {
+        width: 200
+        height: 500
         var widgetList:WidgetInstance[];
         fill: Color.SLATEGRAY
         content: WidgetContainer {

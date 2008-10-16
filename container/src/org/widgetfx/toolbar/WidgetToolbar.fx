@@ -45,7 +45,7 @@ public class WidgetToolbar extends Group {
     
     public-init var instance:WidgetInstance;
     
-    public-init var selectedName:String = null;
+    public-init var selectedName:String;
     
     public function setName(name:String):Void {
         selectedName = name;
@@ -67,10 +67,10 @@ public class WidgetToolbar extends Group {
     
     var visibleButtons = bind buttons[b|b.visible];
 
-    public-read var toolbarWidth = bind visibleButtons.size() * (BUTTON_SIZE + BUTTON_SPACING) - BUTTON_SPACING + BUTTON_BORDER * 2;
+    public-read var toolbarWidth = 100;//bind visibleButtons.size() * (BUTTON_SIZE + BUTTON_SPACING) - BUTTON_SPACING + BUTTON_BORDER * 2;
     
     var text = Text {
-        visible: bind selectedName != null
+        visible: bind not selectedName.isEmpty()
         translateX: bind -toolbarWidth - BUTTON_BORDER * 2
         translateY: BUTTON_BORDER
         content: bind selectedName

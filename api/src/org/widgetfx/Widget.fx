@@ -27,7 +27,7 @@ import java.lang.System;
 import java.lang.Throwable;
 import java.net.URL;
 import javafx.lang.FX;
-import javafx.stage.Stage;
+import javafx.scene.Scene;
 import javax.jnlp.BasicService;
 import javax.jnlp.ServiceManager;
 
@@ -52,21 +52,19 @@ import javax.jnlp.ServiceManager;
  * import javafx.scene.shape.Ellipse;
  * import javafx.scene.paint.Color;
  * import javafx.stage.Stage;
- * var width = 100;
- * var height = 100;
- * widget = Widget {
- *     scene: Scene {
- *         width: bind width with inverse;
- *         height: bind height with inverse;
- *         content: Ellipse {
- *             centerX: bind width / 2
- *             centerY: bind height / 2
- *             radiusX: bind width / 2
- *             radiusY: bind height / 2
- *             fill: Color.RED
- *         }
+ * var widget:Widget = Widget {
+ *     width = 100;
+ *     height = 100;
+ *     content: Ellipse {
+ *         centerX: bind widget.width / 2
+ *         centerY: bind widget.height / 2
+ *         radiusX: bind widget.width / 2
+ *         radiusY: bind widget.height / 2
+ *         fill: Color.RED
  *     }
- * }</pre></blockquote>
+ * }
+ * return widget;
+ * </pre></blockquote>
  * <p>
  * Sample JNLP file for the above widget:
  * <blockquote><pre>
@@ -88,7 +86,7 @@ import javax.jnlp.ServiceManager;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class Widget extends Stage {
+public class Widget extends Scene {
     
     /**
      * Used to give widgets a fixed aspectRatio.  The default value of 0 allows
@@ -110,6 +108,8 @@ public class Widget extends Stage {
      * class for more information.
      */
     public-init var configuration:Configuration;
+    
+    public-init var resizable:Boolean = true;
     
     /**
      * Event handler called on resize of a widget.  This method is always

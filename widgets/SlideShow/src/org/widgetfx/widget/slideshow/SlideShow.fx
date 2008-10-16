@@ -56,8 +56,6 @@ var imageFiles:String[];
 var shuffle = true;
 var duration:Integer = 10;
 var keywords : String;
-var width:Number = 300;
-var height:Number = 200;
 var imageIndex:Integer;
 var imageHeight:Number;
 var currentFile:String;
@@ -314,8 +312,9 @@ var browseButton:SwingButton = SwingButton {
 //    return tabbedPane;
 //}
 
-Widget {
-    resizable: true
+var slideShow:Widget = Widget {
+    width: 300;
+    height: 200;
     aspectRatio: 4.0/3.0
     configuration: Configuration {
         properties: [
@@ -350,38 +349,34 @@ Widget {
 //        }
 
         onLoad: function() {
-            imageHeight = height;
+            imageHeight = slideShow.height;
             loadDirectory;
         }
         onSave: loadDirectory;
     }
-    width: bind width with inverse
-    height: bind height with inverse
-    scene: Scene {
-        content: [
-            ImageView {
-                image: bind currentImage
-            },
-            Group {
-                content: [
-                    Rectangle {
-                        width: bind width
-                        height: bind height
-                        fill: Color.BLACK
-                        arcWidth: 8, arcHeight: 8
-                    },
-                    Text {
-                        translateY: bind height / 2
-                        translateX: bind width / 2
-                        textAlignment: TextAlignment.CENTER
-                        content: bind status
-                        fill: Color.WHITE
-                    }
-                ]
-                opacity: bind if (status == null) 0 else 1;
-            }
-        ]
-    }
+    content: [
+        ImageView {
+            image: bind currentImage
+        },
+        Group {
+            content: [
+                Rectangle {
+                    width: bind slideShow.width
+                    height: bind slideShow.height
+                    fill: Color.BLACK
+                    arcWidth: 8, arcHeight: 8
+                },
+                Text {
+                    translateY: bind slideShow.height / 2
+                    translateX: bind slideShow.width / 2
+                    textAlignment: TextAlignment.CENTER
+                    content: bind status
+                    fill: Color.WHITE
+                }
+            ]
+            opacity: bind if (status == null) 0 else 1;
+        }
+    ]
     onResize: function(width:Number, height:Number) {
         if (imageHeight != height) {
             imageHeight = height;
@@ -391,3 +386,4 @@ Widget {
         }
     }
 }
+return slideShow;
