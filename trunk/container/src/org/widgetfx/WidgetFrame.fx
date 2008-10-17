@@ -50,7 +50,13 @@ public class WidgetFrame extends Stage {
     
     public-init var instance:WidgetInstance;
     
-    var widget = bind instance.widget;
+    var boxHeight:Number;
+    
+    var widget = bind instance.widget on replace {
+        width = widget.width + BORDER * 2 + 1;
+        boxHeight = widget.height + BORDER * 2 + 1;
+        height = boxHeight + toolbarHeight;
+    }
     
     var xSync = bind x on replace {
         instance.undockedX = x;
@@ -59,12 +65,6 @@ public class WidgetFrame extends Stage {
     var ySync = bind y on replace {
         instance.undockedY = y;
     }
-    
-    override var width = bind widget.width + BORDER * 2 + 1;
-    
-    var boxHeight = bind widget.height + BORDER * 2 + 1;
-    
-    override var height = bind boxHeight + toolbarHeight;
 
     public var resizing:Boolean on replace {
         updateFocus();
@@ -114,7 +114,8 @@ public class WidgetFrame extends Stage {
         resizing = false;
     }
     
-    override var style = if (WidgetFXConfiguration.TRANSPARENT) StageStyle.TRANSPARENT else StageStyle.UNDECORATED;
+    // todo - there is a defect in Javafx which does not allow transparent windows. (their own example doesn't work)
+    override var style = StageStyle.UNDECORATED;//if (WidgetFXConfiguration.TRANSPARENT) StageStyle.TRANSPARENT else StageStyle.UNDECORATED;
     override var title = instance.title;
     
     public function dock(dockX:Integer, dockY:Integer):Void {
@@ -189,7 +190,7 @@ public class WidgetFrame extends Stage {
         );
     }
     
-    postinit {
+    init {
         var dragRect:Group = Group {
             var backgroundColor = Color.rgb(0xF5, 0xF5, 0xF5, 0.6);
             translateY: toolbarHeight,
@@ -347,26 +348,16 @@ public class WidgetFrame extends Stage {
         scene = Scene {
             content: [
                 dragRect,
-                Group { // Widget with DropShadow
+                Group { // Widget
                     translateX: BORDER, translateY: BORDER + toolbarHeight
-                    content: [
-                        Group { // Rear Slice
-                            cache: true
-                            content: Group { // Drop Shadow
-                                effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
-                                content: Group { // Clip Group
-                                    content: bind widget.content[0]
-                                    clip: Rectangle {width: bind widget.width, height: bind widget.height}
-                                }
-                            }
-                        },
-                        Group { // Front Slices
-                            cache: true
-                            content: bind widget.content[1..]
+                    cache: true
+                    content: Group { // Drop Shadow
+                        effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                        content: Group { // Clip Group
+                            content: widget
                             clip: Rectangle {width: bind widget.width, height: bind widget.height}
-                        },
-                    ]
-                    opacity: bind (instance.opacity as Number) / 100
+                        }
+                    }
                 },
                 Group { // Transparency Slider
                     content: [
@@ -406,7 +397,6 @@ public class WidgetFrame extends Stage {
                     }
                 }
             ]
-            fill: null
         }
         // todo - find a way to get the window
 //        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
@@ -432,7 +422,7 @@ public class WidgetFrame extends Stage {
 //                instance.saveWithoutNotification();
 //            }
 //        });
-        visible = true;
+//        visible = true;
     }
 
 }
