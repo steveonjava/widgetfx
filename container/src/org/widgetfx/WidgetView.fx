@@ -42,7 +42,7 @@ public var BOTTOM_BORDER = 7;
 public class WidgetView extends Group, Constrained {    
     public-init var container:WidgetContainer;
     public-init var instance:WidgetInstance;
-    public-init var widget = bind instance.widget;
+    var widget = bind instance.widget;
     
     var resizing = false;
     public-read var docking = false;
@@ -114,7 +114,6 @@ public class WidgetView extends Group, Constrained {
     
     override var maxWidth on replace {
         resize();
-        System.out.println("width: {maxWidth}")
     }
     
     override var maxHeight on replace {
@@ -122,13 +121,20 @@ public class WidgetView extends Group, Constrained {
     }
     
     function wrapContent(content:Node[]):Node[] {
+        java.lang.System.out.println("wrapping content: {content[0]}, XXXXXXXXXXXXXXXXX {content[1..]}");
         return [
+            Rectangle { // Invisible Spacer
+                height: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER
+                width: bind widget.width * scale
+                fill: Color.BLUE
+                //fill: Color.rgb(0, 0, 0, 0.0)
+            },
             Group { // Rear Slice
                 cache: true
                 content: Group { // Drop Shadow
                     effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
                     content: Group { // Clip Group
-                        content: widget.content[0]
+                        content: content[0]
                         clip: Rectangle {width: bind widget.width, height: bind widget.height}
                         scaleX: bind scale, scaleY: bind scale
                     }
@@ -136,26 +142,36 @@ public class WidgetView extends Group, Constrained {
             },
             Group { // Front Slices
                 cache: true
-                content: widget.content[1..]
+                content: content[1..]
                 clip: Rectangle {width: bind widget.width, height: bind widget.height}
                 scaleX: bind scale, scaleY: bind scale
             },
         ]
     }
     
+    override var cache = true;
+    
+    var embeddedWidget = widget;
+    
     init {
-        cache = true;
         content = [
             Rectangle { // Invisible Spacer
                 height: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER
                 width: bind maxWidth
-                fill: Color.PINK
-                //fill: Color.rgb(0, 0, 0, 0.0)
+                fill: Color.rgb(0, 0, 0, 0.0)
             },
             Group { // Widget with DropShadow
                 translateY: TOP_BORDER
                 translateX: bind (maxWidth - widget.width * scale) / 2
-                content: bind wrapContent(widget.content)
+                cache: true
+                content: Group { // Drop Shadow
+                    effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
+                    content: Group { // Clip Group
+                        content: bind embeddedWidget
+                        clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                        scaleX: bind scale, scaleY: bind scale
+                    }
+                }
             },
             WidgetToolbar {
                 blocksMouse: true
@@ -212,58 +228,64 @@ public class WidgetView extends Group, Constrained {
                 }
             }
         ];
-        onMousePressed = function(e:MouseEvent):Void {
-            initialScreenPosX = -e.sceneX.intValue();
-            initialScreenPosY = -e.sceneY.intValue();
-        };
-        onMouseDragged = function(e:MouseEvent):Void {
-            if (not docking) {
-                var xPos;
-                var yPos;
-                if (instance.docked) {
-                    container.dragging = true;
-                    var bounds = container.layout.getScreenBounds(this);
-                    xPos = (bounds.x + (bounds.width - widget.width * scale) / 2 - WidgetFrame.BORDER).intValue();
-                    var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
-                    yPos = bounds.y + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
-                    instance.frame = WidgetFrame {
-                        instance: instance
-                        x: xPos, y: yPos
-                    }
-                    initialScreenPosX += xPos;
-                    initialScreenPosY += yPos;
-                }
-                var hoverOffset:Number[] = [0, 0];
-                for (container in WidgetContainer.containers) {
-                    var offset = container.hover(instance, e.screenX, e.screenY, e.x, e.y, not instance.docked);
-                    if (offset != [0, 0]) {
-                        hoverOffset = offset;
-                    }
-                }
-                instance.docked = false;
-                instance.frame.x = e.sceneX.intValue() + initialScreenPosX + hoverOffset[0];
-                instance.frame.y = e.sceneY.intValue() + initialScreenPosY + hoverOffset[1];
-            }
-        };
-        onMouseReleased = function(e:MouseEvent):Void {
-            if (not docking and not instance.docked) {
-                for (container in WidgetContainer.containers) {
-                    var targetBounds = container.finishHover(instance, e.screenX, e.screenY);
-                    if (targetBounds != null) {
-                        docking = true;
-                        instance.frame.dock(targetBounds.x + (targetBounds.width - widget.width) / 2, targetBounds.y);
-                    } else {
-                        // todo - don't call onResize multiple times
-                        if (instance.widget.onResize != null) {
-                            instance.widget.onResize(instance.widget.width, instance.widget.height);
-                        }
-                    }
-                }
-                container.dragging = false;
-                instance.saveWithoutNotification();
-            }
-        };
-        onMouseEntered = function(e) {requestFocus(true)}
-        onMouseExited = function(e) {requestFocus(false)}
     }
+        
+    override var onMousePressed = function(e:MouseEvent):Void {
+        initialScreenPosX = -e.sceneX.intValue();
+        initialScreenPosY = -e.sceneY.intValue();
+    };
+
+    override var onMouseDragged = function(e:MouseEvent):Void {
+        if (not docking) {
+            var xPos;
+            var yPos;
+            if (instance.docked) {
+                container.dragging = true;
+                var bounds = container.layout.getScreenBounds(this);
+                xPos = (bounds.x + (bounds.width - widget.width * scale) / 2 - WidgetFrame.BORDER).intValue();
+                var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
+                yPos = bounds.y + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
+                //embeddedWidget = null;
+                instance.frame = WidgetFrame {
+                    instance: instance
+                    x: xPos, y: yPos
+                }
+                initialScreenPosX += xPos;
+                initialScreenPosY += yPos;
+            }
+            var hoverOffset:Number[] = [0, 0];
+//            for (container in WidgetContainer.containers) {
+//                var offset = container.hover(instance, e.screenX, e.screenY, e.x, e.y, not instance.docked);
+//                if (offset != [0, 0]) {
+//                    hoverOffset = offset;
+//                }
+//            }
+            instance.docked = false;
+            instance.frame.x = e.sceneX.intValue() + initialScreenPosX + hoverOffset[0];
+            instance.frame.y = e.sceneY.intValue() + initialScreenPosY + hoverOffset[1];
+        }
+    };
+    
+    override var onMouseReleased = function(e:MouseEvent):Void {
+        if (not docking and not instance.docked) {
+            for (container in WidgetContainer.containers) {
+                var targetBounds = container.finishHover(instance, e.screenX, e.screenY);
+                if (targetBounds != null) {
+                    docking = true;
+                    instance.frame.dock(targetBounds.x + (targetBounds.width - widget.width) / 2, targetBounds.y);
+                } else {
+                    // todo - don't call onResize multiple times
+                    if (instance.widget.onResize != null) {
+                        instance.widget.onResize(instance.widget.width, instance.widget.height);
+                    }
+                }
+            }
+            container.dragging = false;
+            instance.saveWithoutNotification();
+        }
+    };
+    
+    override var onMouseEntered = function(e) {requestFocus(true)}
+    
+    override var onMouseExited = function(e) {requestFocus(false)}
 }

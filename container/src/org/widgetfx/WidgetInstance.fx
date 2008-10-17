@@ -197,11 +197,11 @@ public class WidgetInstance {
     public var undockedHeight:Number;
     
     public function setWidth(width:Number) {
-        widget.impl_setWidth(width);
+        widget.width = width;
     }
     
     public function setHeight(height:Number) {
-        widget.impl_setHeight(height);
+        widget.height = height;
     }
     
     public-init var widget:Widget on replace {
@@ -247,12 +247,12 @@ public class WidgetInstance {
         if (docked) {
             if (widget.resizable) {
                 setWidth(dockedWidth);
-                widget.impl_setHeight(dockedHeight);
+                setHeight(dockedHeight);
             }
         } else {
             if (widget.resizable) {
                 setWidth(undockedWidth);
-                widget.impl_setHeight(undockedHeight);
+                setHeight(undockedHeight);
             }
             frame = WidgetFrame {
                 instance: this

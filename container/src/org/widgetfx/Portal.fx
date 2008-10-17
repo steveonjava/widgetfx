@@ -50,7 +50,6 @@ Stage {
         }
     }
     scene: scene
-    visible: true
 }
 
 Stage {
@@ -71,5 +70,4 @@ Stage {
         }
     }
     scene: scene
-    visible: true
 }

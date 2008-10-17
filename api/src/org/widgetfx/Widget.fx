@@ -27,7 +27,8 @@ import java.lang.System;
 import java.lang.Throwable;
 import java.net.URL;
 import javafx.lang.FX;
-import javafx.scene.Scene;
+import javafx.scene.layout.Resizable;
+import javafx.scene.Group;
 import javax.jnlp.BasicService;
 import javax.jnlp.ServiceManager;
 
@@ -86,7 +87,7 @@ import javax.jnlp.ServiceManager;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class Widget extends Scene {
+public class Widget extends Group, Resizable {
     
     /**
      * Used to give widgets a fixed aspectRatio.  The default value of 0 allows
