@@ -22,32 +22,32 @@ package org.widgetfx.toolbar;
 
 import org.widgetfx.*;
 import javafx.animation.*;
+import javafx.input.*;
 import javafx.scene.*;
 import javafx.scene.effect.*;
-import javafx.scene.input.*;
-import javafx.scene.shape.*;
+import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
-var pressedColor = Color.rgb(54, 101, 143);
-
 public abstract class ToolbarButton extends Group {
-    public-init var toolbar:WidgetToolbar;
+    private static attribute pressedColor = Color.rgb(54, 101, 143);
 
-    public-init var name:String;
+    public attribute toolbar:WidgetToolbar;
+
+    public attribute name:String;
     
     protected abstract function performAction():Void;
 
     protected abstract function getShape():Node[];
 
-    protected var highlightColor = bind if (hover and pressed) pressedColor else Color.WHITE;
+    protected attribute highlightColor = bind if (hover and pressed) pressedColor else Color.WHITE;
     
-    var dsColor = Color.BLACK;
-    var dsTimeline = Timeline {
-        autoReverse: true
+    private attribute dsColor = Color.BLACK;
+    private attribute dsTimeline = Timeline {
+        toggle: true, autoReverse: true
         keyFrames: KeyFrame {
             time: 300ms
             values: [
@@ -55,8 +55,9 @@ public abstract class ToolbarButton extends Group {
             ]
         }
     }
+    override attribute effect = DropShadow {color: bind dsColor};
     
-    override var content = [
+    override attribute content = [
         Rectangle { // Bounding Rect (for rollover)
             x: -WidgetToolbar.BUTTON_SIZE / 2, y: -WidgetToolbar.BUTTON_SIZE / 2
             width: WidgetToolbar.BUTTON_SIZE, height: WidgetToolbar.BUTTON_SIZE
@@ -65,18 +66,26 @@ public abstract class ToolbarButton extends Group {
         getShape()
     ];
     
-    override var hover on replace {
-        dsTimeline.play();
-        toolbar.setName(if (hover) then name else "");
+    private attribute hover = false on replace {
+        dsTimeline.start();
+    }
+    override attribute onMouseEntered = function(e) {
+        hover = true;
+        toolbar.setName(name);
+    }
+    override attribute onMouseExited = function(e) {
+        hover = false;
+        toolbar.setName(null);
     }
     
-    override var onMouseReleased = function(e:MouseEvent) {
+    private attribute pressed = false;
+    override attribute onMousePressed = function(e) {
+        pressed = true;
+    }
+    override attribute onMouseReleased = function(e:MouseEvent) {
+        pressed = false;
         if (hover) {
             performAction();
         }
-    }
-    
-    init {
-        effect = DropShadow {color: bind dsColor};
     }
 }

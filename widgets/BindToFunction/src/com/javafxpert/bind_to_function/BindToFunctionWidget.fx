@@ -13,7 +13,7 @@ package com.javafxpert.bind_to_function;
 import javafx.application.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
-import javafx.scene.shape.*;
+import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
 import javafx.scene.text.*;
 import javafx.scene.transform.*;
@@ -22,7 +22,7 @@ import org.widgetfx.*;
 import org.widgetfx.config.*;
 
 class CircleModel {
-  var diameter:Integer;
+  attribute diameter:Integer;
   
   bound function getArea():Number {
     Math.PI * Math.pow(diameter / 2, 2);

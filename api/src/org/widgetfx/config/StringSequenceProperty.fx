@@ -36,12 +36,12 @@ public class StringSequenceProperty extends Property {
      * value: bind someVar with inverse
      * </blockquote></pre>
      */
-    public var value:String[] on replace {
+    public attribute value:String[] on replace {
         fireOnChange();
     }
     
     /** {@inheritDoc} */
-    override function getStringValue():String {
+    public function getStringValue():String {
         var sb = new StringBuilder();
         for (s in value) {
             if (indexof s > 0) {
@@ -53,7 +53,7 @@ public class StringSequenceProperty extends Property {
     }
     
     /** {@inheritDoc} */
-    override function setStringValue(value:String):Void {
+    public function setStringValue(value:String):Void {
         this.value = if (value.length() == 0) [] else for (s in Arrays.asList(value.split(","))) s;
     }
 }

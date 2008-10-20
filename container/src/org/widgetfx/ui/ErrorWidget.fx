@@ -20,8 +20,9 @@
  */
 package org.widgetfx.ui;
 
+import javafx.application.Stage;
 import javafx.scene.*;
-import javafx.scene.shape.*;
+import javafx.scene.geometry.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.text.*;
@@ -30,59 +31,59 @@ import org.widgetfx.Widget;
 /**
  * @author Stephen Chin
  */
-public var LINE_HEIGHT = 20;
-
-var X_COLOR = Color.rgb(70, 50, 50);
-
 public class ErrorWidget extends Widget {
+    private static attribute X_COLOR = Color.rgb(70, 50, 50);
+    public static attribute LINE_HEIGHT = 20;
     
-    public-init var errorLines:String[] = "uninitialized error";
+    public attribute errorLines:String[] = "uninitialized error";
     
-    override var autoLaunch = false;
+    override attribute autoLaunch = false;
     
-    override var width = 300;
+    override attribute resizable = true;
     
-    override var height = 150;
-    
-    override var content = [
-        Group {
-            clip: Rectangle {
-                width: bind width
-                height: bind height
-                arcWidth: 16
-                arcHeight: 16
-            }
-            content: [
-                Rectangle {
-                    width: bind width
-                    height: bind height
-                    fill: Color.BLACK
-                },
-                Line {
-                    endX: bind width
-                    endY: bind height
-                    stroke: X_COLOR
-                    strokeWidth: 40
-                },
-                Line {
-                    startX: bind width
-                    endY: bind height
-                    stroke: X_COLOR
-                    strokeWidth: 40
-                },
-                Group {
-                    translateX: bind width / 2
-                    translateY: bind height / 2 - LINE_HEIGHT * (errorLines.size().doubleValue() / 2 - 0.5)
-                    content: bind for (error in errorLines) {
-                        Text {
-                            translateY: indexof error * LINE_HEIGHT
-                            content: error
-                            fill: Color.WHITE
-                            textAlignment: TextAlignment.CENTER
+    override attribute stage = Stage {
+        width: 300
+        height: 150
+        content: [
+            Group {
+                clip: Rectangle {
+                    width: bind stage.width
+                    height: bind stage.height
+                    arcWidth: 16
+                    arcHeight: 16
+                }
+                content: [
+                    Rectangle {
+                        width: bind stage.width
+                        height: bind stage.height
+                        fill: Color.BLACK
+                    },
+                    Line {
+                        endX: bind stage.width
+                        endY: bind stage.height
+                        stroke: X_COLOR
+                        strokeWidth: 40
+                    },
+                    Line {
+                        startX: bind stage.width
+                        endY: bind stage.height
+                        stroke: X_COLOR
+                        strokeWidth: 40
+                    },
+                    Group {
+                        translateX: bind stage.width / 2
+                        translateY: bind stage.height / 2 - LINE_HEIGHT * (errorLines.size().doubleValue() / 2 - 0.5)
+                        content: bind for (error in errorLines) {
+                            Text {
+                                translateY: indexof error * LINE_HEIGHT
+                                content: error
+                                fill: Color.WHITE
+                                horizontalAlignment: HorizontalAlignment.CENTER
+                            }
                         }
                     }
-                }
-            ]
-        }
-    ]
+                ]
+            }
+        ]
+    }
 }

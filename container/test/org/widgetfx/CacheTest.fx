@@ -6,12 +6,11 @@
 
 package org.widgetfx;
 
+import javafx.application.*;
 import javafx.scene.*;
 import javafx.animation.*;
-import javafx.scene.Scene;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.stage.Stage;
+import javafx.scene.geometry.Rectangle;
 
 /**
  * Simple test case to exercise the scenegraph cache.
@@ -33,17 +32,17 @@ Timeline {
             width2 => 400 tween Interpolator.EASEBOTH
         ]}
     ]
-}.play();
+}.start();
 
-Stage {
+Frame {
     width: bind width
     visible: true
-    scene: Scene {
+    stage: Stage {
         content: [
             Group {
                 cache: true
                 content: Rectangle {width: bind width2, height: 100, fill: Color.BLUE}
-                // todo - fix the horizontal alignment
+                horizontalAlignment: HorizontalAlignment.CENTER
                 translateX: bind width / 2
             }
         ]

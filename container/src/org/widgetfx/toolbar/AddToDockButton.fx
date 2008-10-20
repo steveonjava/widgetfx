@@ -23,7 +23,7 @@ package org.widgetfx.toolbar;
 import org.widgetfx.*;
 import java.net.URL;
 import javafx.scene.*;
-import javafx.scene.shape.*;
+import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
 import javafx.scene.transform.*;
 import javax.jnlp.*;
@@ -32,20 +32,20 @@ import javax.jnlp.*;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public var PUBLIC_CODEBASE = "http://widgetfx.org/dock/";
-
-public class AddToDockButton extends ToolbarButton {    
-    override var name = "Add to Dock";
+public class AddToDockButton extends ToolbarButton {
+    public static attribute PUBLIC_CODEBASE = "http://widgetfx.org/dock/";
     
-    var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+    override attribute name = "Add to Dock";
     
-    override function performAction() {
+    private attribute basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+    
+    protected function performAction() {
         basicService.showDocument(new URL("{PUBLIC_CODEBASE}launch.jnlp?arg={toolbar.instance.jnlpUrl}"));
     }
     
-    override var visible = bind WidgetManager.getInstance().widgetRunner or not basicService.getCodeBase().toString().equals(PUBLIC_CODEBASE);
+    override attribute visible = bind WidgetManager.getInstance().widgetRunner or not basicService.getCodeBase().toString().equals(PUBLIC_CODEBASE);
     
-    override function getShape() {
+    protected function getShape() {
         [Line { // Border
             stroke: bind Color.BLACK
             strokeWidth: 4

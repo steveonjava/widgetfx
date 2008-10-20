@@ -33,50 +33,49 @@ import org.widgetfx.config.*;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public var VERSION = "0.1.5";
-public var TRANSPARENT = true;
-public var IS_MAC = System.getProperty("os.name").contains("Mac OS");
-
-var instance = WidgetFXConfiguration {}
-
-public function getInstanceWithProperties(properties:Property[]) {
-    insert properties into instance.properties;
-    return instance;
-}
-    
-public function getInstance() {
-    return instance;
-}
-
 public class WidgetFXConfiguration {
+    public static attribute VERSION = "0.1.5";
+    public static attribute TRANSPARENT = true;
+    public static attribute IS_MAC = System.getProperty("os.name").contains("Mac OS");
     
-    var properties:Property[] = [];
+    private static attribute instance = WidgetFXConfiguration {}
     
-    public var mergeProperties = false;
+    public static function getInstance() {
+        return instance;
+    }
     
-    public-read var widgetFXIcon16 = Image {url: getClass().getResource("nut9_16.png").toString()};
-    public-read var widgetFXIcon16s = Image {url: getClass().getResource("nut9_16s.png").toString()};
-    public-read var widgetFXIcon16t = Image {url: getClass().getResource("nut9_16s.gif").toString()};
+    public attribute properties:Property[] = [];
     
-    public-read var codebase = (ServiceManager.lookup("javax.jnlp.BasicService") as BasicService).getCodeBase();
+    public attribute mergeProperties = false;
     
-    public-read var devMode = codebase.getProtocol().equalsIgnoreCase("file") on replace {
+    public attribute widgetFXIcon16 = Image {url: getClass().getResource("nut9_16.png").toString()};
+    public attribute widgetFXIcon16s = Image {url: getClass().getResource("nut9_16s.png").toString()};
+    public attribute widgetFXIcon16t = Image {url: getClass().getResource("nut9_16s.gif").toString()};
+    
+    public attribute codebase = (ServiceManager.lookup("javax.jnlp.BasicService") as BasicService).getCodeBase();
+    
+    public attribute devMode = codebase.getProtocol().equalsIgnoreCase("file") on replace {
         if (devMode) {
             System.out.println("Starting Development Mode");
         }
     }
 
-    public-read var configFolder = new File(System.getProperty("user.home"),
+    public attribute configFolder = new File(System.getProperty("user.home"),
         if (devMode) ".WidgetFXDev" else ".WidgetFX") on replace {
         System.out.println("Configuration directory location is: \"{configFolder}\"");
     }
     
-    function getPropertyFile():File {
+    public static function getInstanceWithProperties(properties:Property[]) {
+        insert properties into instance.properties;
+        return instance;
+    }
+    
+    private function getPropertyFile():File {
         var configPath = new File(configFolder, "WidgetFX.config");
         return configPath;
     }
     
-    var persister = ConfigPersister {
+    private attribute persister = ConfigPersister {
         file: getPropertyFile()
         properties: bind properties
         autoSave: true

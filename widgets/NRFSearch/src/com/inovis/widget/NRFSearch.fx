@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.widgetfx.*;
 import javafx.application.*;
-import javafx.scene.shape.*;
+import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
 import javafx.scene.image.*;
 import javafx.ext.swing.*;

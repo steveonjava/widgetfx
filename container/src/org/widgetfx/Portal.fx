@@ -21,11 +21,9 @@
 package org.widgetfx;
 
 import org.widgetfx.ui.*;
-import javafx.lang.FX;
-import javafx.scene.*;
-import javafx.scene.shape.*;
+import javafx.application.*;
+import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
-import javafx.stage.*;
 
 /**
  * @author Stephen Chin
@@ -33,41 +31,49 @@ import javafx.stage.*;
 WidgetManager.createPortalInstance();
 WidgetFXConfiguration.getInstance().mergeProperties = true;
 WidgetFXConfiguration.getInstance().load();
-Stage {
-    onClose: function() {FX.exit()}
+Frame {
+    closeAction: function() {java.lang.System.exit(0)}
     x: 100
     y: 200
+    width: 500
+    height: 500
     title: "Portal 1"
-    var scene:Scene = Scene {
-        width: 500
-        height: 500
+    stage: Stage {
+        var width:Integer;
+        var height:Integer;
         fill: Color.SLATEGRAY
+        width: bind width with inverse
+        height: bind height with inverse
         content: WidgetContainer {
             widgets: WidgetManager.getInstance().widgets[w|w.docked];
-            width: bind scene.width
-            height: bind scene.height
+            width: bind width
+            height: bind height
             layout: GapGridBox {rows: 2, columns: 3, spacing: 5}
         }
     }
-    scene: scene
+    visible: true
 }
 
-Stage {
-    onClose: function() {FX.exit()}
+Frame {
+    closeAction: function() {java.lang.System.exit(0)}
     x: 700
     y: 200
+    width: 200
+    height: 500
     title: "Portal 2"
-    var scene:Scene = Scene {
-        width: 200
-        height: 500
+    stage: Stage {
         var widgetList:WidgetInstance[];
+        var width:Integer;
+        var height:Integer;
         fill: Color.SLATEGRAY
+        width: bind width with inverse
+        height: bind height with inverse
         content: WidgetContainer {
             widgets: widgetList
-            width: bind scene.width
-            height: bind scene.height
+            width: bind width
+            height: bind height
             layout: GapGridBox {rows: 4, columns: 1, spacing: 5}
         }
     }
-    scene: scene
+    visible: true
 }

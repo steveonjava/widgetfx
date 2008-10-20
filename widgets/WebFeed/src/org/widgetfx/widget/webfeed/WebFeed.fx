@@ -23,18 +23,19 @@ package org.widgetfx.widget.webfeed;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
+import org.widgetfx.util.*;
+import javafx.application.*;
 import javafx.ext.swing.*;
-import javafx.animation.*;
 import javafx.async.*;
 import javafx.scene.*;
+import javafx.scene.geometry.*;
+import javafx.animation.*;
 import javafx.scene.effect.*;
 import javafx.scene.effect.light.*;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
 import javafx.scene.paint.*;
-import javafx.scene.shape.*;
-import javafx.scene.text.*;
 import javafx.scene.transform.*;
+import javafx.scene.text.*;
+import javafx.scene.layout.*;
 import java.awt.Desktop;
 import java.lang.*;
 import java.net.URI;
@@ -60,22 +61,26 @@ var entrySequence:SyndEntryImpl[];
 var error:String;
 
 var border = 6;
+var width = 300;
+var height = 200;
+var entryWidth = bind width - border * 2;
+var entryHeight = 25; // todo - don't hardcode the height of the entries
 
-function updateFeed():Void {
+private function updateFeed():Void {
     var feedInfoCache = HashMapFeedInfoCache.getInstance();
     var feedFetcher:FeedFetcher = new HttpURLFeedFetcher(feedInfoCache);
     try {
         feed = feedFetcher.retrieveFeed(new URL(feedUrl));
         var entries = feed.getEntries();
-        entrySequence = for (entry in entries) entry as SyndEntryImpl;
-        error = "";
+        entrySequence = Sequences.make(SyndEntryImpl.<<class>>, entries);
+        error = null;
     } catch (e) {
         entrySequence = null;
         error = "Unable to Load Feed";
     }
 }
 
-function dateSince(date:Date):String {
+private function dateSince(date:Date):String {
     var offset:Number = System.currentTimeMillis() - date.getTime();
     var minutes = (offset / 60000).intValue();
     var hours = minutes / 60;
@@ -89,7 +94,7 @@ function dateSince(date:Date):String {
     }
 }
 
-function launchUri(uri:URI) {
+private function launchUri(uri:URI) {
     if (Desktop.isDesktopSupported()) {
         var desktop = Desktop.getDesktop();
         if (desktop.isSupported(Desktop.Action.BROWSE )) {
@@ -98,7 +103,7 @@ function launchUri(uri:URI) {
     }
 }
 
-function createEntryDisplay(entry:SyndEntryImpl):Node {
+private function createEntryDisplay(entry:SyndEntryImpl):Node {
     Group {
         var groupOpacity = 0.0;
         var groupFill = Color.BLACK;
@@ -111,28 +116,28 @@ function createEntryDisplay(entry:SyndEntryImpl):Node {
             },
             VBox {
                 content: [
-                    Text {
+                    BoundedText {
                         font: Font {size: 11}
                         fill: Color.WHITE
                         textOrigin: TextOrigin.TOP
-                        content: StringEscapeUtils.unescapeHtml(entry.getTitle());
-                        wrappingWidth: bind entryWidth - border * 2
+                        text: StringEscapeUtils.unescapeHtml(entry.getTitle());
+                        width: bind entryWidth - border * 2
                     },
                     Group {content: [
-                        Text {
+                        BoundedText {
                             font: Font {size: 9}
                             fill: Color.CYAN
                             textOrigin: TextOrigin.TOP
-                            textAlignment: TextAlignment.LEFT
-                            content: feed.getTitle()
-                            wrappingWidth: bind entryWidth - 55
+                            horizontalAlignment: HorizontalAlignment.LEADING
+                            text: feed.getTitle()
+                            width: bind entryWidth - 55
                         },
                         Text {
                             font: Font {size: 9}
                             content: dateSince(entry.getPublishedDate())
                             fill: Color.CYAN
                             textOrigin: TextOrigin.TOP
-                            textAlignment: TextAlignment.RIGHT
+                            horizontalAlignment: HorizontalAlignment.TRAILING
                             translateX: bind entryWidth
                         }
                     ]}
@@ -152,7 +157,7 @@ function createEntryDisplay(entry:SyndEntryImpl):Node {
             groupOpacity = 0.6;
         }
         onMouseClicked: function(event):Void {
-            if (event.button == MouseButton.PRIMARY) {
+            if (event.getButton() == 1) {
                 groupFill = Color.SLATEGRAY;
                 launchUri(new URI(entry.getLink()));
                 groupOpacity = 0.6;
@@ -167,11 +172,10 @@ Timeline {
         KeyFrame {time: 0s, action: updateFeed},
         KeyFrame {time: 15m}
     ]
-}.play();
+}.start();
 
-var webFeed:Widget = Widget {
-    width: 300;
-    height: 200;
+Widget {
+    resizable: true
     configuration: Configuration {
         properties: [
             StringProperty {
@@ -179,64 +183,65 @@ var webFeed:Widget = Widget {
                 value: bind feedUrl with inverse;
             }
         ]
-        scene: Scene {
-            var label = SwingLabel {text: "RSS Feed:"};
-            var textField = SwingTextField {text: bind feedUrl with inverse, columns: 40};
-            content: [
-                HBox {
-                    content: [
-                        label,
-                        textField
-                    ]
-                }
-            ]
+
+        component: ClusterPanel {
+            var label = Label {text: "RSS Feed:"};
+            var textField = TextField {text: bind feedUrl with inverse, hpref: 300};
+            vcluster: ParallelCluster { content: [
+                label,
+                textField
+            ]}
+            hcluster: SequentialCluster { content: [
+                label,
+                textField
+            ]}
         }
         onSave: function() {
             updateFeed();
         }
     }
-    content: [
-        Group {
-            cache: true
-            content: Rectangle {
-                // todo - this is too slow, figure out something else
+    stage: Stage {
+        width: bind width with inverse
+        height: bind height with inverse
+        content: [
+            Group {
+                cache: true
+                content: Rectangle {
+                    // todo - this is too slow, figure out something else
 //                    effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
-                width: bind webFeed.width, height: bind webFeed.height
-                fill: Color.BLACK
-                arcHeight: 7, arcWidth: 7
-            }
-        },
-        VBox {
-            visible: bind not error.isEmpty()
-            translateY: bind webFeed.height / 2
-            content: [
-                Text {
-                    translateX: bind webFeed.width / 2
-                    textAlignment: TextAlignment.CENTER
-                    content: bind error
-                    fill: Color.WHITE
-                },
-                Text {
-                    translateX: bind webFeed.width / 2
-                    textAlignment: TextAlignment.CENTER
-                    content: bind feedUrl
-                    font: Font {size: 11}
-                    fill: Color.LIGHTSTEELBLUE
+                    width: bind width, height: bind height
+                    fill: Color.BLACK
+                    arcHeight: 7, arcWidth: 7
                 }
-            ]
+            },
+            VBox {
+                visible: bind error != null
+                translateY: bind height / 2
+                verticalAlignment: VerticalAlignment.CENTER
+                content: [
+                    Text {
+                        translateX: bind width / 2
+                        horizontalAlignment: HorizontalAlignment.CENTER
+                        content: bind error
+                        fill: Color.WHITE
+                    },
+                    Text {
+                        translateX: bind width / 2
+                        horizontalAlignment: HorizontalAlignment.CENTER
+                        content: bind feedUrl
+                        font: Font {size: 11}
+                        fill: Color.LIGHTSTEELBLUE
+                    }
+                ]
 
-        },
-        VBox {
-            translateX: border, translateY: border
-            clip: Rectangle {width: bind entryWidth, height: bind webFeed.height - border * 2}
-            content: bind for (entry in entrySequence) {
-                createEntryDisplay(entry);
+            },
+            VBox {
+                translateX: border, translateY: border
+                clip: Rectangle {width: bind entryWidth, height: bind height - border * 2}
+                content: bind for (entry in entrySequence) {
+                    createEntryDisplay(entry);
+                }
             }
-        }
-    ]
+        ]
+    }
 }
-
-var entryWidth = bind webFeed.width - border * 2;
-var entryHeight = 25; // todo - don't hardcode the height of the entries
-    
-return webFeed;

@@ -22,7 +22,7 @@ package org.widgetfx.toolbar;
 
 import org.widgetfx.*;
 import javafx.scene.*;
-import javafx.scene.shape.*;
+import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
 import javafx.scene.transform.*;
 
@@ -32,16 +32,16 @@ import javafx.scene.transform.*;
  */
 public class ConfigButton extends ToolbarButton {
     
-    override var name = "Configuration";
+    override attribute name = "Configuration";
     
-    override function performAction() {
+    protected function performAction() {
         toolbar.instance.showConfigDialog();
     }
     
-    override function getShape() {
+    protected function getShape() {
         [Group {// Border
             translateX: 1.4, translateY: -0.4
-            transforms: [Rotate {angle: 45}, Scale {x: 0.48, y: 0.48}]
+            transform: [Rotate {angle: 45}, Scale {x: 0.48, y: 0.48}]
             content: [
                 Line {startY: 10, endY: 12, stroke: Color.BLACK, strokeWidth: 9},
                 ShapeSubtract {
@@ -53,7 +53,7 @@ public class ConfigButton extends ToolbarButton {
         },
         Group { // Config
             translateX: 1
-            transforms: [Rotate {angle: 45}, Scale {x: 0.4, y: 0.4}]
+            transform: [Rotate {angle: 45}, Scale {x: 0.4, y: 0.4}]
             content: [
                 Line {startY: 10, endY: 14, stroke: bind highlightColor, strokeWidth: 9},
                 ShapeSubtract {

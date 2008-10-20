@@ -21,6 +21,7 @@
 package org.widgetfx.ui;
 
 import javafx.animation.*;
+import javafx.application.*;
 import javafx.lang.*;
 import javafx.scene.*;
 import org.widgetfx.*;
@@ -29,56 +30,56 @@ import org.widgetfx.*;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public var containers:WidgetContainer[];
-
 public class WidgetContainer extends Group {
     
-    public var widgets:WidgetInstance[];
+    public static attribute containers:WidgetContainer[];
+    
+    public attribute widgets:WidgetInstance[];
     
     // if this is set, copy widget when dropped on a new container, but place the original
     // widget back in the source container
-    public-init var copyOnContainerDrop:Boolean;
+    public attribute copyOnContainerDrop:Boolean;
     
-    public-init var layout:GapBox on replace {
+    public attribute layout:GapBox on replace {
         layout.maxWidth = width;
         layout.maxHeight = height;
         layout.content = widgetViews;
         content = [layout];
     }
     
-    public var width:Number on replace {
+    public attribute width:Integer on replace {
         layout.maxWidth = width;
     }
     
-    public var height:Number on replace {
+    public attribute height:Integer on replace {
         layout.maxHeight = height;
     }
     
-    public var resizing:Boolean;
+    public attribute resizing:Boolean;
     
-    public var dragging:Boolean;
+    public attribute dragging:Boolean;
     
-    var widgetViews:WidgetView[] = bind for (instance in widgets) createWidgetView(instance) on replace {
+    private attribute widgetViews:WidgetView[] = bind for (instance in widgets) createWidgetView(instance) on replace {
         layout.content = widgetViews;
     }
     
-    function createWidgetView(instance:WidgetInstance):WidgetView {
+    private function createWidgetView(instance:WidgetInstance):WidgetView {
         return WidgetView {
             container: this
             instance: instance
         }
     }
     
-    var animateHover:Timeline;
-    var animatingInstance:WidgetInstance;
-    var animating = bind if (animateHover == null) false else animateHover.running on replace {
+    private attribute animateHover:Timeline;
+    private attribute animatingInstance:WidgetInstance;
+    private attribute animating = bind if (animateHover == null) false else animateHover.running on replace {
         animatingInstance.frame.resizing = animating;
     }
-    var animateDocked:Boolean;
-    var saveUndockedWidth:Number;
-    var saveUndockedHeight:Number;
-    var xHoverOffset:Number;
-    var yHoverOffset:Number;
+    private attribute animateDocked:Boolean;
+    private attribute saveUndockedWidth:Integer;
+    private attribute saveUndockedHeight:Integer;
+    private attribute xHoverOffset;
+    private attribute yHoverOffset;
     
     init {
         insert this into containers;
@@ -93,26 +94,20 @@ public class WidgetContainer extends Group {
             saveUndockedHeight = instance.undockedHeight;
             var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
             var newHeight = if (instance.docked) instance.undockedHeight else instance.dockedHeight;
-            var width = instance.widget.width on replace {
-                animatingInstance.setWidth(width);
-            }
-            var height = instance.widget.height on replace {
-                animatingInstance.setHeight(height);
-            }
             animateHover = Timeline {
-                autoReverse: true
+                autoReverse: true, toggle: true
                 keyFrames: KeyFrame {
                     time: 300ms
                     values: [
                         if (newWidth > 0) {[
-                            width => newWidth tween Interpolator.EASEBOTH,
-                            xHoverOffset => localX - localX * newWidth / instance.widget.width tween Interpolator.EASEBOTH
+                            instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH,
+                            xHoverOffset => localX - localX * newWidth / instance.widget.stage.width tween Interpolator.EASEBOTH
                         ]} else {
                             []
                         },
                         if (newHeight > 0) {[
-                            height => newHeight tween Interpolator.EASEBOTH,
-                            yHoverOffset => localY - localY * newHeight / instance.widget.height tween Interpolator.EASEBOTH
+                            instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH,
+                            yHoverOffset => localY - localY * newHeight / instance.widget.stage.height tween Interpolator.EASEBOTH
                         ]} else {
                             []
                         }
@@ -127,17 +122,17 @@ public class WidgetContainer extends Group {
         setupHoverAnimation(instance, localX, localY);
         if (layout.containsScreenXY(screenX, screenY)) {
             delete instance from widgets;
-            var dockedHeight = if (instance.dockedHeight == 0) instance.widget.height else instance.dockedHeight;
+            var dockedHeight = if (instance.dockedHeight == 0) instance.widget.stage.height else instance.dockedHeight;
             layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
             if (animateHover != null and not animateDocked) {
                 animateDocked = true;
-                animateHover.play();
+                animateHover.start();
             }
         } else {
             layout.clearGap(animate);
             if (animateHover != null and animateDocked) {
                 animateDocked = false;
-                animateHover.play();
+                animateHover.start();
             }
         }
         return [xHoverOffset, yHoverOffset];
@@ -153,7 +148,7 @@ public class WidgetContainer extends Group {
         } else {
             if (animateHover != null and animateDocked) {
                 animateDocked = false;
-                animateHover.play();
+                animateHover.start();
             }
             animateHover = null;
             return null;

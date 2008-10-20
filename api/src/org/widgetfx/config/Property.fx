@@ -38,14 +38,14 @@ public abstract class Property {
      * Name of the property as it will be saved to the configuration file.  This
      * must be given a unique value.
      */
-    public-init var name:String;
+    public attribute name:String;
     
     /**
      * If set to true, the state of this propery will be persisted whenever the
      * value changes.  The default is false so that unnecessary state persistence
      * is not performed.
      */
-    public-init var autoSave:Boolean;
+    public attribute autoSave:Boolean;
 
     /**
      * Implemented by subclasses to provide conversion of values to a common
@@ -59,9 +59,9 @@ public abstract class Property {
      */
     public abstract function setStringValue(value:String):Void;
     
-    protected var onChange:function(changedProperty:Property):Void;
+    attribute onChange:function(changedProperty:Property):Void;
     
-    package function fireOnChange() {
+    private function fireOnChange() {
         if (onChange != null) {
             onChange(this);
         }

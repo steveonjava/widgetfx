@@ -36,11 +36,11 @@ import javax.swing.SwingUtilities;
  */
 public class GapVBox extends GapBox {
     
-    var gapHeight:Number;
+    private attribute gapHeight:Number;
         
-    var timeline:Timeline;
+    private attribute timeline:Timeline;
 
-    override function getBounds(index:Integer):Rectangle {
+    protected function getBounds(index:Integer):Rectangle {
         var y:Number = 0;
         for (node in content) {
             if (indexof node == gapIndex) {
@@ -50,23 +50,23 @@ public class GapVBox extends GapBox {
                 y += gapHeight;
             }
             if (indexof node == index) {
-                return new Rectangle(0, y, maxWidth, node.boundsInLocal.height);
+                return new Rectangle(0, y, maxWidth, node.getBoundsHeight());
             }
             if (node.visible) {
-                y += node.boundsInLocal.height + spacing;
+                y += node.getBoundsHeight() + spacing;
             }
         }
         return null;
     }
 
-    override function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
+    public function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
         var point = new Point(screenX, screenY);
         SwingUtilities.convertPointFromScreen(point, impl_getSGNode().getPanel());
         impl_getSGNode().globalToLocal(point, point);
         var index = content.size();
         for (node in content) {
-            var viewY = node.boundsInLocal.minY;
-            var viewHeight = node.boundsInLocal.height;
+            var viewY = node.getBoundsY();
+            var viewHeight = node.getBoundsHeight();
             if (point.y < viewY + viewHeight / 2) {
                 index = indexof node;
                 break;
@@ -79,15 +79,16 @@ public class GapVBox extends GapBox {
      * Set the index and size of the gap.  The gap will get inserted before the component at this index.
      * The actual gap size will also include spacing if it is set.
      */
-    override function setGap(index:Integer, size:Number, animate:Boolean):Void {
-        var adjustedSize = if (size == -1) 0 else size + spacing;
-        if (gapIndex != index or gapHeight != adjustedSize) {
+    public function setGap(index:Integer, size:Number, animate:Boolean):Void {
+        size = if (size == -1) 0 else size + spacing;
+        if (gapIndex != index or gapHeight != size) {
             gapIndex = index;
-            gapHeight = adjustedSize;
+            gapHeight = size;
             if (animate) {
                 animateGapVBoxLayout();
             } else {
                 timeline.stop();
+                timeline.running = false; // set running false synchronously to unblock layout
                 impl_requestLayout();
             }
         }
@@ -97,7 +98,7 @@ public class GapVBox extends GapBox {
         impl_layout = doGapVBoxLayout;
     }
 
-    function doGapVBoxLayout(g:Group):Void {
+    private function doGapVBoxLayout(g:Group):Void {
         if (timeline.running) {
             return;
         }
@@ -115,12 +116,12 @@ public class GapVBox extends GapBox {
             if (node.visible) {
                 node.impl_layoutX = x;
                 node.impl_layoutY = y;
-                y += node.boundsInLocal.height + spacing;
+                y += node.getBoundsHeight() + spacing;
             }
         }
     }
 
-    function animateGapVBoxLayout():Void {
+    private function animateGapVBoxLayout():Void {
         if (timeline != null) {
             timeline.pause();
         }
@@ -138,7 +139,7 @@ public class GapVBox extends GapBox {
                             node.impl_layoutX => x tween Interpolator.EASEIN,
                             node.impl_layoutY => y tween Interpolator.EASEIN
                         ];
-                        y += node.boundsInLocal.height + spacing;
+                        y += node.getBoundsHeight() + spacing;
                         values;
                     } else {
                         [];
@@ -149,7 +150,8 @@ public class GapVBox extends GapBox {
                 }
             }
         }
-        newTimeline.play();
+        newTimeline.start();
+        newTimeline.running = true; // make sure there are no gaps between animation swapping
         timeline = newTimeline;
     }
 }

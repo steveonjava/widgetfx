@@ -37,17 +37,17 @@ import javax.swing.SwingUtilities;
  */
 public class GapGridBox extends GapBox {
     
-    public-init var rows:Integer = 1;
+    public attribute rows:Integer = 1;
 
-    public-init var columns:Integer = 1;
+    public attribute columns:Integer = 1;
     
-    var nodeWidth = bind (maxWidth - (columns - 1) * spacing) / columns;
+    private attribute nodeWidth = bind (maxWidth - (columns - 1) * spacing) / columns;
     
-    var nodeHeight = bind (maxHeight - (rows - 1) * spacing) / rows;
+    private attribute nodeHeight = bind (maxHeight - (rows - 1) * spacing) / rows;
     
-    var timeline:Timeline;
+    private attribute timeline:Timeline;
 
-    override function getBounds(index:Integer):Rectangle {
+    protected function getBounds(index:Integer):Rectangle {
         return new Rectangle(
             (index mod columns) * (nodeWidth + spacing),
             index / columns * (nodeHeight + spacing),
@@ -56,7 +56,7 @@ public class GapGridBox extends GapBox {
         );
     }
     
-    override function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
+    public function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
         var point = new Point(screenX, screenY);
         SwingUtilities.convertPointFromScreen(point, impl_getSGNode().getPanel());
         impl_getSGNode().globalToLocal(point, point);
@@ -73,7 +73,7 @@ public class GapGridBox extends GapBox {
      * Set the index and size of the gap.  The gap will get inserted before the component at this index.
      * The actual gap size will also include spacing if it is set.
      */
-    override function setGap(index:Integer, size:Number, animate:Boolean):Void {
+    public function setGap(index:Integer, size:Number, animate:Boolean):Void {
         if (gapIndex != index) {
             gapIndex = index;
             impl_requestLayout();
@@ -84,7 +84,7 @@ public class GapGridBox extends GapBox {
         impl_layout = doGapGridLayout;
     }
 
-    function doGapGridLayout(g:Group):Void {
+    private function doGapGridLayout(g:Group):Void {
         if (timeline.running) {
             return;
         }

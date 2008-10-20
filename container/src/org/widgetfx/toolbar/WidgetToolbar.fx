@@ -21,39 +21,44 @@
 package org.widgetfx.toolbar;
 
 import org.widgetfx.WidgetInstance;
-import javafx.animation.*;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.input.MouseEvent;
 import javafx.scene.*;
-import javafx.scene.effect.*;
-import javafx.scene.input.*;
-import javafx.scene.shape.*;
-import javafx.scene.paint.*;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.geometry.Circle;
+import javafx.scene.geometry.Line;
+import javafx.scene.geometry.Rectangle;
+import javafx.scene.geometry.ShapeSubtract;
+import javafx.scene.paint.Color;
 import javafx.scene.text.*;
-import javafx.scene.transform.*;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Scale;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
-public var BUTTON_SIZE = 10;
-public var BUTTON_SPACING = 3;
-public var BUTTON_BORDER = 3;
-public var TOOLBAR_HEIGHT = BUTTON_SIZE + BUTTON_BORDER * 2;
-
-public var BACKGROUND = Color.rgb(163, 184, 203);
-
 public class WidgetToolbar extends Group {
+    public static attribute BUTTON_SIZE = 10;
+    public static attribute BUTTON_SPACING = 3;
+    public static attribute BUTTON_BORDER = 3;
+    public static attribute TOOLBAR_HEIGHT = BUTTON_SIZE + BUTTON_BORDER * 2;
     
-    public-init var instance:WidgetInstance;
+    public static attribute BACKGROUND = Color.rgb(163, 184, 203);
     
-    public-init var selectedName:String;
+    public attribute instance:WidgetInstance;
+    
+    private attribute selectedName:String = null;
     
     public function setName(name:String):Void {
         selectedName = name;
     }
     
-    public-init var onClose:function():Void;
+    public attribute onClose:function():Void;
     
-    public-init var buttons = bind [
+    public attribute buttons = bind [
         ConfigButton {
             toolbar: this
         },
@@ -65,22 +70,22 @@ public class WidgetToolbar extends Group {
         }
     ];
     
-    var visibleButtons = bind buttons[b|b.visible];
+    public attribute visibleButtons = bind buttons[b|b.visible];
 
-    public-read var toolbarWidth = 100;//bind visibleButtons.size() * (BUTTON_SIZE + BUTTON_SPACING) - BUTTON_SPACING + BUTTON_BORDER * 2;
+    public attribute toolbarWidth = bind visibleButtons.size() * (BUTTON_SIZE + BUTTON_SPACING) - BUTTON_SPACING + BUTTON_BORDER * 2;
     
-    var text = Text {
-        visible: bind not selectedName.isEmpty()
+    private attribute text = Text {
+        visible: bind selectedName != null
         translateX: bind -toolbarWidth - BUTTON_BORDER * 2
         translateY: BUTTON_BORDER
         content: bind selectedName
         textOrigin: TextOrigin.TOP
-        textAlignment: TextAlignment.RIGHT
+        horizontalAlignment: HorizontalAlignment.RIGHT
         fill: Color.BLACK
         font: Font {size: 10}
     }
 
-    override var content = bind [
+    override attribute content = bind [
         Group { // Buttons
             translateX: bind -toolbarWidth - 1
             clip: Rectangle { // Clip
@@ -116,11 +121,11 @@ public class WidgetToolbar extends Group {
         Rectangle {
             visible: bind selectedName != null
             translateX: bind -toolbarWidth - BUTTON_BORDER
-            width: bind text.boundsInLocal.width + BUTTON_BORDER * 2
+            width: bind text.getWidth() + BUTTON_BORDER * 2
             height: TOOLBAR_HEIGHT
             arcWidth: TOOLBAR_HEIGHT
             arcHeight: TOOLBAR_HEIGHT
-            // todo - wants to be aligned right
+            horizontalAlignment: HorizontalAlignment.RIGHT
             fill: Color.WHITESMOKE
             opacity: .7
         },

@@ -22,28 +22,28 @@ package org.widgetfx.ui;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import javafx.lang.Sequences;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.util.Sequences;
 import javax.swing.SwingUtilities;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
-public var UNBOUNDED = -1;
-
 public abstract class GapBox extends Group, Constrained {
     
-    public-init var spacing:Number on replace {
+    public static attribute UNBOUNDED = -1;
+    
+    public attribute spacing:Number on replace {
         impl_requestLayout();
     }
     
-    override var maxWidth = 300;
+    override attribute maxWidth = 300;
     
-    override var maxHeight = 300;
+    override attribute maxHeight = 300;
     
-    protected var gapIndex:Integer = -1;
+    protected attribute gapIndex:Integer = -1;
     
     public function getGapIndex() {
         return gapIndex;
@@ -58,7 +58,7 @@ public abstract class GapBox extends Group, Constrained {
     
     protected abstract function getBounds(index:Integer):Rectangle;
     
-    function getScreenBounds(index:Integer):Rectangle {
+    private function getScreenBounds(index:Integer):Rectangle {
         var bounds = getBounds(index);
         var location = bounds.getLocation();
         impl_getSGNode().localToGlobal(location, location);

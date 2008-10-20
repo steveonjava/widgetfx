@@ -35,17 +35,17 @@ public class BooleanProperty extends Property {
      * value: bind someVar with inverse
      * </blockquote></pre>
      */
-    public var value:Boolean on replace {
+    public attribute value:Boolean on replace {
         fireOnChange();
     }
     
     /** {@inheritDoc} */
-    override function getStringValue():String {
+    public function getStringValue():String {
         return value.toString();
     }
     
     /** {@inheritDoc} */
-    override function setStringValue(value:String):Void {
+    public function setStringValue(value:String):Void {
         this.value = "true".equalsIgnoreCase(value);
     }
 }

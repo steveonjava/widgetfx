@@ -19,68 +19,71 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.widgetfx;
-
-import com.sun.javafx.stage.WindowStageDelegate;
 import org.widgetfx.ui.*;
 import org.widgetfx.config.*;
 import org.widgetfx.install.InstallUtil;
 import javafx.lang.*;
+import javafx.scene.paint.*;
+import javafx.application.Stage;
+import javafx.application.WindowStyle;
 import javafx.scene.*;
-import javafx.scene.shape.*;
+import javafx.scene.geometry.*;
 import javafx.scene.effect.*;
 import javafx.scene.image.*;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
-import javafx.scene.paint.*;
-import javafx.scene.text.*;
-import javafx.stage.*;
+import javafx.input.*;
 import javax.swing.*;
+import javafx.scene.text.*;
+import javafx.scene.layout.*;
 import javafx.ext.swing.*;
 import javafx.animation.*;
 import java.awt.AWTException;
+import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.geom.*;
-import java.awt.image.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.awt.GraphicsEnvironment;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.Properties;
 import java.io.*;
 import java.lang.*;
-import java.net.*;
-import java.util.*;
+import java.net.URL;
 
 /**
  * @author Stephen Chin
  */
-var menuHeight = if (WidgetFXConfiguration.IS_MAC) 22 else 0;
-var DEFAULT_WIDTH = 180;
-var MIN_WIDTH = 120;
-var MAX_WIDTH = 400;
-var BORDER = 5;
-public var DS_RADIUS = 5;
-var BG_OPACITY = 0.7;
-var BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
-var BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
-var instance;
-
-public function createInstance() {
-    instance = Dock {};
-}
-
-public function getInstance() {
-    return instance;
-}
-
-// todo - create a StageDelegate for Dialogs
-public class Dock extends Stage {
-    var logoUrl:String;
-    var backgroundStartColor = [0.0, 0.0, 0.0];
-    var backgroundEndColor = [0.0, 0.0, 0.0];
+public class Dock extends BaseDialog {
+    private static attribute menuHeight = if (WidgetFXConfiguration.IS_MAC) 22 else 0;
+    private static attribute DEFAULT_WIDTH = 180;
+    private static attribute MIN_WIDTH = 120;
+    private static attribute MAX_WIDTH = 400;
+    static attribute BORDER = 5;
+    public static attribute DS_RADIUS = 5;
+    private static attribute BG_OPACITY = 0.7;
+    private static attribute BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
+    private static attribute BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
     
-    var themeProperties = [
+    private static attribute instance;
+    
+    public static function createInstance() {
+        instance = Dock {};
+    }
+    
+    public static function getInstance() {
+        return instance;
+    }
+    
+    private attribute logoUrl:String;
+    private attribute backgroundStartColor = [0.0, 0.0, 0.0];
+    private attribute backgroundEndColor = [0.0, 0.0, 0.0];
+    
+    private attribute themeProperties = [
         StringProperty {
             name: "logoUrl"
             value: bind logoUrl with inverse;
@@ -95,7 +98,7 @@ public class Dock extends Stage {
         }
     ];
     
-    public var theme:String on replace {
+    public attribute theme:String on replace {
         if (not theme.isEmpty()) {
             var savedProperties = Properties {};
             savedProperties.load((new URL(theme)).openStream());
@@ -107,7 +110,7 @@ public class Dock extends Stage {
         }
     }
     
-    var configuration = WidgetFXConfiguration.getInstanceWithProperties([
+    private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
         StringProperty {
             name: "displayId"
             value: bind displayId with inverse;
@@ -116,7 +119,7 @@ public class Dock extends Stage {
             name: "dockLeft"
             value: bind dockLeft with inverse;
         },
-        NumberProperty {
+        IntegerProperty {
             name: "width"
             value: bind width with inverse;
         },
@@ -134,18 +137,17 @@ public class Dock extends Stage {
         }
     ]);
     
-    // todo - figure out a way to get the enclosing window
-    var mainMenu = createNativeMainMenu(null);
-    var logo:Node = bind if (logoUrl.isEmpty()) {
+    private attribute mainMenu = createNativeMainMenu(window);
+    private attribute logo:Node = bind if (logoUrl.isEmpty()) {
         createWidgetFXLogo()
     } else {
         ImageView { // resolve the logoUrl against the theme
             image: Image {url: (new URL(new URL(theme), logoUrl)).toString()}
         }
     }
-    var headerHeight:Integer = bind BORDER * 2 + logo.boundsInLocal.height.intValue();
-    var dockedWidgets = bind WidgetManager.getInstance().widgets[w|w.docked];
-    var container:WidgetContainer = WidgetContainer {
+    private attribute headerHeight:Integer = bind BORDER * 2 + logo.getHeight().intValue();
+    private attribute dockedWidgets = bind WidgetManager.getInstance().widgets[w|w.docked];
+    attribute container:WidgetContainer = WidgetContainer {
         resizing: bind resizing
         translateX: BORDER
         translateY: bind headerHeight
@@ -155,60 +157,57 @@ public class Dock extends Stage {
         layout: GapVBox {}
     }
     
-    var currentGraphics:java.awt.GraphicsConfiguration;
-    var screenBounds = bind currentGraphics.getBounds() on replace {
+    private attribute currentGraphics:java.awt.GraphicsConfiguration;
+    private attribute screenBounds = bind currentGraphics.getBounds() on replace {
         updateDockLocation();
     }
-    var displayId:String on replace {
+    private attribute displayId:String on replace {
         var newGraphics = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-        for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {
-            if (gd.getIDstring().equals(displayId)) {
-                newGraphics = gd.getDefaultConfiguration();
-                break;
-            }
+        for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) where gd.getIDstring().equals(displayId)) {
+            newGraphics = gd.getDefaultConfiguration();
+            break;
         }
         currentGraphics = newGraphics;
     }
-    var dockLeft:Boolean on replace {
+    private attribute dockLeft:Boolean on replace {
         dockRight = not dockLeft;
         updateDockLocation();
     };
-    var dockRight:Boolean on replace {
+    private attribute dockRight:Boolean on replace {
         dockLeft = not dockRight;
         updateDockLocation();
     };
 
-    var widthTrigger = bind width on replace {
+    private attribute widthTrigger = bind width on replace {
         updateDockLocation();
     }
 
-    // todo - find a way to get the window reference to call alwaysOnTop
-    var alwaysOnTop:Boolean on replace {
-        //window.setAlwaysOnTop(alwaysOnTop);
+    private attribute alwaysOnTop:Boolean on replace {
+        window.setAlwaysOnTop(alwaysOnTop);
     }
     
-    package var resizing:Boolean;
+    attribute resizing:Boolean;
     
-    function updateDockLocation():Void {
+    private function updateDockLocation() {
         height = screenBounds.height - menuHeight;
         x = screenBounds.x + (if (dockLeft) 0 else screenBounds.width - width);
         y = screenBounds.y + menuHeight;
     }
     
-    //var backgroundImage : Image = Image {url:getClass().getResource("Inovis_SidebarBackground1.jpg").toString(), height: 1200};
+    //private attribute backgroundImage : Image = Image {url:getClass().getResource("Inovis_SidebarBackground1.jpg").toString(), height: 1200};
     
-    var transparentBG = bind if (dockLeft) leftBG else rightBG;
-    var bgOpacity = BG_OPACITY;
-    var startColor = bind Color.color(backgroundStartColor[0], backgroundStartColor[1], backgroundStartColor[2], 0);
-    var endColor = bind Color.color(backgroundEndColor[0], backgroundEndColor[1], backgroundEndColor[2], bgOpacity);
-    var leftBG = bind LinearGradient {
+    private attribute transparentBG = bind if (dockLeft) leftBG else rightBG;
+    private attribute bgOpacity = BG_OPACITY;
+    private attribute startColor = bind Color.color(backgroundStartColor[0], backgroundStartColor[1], backgroundStartColor[2], 0);
+    private attribute endColor = bind Color.color(backgroundEndColor[0], backgroundEndColor[1], backgroundEndColor[2], bgOpacity);
+    private attribute leftBG = bind LinearGradient {
         endY: 0
         stops: [
             Stop {offset: 0.0, color: endColor},
             Stop {offset: 1.0, color: startColor}
         ]
     }
-    var rightBG = bind LinearGradient {
+    private attribute rightBG = bind LinearGradient {
         endY: 0
         stops: [
             Stop {offset: 0.0, color: startColor},
@@ -216,7 +215,7 @@ public class Dock extends Stage {
         ]
     }
     
-    var launchOnStartup:Boolean = true on replace {
+    private attribute launchOnStartup:Boolean = true on replace {
         if (launchOnStartup) {
             InstallUtil.copyStartupFile();
         } else {
@@ -224,10 +223,10 @@ public class Dock extends Stage {
         }
     }
 
-    override var title = "WidgetFX";
-    override var visible = true;
-    override var style = if (WidgetFXConfiguration.TRANSPARENT) StageStyle.TRANSPARENT else StageStyle.UNDECORATED;
-    override var width = DEFAULT_WIDTH + BORDER * 2;
+    override attribute title = "WidgetFX";
+    override attribute visible = true;
+    override attribute windowStyle = if (WidgetFXConfiguration.TRANSPARENT) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
+    override attribute width = DEFAULT_WIDTH + BORDER * 2;
 
     postinit {
         configuration.load();
@@ -236,13 +235,15 @@ public class Dock extends Stage {
         WidgetManager.getInstance().dockOffscreenWidgets();
     }
     
-    function hideDock() {
+    private function hideDock() {
         visible = false;
     }
     
     public function showDock() {
         visible = true;
-        FX.deferAction(function() {updateDockLocation();});
+        DeferredTask { // workaround for defect where dock moves to center on show
+            action: function() {updateDockLocation();}
+        }
         toFront();
         WidgetManager.getInstance().dockOffscreenWidgets();
     }
@@ -254,12 +255,12 @@ public class Dock extends Stage {
         }
     }
     
-    function createTrayIcon() {
+    private function createTrayIcon() {
         var tray:TrayIcon = new TrayIcon(createImage());
         tray.setPopupMenu(createNativeMainMenu(null).getPopupMenu());
         tray.setToolTip("WidgetFX");
         tray.addActionListener(ActionListener {
-                override function actionPerformed(e) {
+                public function actionPerformed(e) {
                     showDockAndWidgets();
                 }
         });
@@ -271,7 +272,7 @@ public class Dock extends Stage {
     }
     
     function createImage():java.awt.Image {
-        return WidgetFXConfiguration.getInstance().widgetFXIcon16t.bufferedImage;
+        return WidgetFXConfiguration.getInstance().widgetFXIcon16t.getBufferedImage();
     }
     
     public function addWidget():Void {
@@ -344,13 +345,13 @@ public class Dock extends Stage {
         }
     }
     
-    package var rolloverOpacity = 0.01;
-    package var rolloverTimeline = Timeline {
-        autoReverse: true
+    attribute rolloverOpacity = 0.01;
+    attribute rolloverTimeline = Timeline {
+        autoReverse: true, toggle: true
         keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY * 1.2 tween Interpolator.EASEBOTH]}
     }
     
-    function createWidgetFXLogo():Group {
+    private function createWidgetFXLogo():Group {
         return Group {
             cache: true
             content: HBox {
@@ -362,19 +363,19 @@ public class Dock extends Stage {
                         image: WidgetFXConfiguration.getInstance().widgetFXIcon16
                     },
                     Text {
-                        font: Font {oblique: true}
+                        font: Font {style: FontStyle.BOLD_ITALIC}
                         fill: Color.WHITE
                         content: " Widget"
                     },
                     Text {
                         x: -3
-                        font: Font {embolden: true, oblique: true}
+                        font: Font {style: FontStyle.BOLD_ITALIC}
                         fill: Color.ORANGE
                         content: "FX"
                     },
                     Text {
                         x: -3
-                        font: Font {oblique: true, size: 9}
+                        font: Font {style: FontStyle.ITALIC, size: 9}
                         fill: Color.WHITE
                         content: "v{WidgetFXConfiguration.VERSION}"
                     }
@@ -383,8 +384,8 @@ public class Dock extends Stage {
         }
     }
     
-    function loadContent():Void {
-        onClose = function() {WidgetManager.getInstance().exit()};
+    private function loadContent():Void {
+        closeAction = function() {WidgetManager.getInstance().exit()};
         var addWidgetButton = Group {
             var color = BUTTON_COLOR;
             translateY: 7
@@ -445,8 +446,7 @@ public class Dock extends Stage {
                 color = BUTTON_COLOR;
             }
             onMouseReleased: function(e:MouseEvent) {
-                // todo - figure out a way to get the window
-                mainMenu.show(null, e.sceneX, e.sceneY);
+                mainMenu.show(window, e.getStageX().intValue(), e.getStageY().intValue());
             }
         }
         var hideButton = Group {
@@ -478,8 +478,8 @@ public class Dock extends Stage {
         }
         var menus = HBox { // Menu Buttons
             translateX: bind width, translateY: 4
-            // todo - fix horizontal alignment
             spacing: 4
+            horizontalAlignment: HorizontalAlignment.TRAILING
             content: [
                 addWidgetButton,
                 mainMenuButton,
@@ -487,7 +487,7 @@ public class Dock extends Stage {
             ]
 
         }
-        scene = Scene {
+        stage = Stage {
             content: [
                 Group {
                     content: bind logo
@@ -501,21 +501,20 @@ public class Dock extends Stage {
                         Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity, translateX: 1},
                         Line {endY: bind height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity / 3, translateX: 2}
                     ]
-                    // todo - fix alignment
-                    //horizontalAlignment: bind if (dockLeft) HorizontalAlignment.TRAILING else HorizontalAlignment.LEADING
+                    horizontalAlignment: bind if (dockLeft) HorizontalAlignment.TRAILING else HorizontalAlignment.LEADING
                     translateX: bind if (dockLeft) width else 0
                     cursor: Cursor.H_RESIZE
                     onMouseDragged: function(e:MouseEvent) {
                         resizing = true;
-                        var draggedWidth = if (dockLeft) e.screenX.intValue() - screenBounds.x
-                                else screenBounds.x + screenBounds.width - e.screenX.intValue();
+                        var draggedWidth = if (dockLeft) e.getScreenX().intValue() - screenBounds.x
+                                else screenBounds.x + screenBounds.width - e.getScreenX().intValue();
                         width = if (draggedWidth < MIN_WIDTH) MIN_WIDTH else if (draggedWidth > MAX_WIDTH) MAX_WIDTH else draggedWidth;
                     }
                     onMouseReleased: function(e) {
                         for (instance in dockedWidgets) {
                             if (instance.widget.resizable) {
                                 if (instance.widget.onResize != null) {
-                                    instance.widget.onResize(instance.widget.width, instance.widget.height);
+                                    instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
                                 }
                                 instance.saveWithoutNotification();
                             }
@@ -526,23 +525,22 @@ public class Dock extends Stage {
             ],
             fill: bind transparentBG;
         };
-        // todo - figure out a way to get the window
-//        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
-//            override function mouseEntered(e) {
-//                rolloverTimeline.play();
-//            }
-//            override function mouseExited(e) {
-//                rolloverTimeline.play();
-//            }
-//        });
-//        (window as RootPaneContainer).getContentPane().addMouseMotionListener(MouseMotionAdapter {
-//            override function mouseDragged(e) {
-//                getGraphicsConfiguration(e.getLocationOnScreen());
-//            }
-//        });
+        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
+            public function mouseEntered(e) {
+                rolloverTimeline.start();
+            }
+            public function mouseExited(e) {
+                rolloverTimeline.start();
+            }
+        });
+        (window as RootPaneContainer).getContentPane().addMouseMotionListener(MouseMotionAdapter {
+            public function mouseDragged(e) {
+                getGraphicsConfiguration(e.getLocationOnScreen());
+            }
+        });
     }
     
-    function getGraphicsConfiguration(location:Point) {
+    private function getGraphicsConfiguration(location:Point) {
         if (not container.dragging and not resizing) {
             if (not screenBounds.contains(location)) {
                 for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {

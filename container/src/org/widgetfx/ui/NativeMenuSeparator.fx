@@ -24,7 +24,7 @@ package org.widgetfx.ui;
  * @author Stephen Chin
  */
 public class NativeMenuSeparator extends NativeMenuEntry {
-    override function insertInto(menu:NativeMenu, ind:Integer):Void {
+    protected function insertInto(menu:NativeMenu, ind:Integer):Void {
         menu.getMenu().insertSeparator(ind);
     }
 }

@@ -22,7 +22,8 @@ package org.widgetfx.ui;
 
 import org.widgetfx.*;
 import java.io.File;
-import javafx.scene.*;
+import javafx.application.*;
+import javafx.scene.HorizontalAlignment;
 import javafx.ext.swing.*;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -31,133 +32,131 @@ import javax.swing.filechooser.FileFilter;
  * @author Stephen Chin
  */
 public class AddWidgetDialog {
-
-    public-init var addHandler:function(jnlpUrl:String):Void;
     
-    public-init var cancelHandler:function():Void;
+    public attribute addHandler:function(jnlpUrl:String):Void;
+    
+    public attribute cancelHandler:function():Void;
+    
+    private attribute jnlpUrl:String;
+    
+    private attribute dialog:Dialog;
+    
+    postinit {
+        showDialog();
+    }
+    
+    private attribute selected:ListItem on replace {
+        jnlpUrl = selected.text;
+    }
+    
+    private function add() {
+        dialog.close();
+        if (addHandler != null) {
+            addHandler(jnlpUrl);
+        }
+    }
+    
+    private function cancel() {
+        dialog.close();
+        if (cancelHandler != null) {
+            cancelHandler();
+        }
+    }
+    
+    private function showDialog() {
+        var widgetList = List {
+            selectedItem: bind selected with inverse
+            items: for (url in WidgetManager.getInstance().recentWidgets) ListItem {
+                text: url
+            }
+        }
+        var listLabel = Label {text: "Recent Widgets:", labelFor: widgetList}
+        var jarField = TextField {text: bind jnlpUrl with inverse, hmin: 300, hmax: 300, action: add};
+        var jarLabel = Label {text: "Widget URL:", labelFor: jarField};
+        var browsebutton:Button = Button {
+            text: "Browse...";
+            action: function() {
+                var chooser = new JFileChooser(jnlpUrl);
+                chooser.setFileFilter(FileFilter {
+                    public function accept(f:File):Boolean {
+                        return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp");
+                    }
+                    public function getDescription():String {
+                        return "Java Network Launch Protocol (JNLP)"
+                    }
+                });
+                var returnVal = chooser.showOpenDialog(browsebutton.getJButton());
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    jnlpUrl = chooser.getSelectedFile().toURL().toString();
+                }
+            }
+        }
 
-// todo - this needs to be refactored when we figure out how to create dialogs
-//    
-//    var jnlpUrl:String;
-//    
-//    var dialog:Dialog;
-//    
-//    postinit {
-//        showDialog();
-//    }
-//    
-//    var selected:ListItem on replace {
-//        jnlpUrl = selected.text;
-//    }
-//    
-//    function add() {
-//        dialog.close();
-//        if (addHandler != null) {
-//            addHandler(jnlpUrl);
-//        }
-//    }
-//    
-//    function cancel() {
-//        dialog.close();
-//        if (cancelHandler != null) {
-//            cancelHandler();
-//        }
-//    }
-//    
-//    function showDialog() {
-//        var widgetList = List {
-//            selectedItem: bind selected with inverse
-//            items: for (url in WidgetManager.getInstance().recentWidgets) ListItem {
-//                text: url
-//            }
-//        }
-//        var listLabel = Label {text: "Recent Widgets:", labelFor: widgetList}
-//        var jarField = TextField {text: bind jnlpUrl with inverse, hmin: 300, hmax: 300, action: add};
-//        var jarLabel = Label {text: "Widget URL:", labelFor: jarField};
-//        var browsebutton:Button = Button {
-//            text: "Browse...";
-//            action: function() {
-//                var chooser = new JFileChooser(jnlpUrl);
-//                chooser.setFileFilter(FileFilter {
-//                    override function accept(f:File):Boolean {
-//                        return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp");
-//                    }
-//                    override function getDescription():String {
-//                        return "Java Network Launch Protocol (JNLP)"
-//                    }
-//                });
-//                var returnVal = chooser.showOpenDialog(browsebutton.getJButton());
-//                if (returnVal == JFileChooser.APPROVE_OPTION) {
-//                    jnlpUrl = chooser.getSelectedFile().toURL().toString();
-//                }
-//            }
-//        }
-//
-//        dialog = Dialog {
-//            title: "Add Widget"
-//            visible: true
-//            resizable: false
-//            icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
-//            closeAction: cancel
-//            stage: Stage {
-//                content: ComponentView {
-//                    component: BorderPanel {
-//                        center: ClusterPanel {
-//                            vcluster: SequentialCluster {
-//                                content: [
-//                                    ParallelCluster {
-//                                        content: [
-//                                            listLabel,
-//                                            widgetList
-//                                        ]
-//                                    },
-//                                    ParallelCluster {
-//                                        content: [
-//                                            jarLabel,
-//                                            jarField,
-//                                            browsebutton
-//                                        ]
-//                                    }
-//                                ]
-//                            },
-//                            hcluster: SequentialCluster {
-//                                content: [
-//                                    ParallelCluster {
-//                                        content: [
-//                                            listLabel,
-//                                            jarLabel
-//                                        ]
-//                                    },
-//                                    ParallelCluster {
-//                                        content: [
-//                                            widgetList,
-//                                            SequentialCluster {
-//                                                content: [
-//                                                    jarField,
-//                                                    browsebutton
-//                                                ]
-//                                            }
-//                                        ]
-//                                    }
-//                                ]
-//                            }
-//                        }
-//                        bottom: FlowPanel {
-//                            alignment: HorizontalAlignment.RIGHT
-//                            content: [
-//                                Button {
-//                                    text: "Add"
-//                                    action: add
-//                                },
-//                                Button {
-//                                    text: "Cancel"
-//                                    action: cancel
-//                                }
-//                            ]
-//                        }
-//                    }
-//                }
-//            }
-//        };
-//    }
+        dialog = Dialog {
+            title: "Add Widget"
+            visible: true
+            resizable: false
+            icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
+            closeAction: cancel
+            stage: Stage {
+                content: ComponentView {
+                    component: BorderPanel {
+                        center: ClusterPanel {
+                            vcluster: SequentialCluster {
+                                content: [
+                                    ParallelCluster {
+                                        content: [
+                                            listLabel,
+                                            widgetList
+                                        ]
+                                    },
+                                    ParallelCluster {
+                                        content: [
+                                            jarLabel,
+                                            jarField,
+                                            browsebutton
+                                        ]
+                                    }
+                                ]
+                            },
+                            hcluster: SequentialCluster {
+                                content: [
+                                    ParallelCluster {
+                                        content: [
+                                            listLabel,
+                                            jarLabel
+                                        ]
+                                    },
+                                    ParallelCluster {
+                                        content: [
+                                            widgetList,
+                                            SequentialCluster {
+                                                content: [
+                                                    jarField,
+                                                    browsebutton
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                        bottom: FlowPanel {
+                            alignment: HorizontalAlignment.RIGHT
+                            content: [
+                                Button {
+                                    text: "Add"
+                                    action: add
+                                },
+                                Button {
+                                    text: "Cancel"
+                                    action: cancel
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        };
+    }
 }

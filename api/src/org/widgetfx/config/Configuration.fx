@@ -20,7 +20,7 @@
  */
 package org.widgetfx.config;
 
-import javafx.scene.Scene;
+import javafx.ext.swing.Component;
 
 /**
  * This class provides an entry point for configuration capabilities of widgets.
@@ -55,18 +55,18 @@ import javafx.scene.Scene;
  */
 public class Configuration {
     /**
-     * The scene that will be displayed in a configuration dialog for editing
+     * The component that will be placed in a configuration dialog for editing
      * properties of this widget.  If this is set to null configuration of the
      * associated widget will be disabled.
      */
-    public var scene:Scene;
+    public attribute component:Component;
     
     /**
      * A list of properties that will be read and written for persistence.  This
      * array must be populated prior to load, because only existing properties
      * will have their values set.  Likewise, on save all the values in this
      * array will have their current values persisted.  For an example of how
-     * to use this var, see the class documentation above.
+     * to use this attribute, see the class documentation above.
      * <p>
      * In order to remain backwards compatible with older versions of persisted
      * configuration, it is recommended that property names are not reused for
@@ -74,13 +74,13 @@ public class Configuration {
      * ignored) for backwards compatibility, while new properties can be added
      * to handle additional requirements.
      */
-    public var properties:Property[];
+    public attribute properties:Property[];
     
     /**
      * If set, this provides a load handler that will be called precisely once
      * after the widget configuration is loaded.
      */
-    public-init var onLoad:function();
+    public attribute onLoad:function();
     
     /**
      * If set, this provides a save handler that will be called when the user
@@ -88,5 +88,5 @@ public class Configuration {
      * configuration dialog.  This will not be called for auto-save operations
      * which can be enabled per (@see Property}.
      */
-    public-init var onSave:function();
+    public attribute onSave:function();
 }

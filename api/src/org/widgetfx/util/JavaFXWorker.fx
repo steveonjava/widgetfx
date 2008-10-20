@@ -48,25 +48,25 @@ import javax.swing.SwingWorker;
  * Both the inBackground and onDone handlers are required to be set.  Upon initialization
  * the worker will automatically start execution on a background thread and can be
  * later stopped by calling cancel.  Any results of execution in the background thread
- * will be saved to the result var and also passed in to the onDone handler.
+ * will be saved to the result attribute and also passed in to the onDone handler.
  *
  * @author Stephen Chin
  */
-public class JavaFXWorker {
-    var worker:SwingWorker;
+public class JavaFXWorker extends AbstractAsyncOperation {
+    private attribute worker:SwingWorker;
     
     /**
      * Function that will be executed on a background thread.  If an exception is
-     * thrown while executing this function the failed var will be set to true
+     * thrown while executing this function the failed attribute will be set to true
      * and failedText will be set to the exception message.
      * <p>
      * Since this method is executed asynchronous to other UI operations, it is not
      * safe to make calls that will modify the UI state.  This includes most JavaFX
      * Script library operations.
      * <p>
-     * Failure to set this var will result in an NPE.
+     * Failure to set this attribute will result in an NPE.
      */
-    public-init var inBackground: function():Object;
+    public attribute inBackground: function():Object;
     
     /**
      * Function that will be called once inBackground completes.  The result of the
@@ -78,7 +78,7 @@ public class JavaFXWorker {
      * <p>
      * Failure to set this attribute will result in an NPE.
      */
-    public-init var onDone: function(result:Object):Void;
+    public attribute onDone: function(result:Object):Void;
     
     /**
      * Function that will be called if inBackground fails due to an exception.  The
@@ -89,42 +89,43 @@ public class JavaFXWorker {
      * This function is guaranteed to be called on the Event Dispatch thread, and
      * can safely make changes to the UI state.
      * <p>
-     * This var may be left null if no special handling of exceptions is required.
+     * This attribute may be left null if no special handling of exceptions is required.
      */
-    public-init var onFailure: function(e:ExecutionException):Void;
+    public attribute onFailure: function(e:ExecutionException):Void;
 
     /**
-     * This var gets set to the result returned by the inBackground method
+     * This attribute gets set to the result returned by the inBackground method
      * if it is successful, and will also be passed in to the onDone handler.
      */
-    public-read var result: Object;
+    public attribute result: Object;
     
     /**
      * Immediately cancels the background thread if it is executing by throwing
      * an interruped exception.
      */
     public function cancel():Void {
-        worker.cancel(true);
-    }
-    
-    init {
-        start();
+        if (worker.cancel(true)) {
+            onCancel();
+        }
     }
     
     function start():Void {
         worker = ObjectSwingWorker {
-            override function doInBackground():Object {
+            public function doInBackground():Object {
                 return inBackground();
             }
             
-            override function done():Void {
+            public function done():Void {
                 try {
-                    onDone(get());
+                    result = get();
+                    onCompletion(result);
+                    onDone(result);
                 } catch (e1:InterruptedException) {
-                    // ignore
+                    onCancel();
                 } catch (e3:CancellationException) {
-                    // ignore
+                    onCancel();
                 } catch (e2:ExecutionException) {
+                    onException(e2);
                     if (onFailure != null) {
                         onFailure(e2);
                     }

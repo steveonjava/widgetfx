@@ -27,19 +27,21 @@ import java.awt.event.*;
  * @author Stephen Chin
  */
 public class NativeMenuItem extends NativeMenuEntry {
-    public var text:String on replace {
+    public attribute text:String on replace {
         getMenuItem().setLabel(text);
     }
     
-    public-init var action:function():Void;
+    private attribute actionListener:ActionListener;
     
-    var menuItem:MenuItem;
+    public attribute action:function():Void;
+    
+    private attribute menuItem:MenuItem;
     
     public function getMenuItem():MenuItem {
         if (menuItem == null) {
             menuItem = createMenuItem();
             menuItem.addActionListener(ActionListener {
-                override function actionPerformed(e:ActionEvent):Void {
+                public function actionPerformed(e:ActionEvent):Void {
                     if (action != null) {
                         action();
                     }
@@ -53,7 +55,7 @@ public class NativeMenuItem extends NativeMenuEntry {
         return MenuItem{};
     }
     
-    override function insertInto(menu:NativeMenu, ind:Integer):Void {
+    protected function insertInto(menu:NativeMenu, ind:Integer):Void {
         menu.getMenu().<<insert>>(getMenuItem(), ind);
     }
 }

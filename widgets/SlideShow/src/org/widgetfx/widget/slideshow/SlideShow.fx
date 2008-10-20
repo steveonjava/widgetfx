@@ -23,9 +23,10 @@ package org.widgetfx.widget.slideshow;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
 import org.widgetfx.util.*;
+import javafx.application.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
-import javafx.scene.shape.*;
+import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
 import javafx.scene.image.*;
 import javafx.scene.text.*;
@@ -56,8 +57,10 @@ var imageFiles:String[];
 var shuffle = true;
 var duration:Integer = 10;
 var keywords : String;
+var width = 300;
+var height = 200;
 var imageIndex:Integer;
-var imageHeight:Number;
+var imageHeight:Integer;
 var currentFile:String;
 var currentImage:Image;
 var nextImage:Image;
@@ -69,7 +72,7 @@ var maxFolders = 1000;
 var folderCount = 0;
 var fileCount = 0;
 
-function initTimeline() {
+private function initTimeline() {
     imageIndex = 0;
     timeline = Timeline {
         repeatCount: Timeline.INDEFINITE
@@ -85,7 +88,7 @@ function initTimeline() {
     }
 }
 
-function updateImage():Void {
+private function updateImage():Void {
 //    if (not (new File(currentFile)).exists()) {
 //        currentImage = null;
 //        status = "Missing File: {currentFile}";
@@ -97,8 +100,8 @@ function updateImage():Void {
     worker = JavaFXWorker {
         inBackground: function() {
             var image = Image {url: currentFile, height: imageHeight};
-            if (image.error) {
-                throw new RuntimeException("Error loading image: {currentFile}");
+            if (image.size == 0) {
+                throw new RuntimeException("Image has empty size: {currentFile}");
             }
             return image;
         }
@@ -115,7 +118,7 @@ function updateImage():Void {
     }
 }
 
-function loadDirectory() {
+private function loadDirectory() {
     var directory = new File(directoryName);
     currentImage = null;
     if (not directory.exists()) {
@@ -142,14 +145,14 @@ function loadDirectory() {
                 imageFiles = Sequences.shuffle(imageFiles) as String[];
             }
             initTimeline();
-            timeline.play();
+            timeline.start();
         } else {
             status = "No Images Found"
         }
     }
 }
 
-function excludesFile(name:String):Boolean {
+private function excludesFile(name:String):Boolean {
     if (keywords != null and keywords.length() > 0) {
         if (name.toLowerCase().contains(keywords.toLowerCase())) {
             return true;
@@ -158,7 +161,7 @@ function excludesFile(name:String):Boolean {
     return false;
 }
 
-function getImageFiles(directory:File):String[] {
+private function getImageFiles(directory:File):String[] {
     var emptyFile:String[] = [];
     if (folderCount++ >= maxFolders or fileCount >= maxFiles) {
         return emptyFile;
@@ -187,7 +190,7 @@ function getImageFiles(directory:File):String[] {
     }
 }
 
-var browseButton:SwingButton = SwingButton {
+var browseButton:Button = Button {
     text: "Browse...";
     action: function() {
         var chooser:JFileChooser = new JFileChooser(directoryName);
@@ -199,122 +202,118 @@ var browseButton:SwingButton = SwingButton {
     }
 }
 
-// todo - reimplement this without a group layout
-//function getTabbedPane():JTabbedPane {
-//    var keywordLabel = SwingLabel {text: "Filter:"};
-//    var keywordEdit = SwingTextField {text: bind keywords with inverse, columns: 40};
-//    var directoryLabel = SwingLabel {text: "Directory:"};
-//    var directoryEdit = SwingTextField {text: bind directoryName with inverse, columns: 40};
-//
-//    var shuffleCheckBox = SwingCheckBox {text: "Shuffle", selected: bind shuffle with inverse};
-//    var durationLabel = SwingLabel {text: "Duration"};
-//
-//    // todo - replace with javafx spinner when one exists
-//    var durationSpinner = new JSpinner(new SpinnerNumberModel(duration, 2, 60, 1));
-//    durationSpinner.addChangeListener(ChangeListener {
-//        override function stateChanged(e):Void {
-//            duration = durationSpinner.getValue() as Integer;
-//        }
-//    });
-//    var durationSpinnerComponent = SwingComponent.wrap(durationSpinner);
-//    durationSpinnerComponent.hmax = 52;
-//
-//    var displayTab = ClusterPanel {
-//        hcluster: ParallelCluster {
-//            content: [
-//                shuffleCheckBox,
-//                SequentialCluster {
-//                    content: [
-//                        durationLabel,
-//                        durationSpinnerComponent
-//                    ]
-//                }
-//            ]
-//        }
-//        vcluster: SequentialCluster {
-//            content: [
-//                shuffleCheckBox,
-//                ParallelCluster {
-//                    content: [
-//                        durationLabel,
-//                        durationSpinnerComponent
-//                    ]
-//                }
-//            ]
-//        }
-//    }
-//
-//    var contentTab = ClusterPanel {
-//        vcluster: ParallelCluster {
-//            content: [
-//                directoryLabel,
-//                directoryEdit,
-//                browseButton,
-//            ]
-//        },
-//        hcluster: SequentialCluster {
-//            content: [
-//                ParallelCluster {
-//                    content:[
-//                        directoryLabel,
-//                        keywordLabel,
-//                    ]
-//                },
-//                ParallelCluster {
-//                    content:[
-//                        SequentialCluster {
-//                            content:[
-//                                directoryEdit,
-//                                browseButton
-//                            ]
-//                        },
-//                        keywordEdit
-//                    ]
-//                }
-//            ]
-//        }
-//        vcluster : SequentialCluster {
-//            content:[
-//                ParallelCluster{
-//                    content: [
-//                        directoryLabel,
-//                        directoryEdit,
-//                        browseButton
-//                    ]
-//                },
-//                ParallelCluster {
-//                    content : [
-//                        keywordLabel,
-//                        keywordEdit
-//                    ]
-//                }
-//            ]
-//        }
-//    }
-//
-//    // todo - replace with a javafx component when one is available
-//    tabbedPane = new JTabbedPane();
-//
-//    // workaround for a bug in javafx.ext.swing.Component where it gets stuck in
-//    // an infinite hide/show loop when added to a JTabbedPane
-//    var displayListeners = displayTab.getJComponent().getComponentListeners();
-//    for (listener in displayListeners) {
-//        displayTab.getJComponent().removeComponentListener(listener);
-//    }
-//    var contentListeners = contentTab.getJComponent().getComponentListeners();
-//    for (listener in contentListeners) {
-//        contentTab.getJComponent().removeComponentListener(listener);
-//    }
-//
-//    tabbedPane.add("display", displayTab.getJPanel());
-//    tabbedPane.add("content", contentTab.getJPanel());
-//    
-//    return tabbedPane;
-//}
+private function initTabbedPane() {
+    var keywordLabel = Label {text: "Filter:"};
+    var keywordEdit = TextField {text: bind keywords with inverse, hpref: 300};
+    var directoryLabel = Label {text: "Directory:"};
+    var directoryEdit = TextField {text: bind directoryName with inverse, hpref: 300};
 
-var slideShow:Widget = Widget {
-    width: 300;
-    height: 200;
+    var shuffleCheckBox = CheckBox {text: "Shuffle", selected: bind shuffle with inverse};
+    var durationLabel = Label {text: "Duration"};
+
+    // todo - replace with javafx spinner when one exists
+    var durationSpinner = new JSpinner(new SpinnerNumberModel(duration, 2, 60, 1));
+    durationSpinner.addChangeListener(ChangeListener {
+        function stateChanged(e):Void {
+            duration = durationSpinner.getValue() as Integer;
+        }
+    });
+    var durationSpinnerComponent = Component.fromJComponent(durationSpinner);
+    durationSpinnerComponent.hmax = 52;
+
+    var displayTab = ClusterPanel {
+        hcluster: ParallelCluster {
+            content: [
+                shuffleCheckBox,
+                SequentialCluster {
+                    content: [
+                        durationLabel,
+                        durationSpinnerComponent
+                    ]
+                }
+            ]
+        }
+        vcluster: SequentialCluster {
+            content: [
+                shuffleCheckBox,
+                ParallelCluster {
+                    content: [
+                        durationLabel,
+                        durationSpinnerComponent
+                    ]
+                }
+            ]
+        }
+    }
+
+    var contentTab = ClusterPanel {
+        vcluster: ParallelCluster {
+            content: [
+                directoryLabel,
+                directoryEdit,
+                browseButton,
+            ]
+        },
+        hcluster: SequentialCluster {
+            content: [
+                ParallelCluster {
+                    content:[
+                        directoryLabel,
+                        keywordLabel,
+                    ]
+                },
+                ParallelCluster {
+                    content:[
+                        SequentialCluster {
+                            content:[
+                                directoryEdit,
+                                browseButton
+                            ]
+                        },
+                        keywordEdit
+                    ]
+                }
+            ]
+        }
+        vcluster : SequentialCluster {
+            content:[
+                ParallelCluster{
+                    content: [
+                        directoryLabel,
+                        directoryEdit,
+                        browseButton
+                    ]
+                },
+                ParallelCluster {
+                    content : [
+                        keywordLabel,
+                        keywordEdit
+                    ]
+                }
+            ]
+        }
+    }
+
+    // todo - replace with a javafx component when one is available
+    tabbedPane = new JTabbedPane();
+
+    // workaround for a bug in javafx.ext.swing.Component where it gets stuck in
+    // an infinite hide/show loop when added to a JTabbedPane
+    var displayListeners = displayTab.getJComponent().getComponentListeners();
+    for (listener in displayListeners) {
+        displayTab.getJComponent().removeComponentListener(listener);
+    }
+    var contentListeners = contentTab.getJComponent().getComponentListeners();
+    for (listener in contentListeners) {
+        contentTab.getJComponent().removeComponentListener(listener);
+    }
+
+    tabbedPane.add("display", displayTab.getJPanel());
+    tabbedPane.add("content", contentTab.getJPanel());
+}
+
+Widget {
+    resizable: true
     aspectRatio: 4.0/3.0
     configuration: Configuration {
         properties: [
@@ -344,40 +343,43 @@ var slideShow:Widget = Widget {
             }
         ]
 
-//        scene: Scene {
-//            content: SwingComponent.wrap(getTabbedPane());
-//        }
+        component: bind Component.fromJComponent(tabbedPane)
 
-        onLoad: function() {
-            imageHeight = slideShow.height;
-            loadDirectory;
-        }
+        onLoad: loadDirectory;
         onSave: loadDirectory;
     }
-    content: [
-        ImageView {
-            image: bind currentImage
-        },
-        Group {
-            content: [
-                Rectangle {
-                    width: bind slideShow.width
-                    height: bind slideShow.height
-                    fill: Color.BLACK
-                    arcWidth: 8, arcHeight: 8
-                },
-                Text {
-                    translateY: bind slideShow.height / 2
-                    translateX: bind slideShow.width / 2
-                    textAlignment: TextAlignment.CENTER
-                    content: bind status
-                    fill: Color.WHITE
-                }
-            ]
-            opacity: bind if (status == null) 0 else 1;
-        }
-    ]
-    onResize: function(width:Number, height:Number) {
+    onStart: function() {
+        imageHeight = height;
+        initTabbedPane();
+    }
+    stage: Stage {
+        width: bind width with inverse
+        height: bind height with inverse
+        content: [
+            ImageView {
+                image: bind currentImage
+            },
+            Group {
+                content: [
+                    Rectangle {
+                        width: bind width
+                        height: bind height
+                        fill: Color.BLACK
+                        arcWidth: 8, arcHeight: 8
+                    },
+                    Text {
+                        translateY: bind height / 2
+                        translateX: bind width / 2
+                        horizontalAlignment: HorizontalAlignment.CENTER
+                        content: bind status
+                        fill: Color.WHITE
+                    }
+                ]
+                opacity: bind if (status == null) 0 else 1;
+            }
+        ]
+    }
+    onResize: function(width:Integer, height:Integer) {
         if (imageHeight != height) {
             imageHeight = height;
             if (status == null) {
@@ -386,4 +388,3 @@ var slideShow:Widget = Widget {
         }
     }
 }
-return slideShow;

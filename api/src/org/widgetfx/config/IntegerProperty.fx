@@ -35,17 +35,17 @@ public class IntegerProperty extends Property {
      * value: bind someVar with inverse
      * </blockquote></pre>
      */
-    public var value:Integer on replace {
+    public attribute value:Integer on replace {
         fireOnChange();
     }
     
     /** {@inheritDoc} */
-    override function getStringValue():String {
+    public function getStringValue():String {
         return value.toString();
     }
     
     /** {@inheritDoc} */
-    override function setStringValue(value:String):Void {
+    public function setStringValue(value:String):Void {
         this.value = (new BigInteger(value)).intValue();
     }
 }

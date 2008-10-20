@@ -21,7 +21,7 @@
 package org.widgetfx.toolbar;
 
 import javafx.scene.*;
-import javafx.scene.shape.*;
+import javafx.scene.geometry.*;
 import javafx.scene.paint.*;
 import javafx.scene.transform.*;
 
@@ -30,19 +30,19 @@ import javafx.scene.transform.*;
  * @author Keith Combs
  */
 public class CloseButton extends ToolbarButton {
-    public-init var onClose:function():Void;
+    public attribute onClose:function():Void;
     
-    override var name = "Close";
+    override attribute name = "Close";
     
-    override var visible = bind toolbar.instance.widget.configuration == null;
+    override attribute visible = bind toolbar.instance.widget.configuration == null;
     
-    override function performAction() {
+    protected function performAction() {
         if (toolbar.onClose != null) {
             toolbar.onClose();
         }
     }
     
-    override function getShape() {
+    protected function getShape() {
         [Line { // Border
             stroke: bind Color.BLACK
             strokeWidth: 4

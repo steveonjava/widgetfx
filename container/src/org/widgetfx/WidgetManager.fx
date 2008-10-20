@@ -23,8 +23,8 @@ package org.widgetfx;
 import java.lang.System;
 import java.util.Arrays;
 import java.net.URL;
-import javafx.lang.*;
-import javafx.util.*;
+import javafx.lang.DeferredTask;
+import javafx.lang.Sequences;
 import javax.jnlp.*;
 import org.widgetfx.config.IntegerSequenceProperty;
 import org.widgetfx.config.StringSequenceProperty;
@@ -34,32 +34,32 @@ import org.widgetfx.ui.ErrorWidget;
  * @author Stephen Chin
  * @author Keith Combs
  */
-var instance:WidgetManager;
-    
-public function createWidgetRunnerInstance() {
-    instance = WidgetManager {widgetRunner: true};
-}
-
-public function createPortalInstance() {
-    instance = WidgetManager {portal: true};
-}
-
-public function getInstance() {
-    if (instance == null) {
-        instance = WidgetManager {};
-    }
-    return instance;
-}
-    
 public class WidgetManager {
     
-    public var widgetRunner = false;
+    private static attribute instance:WidgetManager;
     
-    public var portal = false;
+    public attribute widgetRunner = false;
     
-    public-read var codebase = WidgetFXConfiguration.getInstance().codebase;
+    public static function createWidgetRunnerInstance() {
+        instance = WidgetManager {widgetRunner: true};
+    }
     
-    var initialWidgets = if (WidgetFXConfiguration.getInstance().devMode) [
+    public attribute portal = false;
+    
+    public static function createPortalInstance() {
+        instance = WidgetManager {portal: true};
+    }
+    
+    public static function getInstance() {
+        if (instance == null) {
+            instance = WidgetManager {};
+        }
+        return instance;
+    }
+    
+    public attribute codebase = WidgetFXConfiguration.getInstance().codebase;
+    
+    private attribute initialWidgets = if (WidgetFXConfiguration.getInstance().devMode) [
         "../../widgets/Clock/dist/launch.jnlp",
         "../../widgets/SlideShow/dist/launch.jnlp",
         "../../widgets/WebFeed/dist/launch.jnlp"
@@ -69,9 +69,9 @@ public class WidgetManager {
         "{codebase}widgets/WebFeed/launch.jnlp"
     ];
     
-    public-read var recentWidgets:String[] = [];
+    public attribute recentWidgets:String[] = [];
     
-    var configuration = WidgetFXConfiguration.getInstanceWithProperties([
+    private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
         IntegerSequenceProperty {
             name: "widgets"
             value: bind widgetIds with inverse
@@ -82,9 +82,9 @@ public class WidgetManager {
         }
     ]);
 
-    var updating:Boolean;
+    private attribute updating:Boolean;
 
-    var widgetIds:Integer[] on replace [i..j]=newWidgetIds {
+    private attribute widgetIds:Integer[] on replace [i..j]=newWidgetIds {
         if (not widgetRunner and not updating) {
             try {
                 updating = true;
@@ -95,7 +95,7 @@ public class WidgetManager {
         }
     }
     
-    public var widgets:WidgetInstance[] = [] on replace [i..j]=newWidgets {
+    public attribute widgets:WidgetInstance[] = [] on replace [i..j]=newWidgets {
         if (not updating) {
             try {
                 updating = true;
@@ -115,15 +115,15 @@ public class WidgetManager {
         }
     }
     
-    var sis = ServiceManager.lookup("javax.jnlp.SingleInstanceService") as SingleInstanceService;
-    var sil = SingleInstanceListener {
-        override function newActivation(params) {
-            FX.deferAction(
-                function():Void {
+    private attribute sis = ServiceManager.lookup("javax.jnlp.SingleInstanceService") as SingleInstanceService;
+    private attribute sil = SingleInstanceListener {
+        public function newActivation(params) {
+            DeferredTask {
+                action: function() {
                     Dock.getInstance().showDockAndWidgets();
                     loadParams(for (s in Arrays.asList(params)) s);
                 }
-            );
+            }
         }
     };
 
@@ -139,14 +139,14 @@ public class WidgetManager {
         var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
         sis.removeSingleInstanceListener(sil);
         basicService.showDocument(new URL(basicService.getCodeBase(), "launch.jnlp"));
-        FX.exit();
+        System.exit(0);
     }
     
     public function exit() {
         if (sis != null) {
             sis.removeSingleInstanceListener(sil);
         }
-        FX.exit();
+        System.exit(0);
     }
     
     public function dockOffscreenWidgets() {
@@ -161,7 +161,7 @@ public class WidgetManager {
         }
     }
     
-    function loadWidget(id:Integer):WidgetInstance {
+    private function loadWidget(id:Integer):WidgetInstance {
         var instance = WidgetInstance{id: id};
         instance.load();
         return instance;
@@ -175,7 +175,7 @@ public class WidgetManager {
     public function addWidget(jnlpUrl:String):WidgetInstance {
         for (widget in widgets) {
             if (widget.jnlpUrl.equals(jnlpUrl)) {
-                System.out.println("Widget already loaded: {jnlpUrl}");
+                System.out.println("Widget already loaded: " + jnlpUrl);
                 return null;
             }
         }

@@ -24,7 +24,6 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.NodeList;
 import org.widgetfx.config.*;
 import org.widgetfx.ui.ErrorWidget;
-import com.sun.javafx.runtime.TypeInfo;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
 import com.sun.javafx.runtime.Entry;
@@ -33,37 +32,40 @@ import java.io.File;
 import java.lang.*;
 import java.net.URL;
 import java.util.Arrays;
-import javafx.ext.swing.*;
-import javafx.reflect.*;
-import javafx.scene.*;
+import javafx.application.Stage;
+import javafx.ext.swing.BorderPanel;
+import javafx.ext.swing.Button;
+import javafx.ext.swing.SwingDialog;
+import javafx.scene.HorizontalAlignment;
+import javafx.ext.swing.FlowPanel;
 import javax.jnlp.*;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathConstants;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
-public var MIN_WIDTH = 100;
-public var MIN_HEIGHT = 50;
-
-var JARS_TO_SKIP = ["widgetfx-api.jar", "widgetfx.jar",
+public class WidgetInstance {
+    public static attribute MIN_WIDTH = 100;
+    public static attribute MIN_HEIGHT = 50;
+    
+    private static attribute JARS_TO_SKIP = ["widgetfx-api.jar", "widgetfx.jar",
         "Scenario.jar", "gluegen-rt.jar", "javafx-swing.jar", "javafxc.jar",
         "javafxdoc.jar", "javafxgui.jar", "javafxrt.jar", "jmc.jar", "jogl.jar"];
     
-var loadedResources:URL[] = [];
+    private static attribute loadedResources:URL[] = [];
 
-public class WidgetInstance {
+    public attribute id:Integer;
 
-    public-init var id:Integer;
-
-    bound function getPropertyFile():File {
+    private bound function getPropertyFile():File {
         var filename = if (id == 0) jnlpUrl.replaceAll("[^a-zA-Z0-9]", "_") else id;
         return new File(WidgetFXConfiguration.getInstance().configFolder, "widgets/{filename}.config");
     }
     
     // todo - possibly prevent widgets from loading if they define user properties that start with "widget."
-    var properties = [
+    private attribute properties = [
         StringProperty {
             name: "widget.jnlpUrl"
             value: bind jnlpUrl with inverse
@@ -78,39 +80,39 @@ public class WidgetInstance {
             value: bind docked with inverse
             autoSave: true
         },
-        NumberProperty {
+        IntegerProperty {
             name: "widget.dockedWidth"
             value: bind dockedWidth with inverse
         },
-        NumberProperty {
+        IntegerProperty {
             name: "widget.dockedHeight"
             value: bind dockedHeight with inverse
         },
-        NumberProperty {
+        IntegerProperty {
             name: "widget.undockedX"
             value: bind undockedX with inverse
         },
-        NumberProperty {
+        IntegerProperty {
             name: "widget.undockedY"
             value: bind undockedY with inverse
         },
-        NumberProperty {
+        IntegerProperty {
             name: "widget.undockedWidth"
             value: bind undockedWidth with inverse;
         },
-        NumberProperty {
+        IntegerProperty {
             name: "widget.undockedHeight"
             value: bind undockedHeight with inverse;
         }
     ];
     
-    var persister = ConfigPersister {properties: bind [properties, widget.configuration.properties], file: getPropertyFile()}
+    private attribute persister = ConfigPersister {properties: bind [properties, widget.configuration.properties], file: bind getPropertyFile()}
     
-    function resolve(url:String):String {
+    private function resolve(url:String):String {
         return (new URL(WidgetManager.getInstance().codebase, url)).toString();
     }
 
-    public-init var jnlpUrl:String on replace {
+    public attribute jnlpUrl:String on replace {
         if (jnlpUrl.length() == 0) {
             mainClass = "";
         } else {
@@ -129,17 +131,17 @@ public class WidgetInstance {
                     var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
                     if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
                         var url = new URL(codeBase, jarUrl);
-                        if (javafx.util.Sequences.indexOf(loadedResources, url) == -1) {
+                        if (javafx.lang.Sequences.indexOf(loadedResources, url) == -1) {
                             ds.loadResource(url, null, DownloadServiceListener {
-                                override function downloadFailed(url, version) {
+                                function downloadFailed(url, version) {
                                     System.out.println("download failed");
                                 }
-                                override function progress(url, version, readSoFar, total, overallPercent) {
+                                function progress(url, version, readSoFar, total, overallPercent) {
                                 }
-                                override function upgradingArchive(url, version, patchPercent, overallPercent) {
+                                function upgradingArchive(url, version, patchPercent, overallPercent) {
                                     System.out.println("upgradingArchive");
                                 }
-                                override function validating(url, version, entry, total, overallPercent) {
+                                function validating(url, version, entry, total, overallPercent) {
                                 }
                             });
                             insert url into loadedResources;
@@ -157,12 +159,13 @@ public class WidgetInstance {
         }
     }
     
-    public-init var mainClass:String on replace {
+    public attribute mainClass:String on replace {
         if (mainClass.length() > 0) {
             try {
                 var widgetClass:Class = Class.forName(mainClass);
                 var name = Entry.entryMethodName();
-                widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, TypeInfo.String.emptySequence as Object) as Widget;
+                var args = Sequences.make(String.<<class>>) as Object;
+                widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, args) as Widget;
             } catch (e:Throwable) {
                 createError(e);
             } finally {
@@ -173,7 +176,7 @@ public class WidgetInstance {
         }
     }
     
-    function createError(e:Throwable) {
+    private function createError(e:Throwable) {
         if (title == null) {
             title = "Error";
         }
@@ -187,72 +190,64 @@ public class WidgetInstance {
         e.printStackTrace();
     }
 
-    public var opacity:Integer = 80;
-    public var docked:Boolean = true;
-    public var dockedWidth:Number;
-    public var dockedHeight:Number;
-    public var undockedX:Number;
-    public var undockedY:Number;
-    public var undockedWidth:Number;
-    public var undockedHeight:Number;
+    public attribute opacity:Integer = 80;
+    public attribute docked:Boolean = true;
+    public attribute dockedWidth:Integer;
+    public attribute dockedHeight:Integer;
+    public attribute undockedX:Integer;
+    public attribute undockedY:Integer;
+    public attribute undockedWidth:Integer;
+    public attribute undockedHeight:Integer;
     
-    public function setWidth(width:Number) {
-        widget.width = width;
-    }
-    
-    public function setHeight(height:Number) {
-        widget.height = height;
-    }
-    
-    public-init var widget:Widget on replace {
+    public attribute widget:Widget on replace {
         if (widget != null) {
-            if (widget.width < MIN_WIDTH) {
-                setWidth(MIN_WIDTH);
+            if (widget.stage.width < MIN_WIDTH) {
+                widget.stage.width = MIN_WIDTH;
             }
-            if (widget.height < MIN_HEIGHT) {
-                setHeight(MIN_HEIGHT);
+            if (widget.stage.height < MIN_HEIGHT) {
+                widget.stage.height = MIN_HEIGHT;
             }
-            undockedWidth = widget.width;
-            undockedHeight = widget.height;
+            undockedWidth = widget.stage.width;
+            undockedHeight = widget.stage.height;
         }
     }
-    public var title:String;
-    public var frame:WidgetFrame;
+    public attribute title:String;
+    public attribute frame:WidgetFrame;
     
-    public var stageWidth = bind widget.width on replace {
-        if (widget.width > 0) {
+    private attribute stageWidth = bind widget.stage.width on replace {
+        if (widget.stage.width > 0) {
             if (docked) {
-                dockedWidth = widget.width;
+                dockedWidth = widget.stage.width;
             } else {
-                undockedWidth = widget.width;
+                undockedWidth = widget.stage.width;
             }
         }
     }
     
-    public var stageHeight = bind widget.height on replace {
-        if (widget.height > 0) {
+    private attribute stageHeight = bind widget.stage.height on replace {
+        if (widget.stage.height > 0) {
             if (docked) {
-                dockedHeight = widget.height;
+                dockedHeight = widget.stage.height;
             } else {
-                undockedHeight = widget.height;
+                undockedHeight = widget.stage.height;
             }
         }
     }
     
-    package function saveWithoutNotification() {
+    function saveWithoutNotification() {
         persister.save();
     }
 
-    function initializeDimensions() {
+    private function initializeDimensions() {
         if (docked) {
             if (widget.resizable) {
-                setWidth(dockedWidth);
-                setHeight(dockedHeight);
+                widget.stage.width = dockedWidth;
+                widget.stage.height = dockedHeight;
             }
         } else {
             if (widget.resizable) {
-                setWidth(undockedWidth);
-                setHeight(undockedHeight);
+                widget.stage.width = undockedWidth;
+                widget.stage.height = undockedHeight;
             }
             frame = WidgetFrame {
                 instance: this
@@ -287,6 +282,11 @@ public class WidgetInstance {
             persister.save(); // initial save
         }
         initializeDimensions();
+        try {
+            if (widget.onStart != null) widget.onStart();
+        } catch (e:Throwable) {
+            e.printStackTrace();
+        }
         if (widget.configuration.onLoad != null) {
             try {
                 widget.configuration.onLoad();
@@ -296,7 +296,7 @@ public class WidgetInstance {
         }
     }
     
-//    var configDialog:SwingDialog;
+    private attribute configDialog:SwingDialog;
     
     public function save() {
         persister.save();
@@ -307,36 +307,35 @@ public class WidgetInstance {
                 e.printStackTrace();
             }
         }
-        //configDialog.close();
+        configDialog.close();
     }
     
     public function showConfigDialog():Void {
-        // todo - figure out how to show dialogs
-//        if (widget.configuration != null) {
-//            configDialog = SwingDialog {
-//                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
-//                title: "{title} Configuration"
-//                resizable: false
-//                closeAction: save
-//                content: BorderPanel {
-//                    center: widget.configuration.component
-//                    bottom: FlowPanel {
-//                        alignment: HorizontalAlignment.RIGHT
-//                        content: Button {
-//                            text: "Done"
-//                            action: function() {
-//                                save();
-//                                configDialog.close();
-//                            }
-//                        }
-//                    }
-//                }
-//                visible: true
-//            }
-//        }
+        if (widget.configuration != null) {
+            configDialog = SwingDialog {
+                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
+                title: "{title} Configuration"
+                resizable: false
+                closeAction: save
+                content: BorderPanel {
+                    center: widget.configuration.component
+                    bottom: FlowPanel {
+                        alignment: HorizontalAlignment.RIGHT
+                        content: Button {
+                            text: "Done"
+                            action: function() {
+                                save();
+                                configDialog.close();
+                            }
+                        }
+                    }
+                }
+                visible: true
+            }
+        }
     }
 
-    package function deleteConfig() {
+    function deleteConfig() {
         getPropertyFile().<<delete>>();
     }
 }

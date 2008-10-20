@@ -25,157 +25,134 @@ import org.widgetfx.ui.Constrained;
 import org.widgetfx.ui.WidgetContainer;
 import java.lang.*;
 import javafx.animation.*;
-import javafx.lang.*;
+import javafx.input.*;
+import javafx.lang.DeferredTask;
 import javafx.scene.*;
 import javafx.scene.effect.*;
-import javafx.scene.input.*;
-import javafx.scene.shape.*;
+import javafx.scene.geometry.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 
 /**
  * @author Stephen Chin
  */
-public var TOP_BORDER = 3;
-public var BOTTOM_BORDER = 7;
-
-public class WidgetView extends Group, Constrained {    
-    public-init var container:WidgetContainer;
-    public-init var instance:WidgetInstance;
-    var widget = bind instance.widget;
+public class WidgetView extends Group, Constrained {
+    public static attribute TOP_BORDER = 3;
+    public static attribute BOTTOM_BORDER = 7;
     
-    var resizing = false;
-    public-read var docking = false;
+    public attribute container:WidgetContainer;
+    public attribute instance:WidgetInstance;
+    private attribute widget = bind instance.widget;
     
-    var dockedParent:Group;
-    var initialScreenPosX:Integer;
-    var initialScreenPosY:Integer;
+    private attribute resizing = false;
+    public attribute docking = false;
     
-    var scale:Number = bind calculateScale();
+    private attribute dockedParent:Group;
+    private attribute initialScreenPosX:Integer;
+    private attribute initialScreenPosY:Integer;
     
-    bound function calculateScale():Number {
+    private attribute scale:Number = bind calculateScale();
+    
+    private bound function calculateScale():Number {
         return if (not widget.resizable) {
-            var widthScale = if (maxWidth == Constrained.UNBOUNDED) 1.0 else maxWidth / widget.width;
-            var heightScale = if (maxHeight == Constrained.UNBOUNDED) 1.0 else maxHeight / widget.height;
+            var widthScale = if (maxWidth == Constrained.UNBOUNDED) 1.0 else maxWidth / widget.stage.width;
+            var heightScale = if (maxHeight == Constrained.UNBOUNDED) 1.0 else maxHeight / widget.stage.height;
             var scale = Math.min(widthScale, heightScale);
-            if (scale > 1) 1.0 else scale;
+            return if (scale > 1) 1 else scale;
         } else {
             1.0;
         }
     }
     
-    var firstRollover = true;
+    private attribute firstRollover = true;
         
-    var hasFocus:Boolean on replace {
+    private attribute hasFocus:Boolean on replace {
         if (firstRollover) {
             firstRollover = false;
         } else {
-            rolloverTimeline.play();
+            rolloverTimeline.start();
         }
     }
     
-    var needsFocus:Boolean;
+    private attribute needsFocus:Boolean;
     
     // this is a workaround for the issue with toggle timelines that are stopped and started immediately triggering a full animation
-    function requestFocus(focus:Boolean):Void {
+    private function requestFocus(focus:Boolean):Void {
         needsFocus = focus;
-        FX.deferAction(
-            function():Void {
+        DeferredTask {
+            action: function() {
                 hasFocus = needsFocus;
             }
-        );
+        }
     }
     
-    var rolloverOpacity = 0.0;
-    var rolloverTimeline = Timeline {
-        autoReverse: true
+    private attribute rolloverOpacity = 0.0;
+    private attribute rolloverTimeline = Timeline {
+        autoReverse: true, toggle: true
         keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
     }
     
-    function resize() {
+    private function resize() {
         if (instance.widget.resizable) {
             if (maxWidth != Constrained.UNBOUNDED) {
-                instance.setWidth(maxWidth);
-        System.out.println("setting width: {maxWidth}")
+                instance.widget.stage.width = maxWidth.intValue();
             }
             if (maxHeight != Constrained.UNBOUNDED) {
-                instance.setHeight(maxHeight);
+                instance.widget.stage.height = maxHeight.intValue();
             }
             if (instance.widget.aspectRatio != 0) {
-                var currentRatio = (instance.widget.width as Number) / instance.widget.height;
+                var currentRatio = (instance.widget.stage.width as Number) / instance.widget.stage.height;
                 if (currentRatio > instance.widget.aspectRatio) {
-                    instance.setWidth(instance.widget.aspectRatio * instance.widget.height);                
+                    instance.widget.stage.width = (instance.widget.aspectRatio * instance.widget.stage.height).intValue();                
                 } else {
-                    instance.setHeight(instance.widget.width / instance.widget.aspectRatio);
+                    instance.widget.stage.height = (instance.widget.stage.width / instance.widget.aspectRatio).intValue();
                 }
             }
         }
     }
     
-    override var maxWidth on replace {
+    override attribute maxWidth on replace {
         resize();
     }
     
-    override var maxHeight on replace {
+    override attribute maxHeight on replace {
         resize();
     }
-    
-    function wrapContent(content:Node[]):Node[] {
-        java.lang.System.out.println("wrapping content: {content[0]}, XXXXXXXXXXXXXXXXX {content[1..]}");
-        return [
-            Rectangle { // Invisible Spacer
-                height: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER
-                width: bind widget.width * scale
-                fill: Color.BLUE
-                //fill: Color.rgb(0, 0, 0, 0.0)
-            },
-            Group { // Rear Slice
-                cache: true
-                content: Group { // Drop Shadow
-                    effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
-                    content: Group { // Clip Group
-                        content: content[0]
-                        clip: Rectangle {width: bind widget.width, height: bind widget.height}
-                        scaleX: bind scale, scaleY: bind scale
-                    }
-                }
-            },
-            Group { // Front Slices
-                cache: true
-                content: content[1..]
-                clip: Rectangle {width: bind widget.width, height: bind widget.height}
-                scaleX: bind scale, scaleY: bind scale
-            },
-        ]
-    }
-    
-    override var cache = true;
-    
-    var embeddedWidget = widget;
     
     init {
+        cache = true;
         content = [
             Rectangle { // Invisible Spacer
-                height: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER
+                height: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER
                 width: bind maxWidth
                 fill: Color.rgb(0, 0, 0, 0.0)
             },
             Group { // Widget with DropShadow
                 translateY: TOP_BORDER
-                translateX: bind (maxWidth - widget.width * scale) / 2
-                cache: true
-                content: Group { // Drop Shadow
-                    effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
-                    content: Group { // Clip Group
-                        content: bind embeddedWidget
-                        clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                translateX: bind (maxWidth - widget.stage.width * scale) / 2
+                content: [
+                    Group { // Rear Slice
+                        cache: true
+                        content: Group { // Drop Shadow
+                            effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
+                            content: Group { // Clip Group
+                                content: bind widget.stage.content[0]
+                                clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
+                                scaleX: bind scale, scaleY: bind scale
+                            }
+                        }
+                    },
+                    Group { // Front Slices
+                        cache: true
+                        content: bind widget.stage.content[1..]
+                        clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
                         scaleX: bind scale, scaleY: bind scale
-                    }
-                }
+                    },
+                ]
             },
             WidgetToolbar {
                 blocksMouse: true
-                translateX: bind (maxWidth + widget.width * scale) / 2
+                translateX: bind (maxWidth + widget.stage.width * scale) / 2
                 opacity: bind rolloverOpacity
                 instance: instance
                 onMouseEntered: function(e) {requestFocus(true)}
@@ -186,7 +163,7 @@ public class WidgetView extends Group, Constrained {
             },
             Group { // Drag Bar
                 blocksMouse: true
-                translateY: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER - 3
+                translateY: bind widget.stage.height * scale + TOP_BORDER + BOTTOM_BORDER - 3
                 content: [
                     Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 4},
                     Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity, translateY: 1},
@@ -198,21 +175,21 @@ public class WidgetView extends Group, Constrained {
                 onMousePressed: function(e:MouseEvent) {
                     if (widget.resizable) {
                         resizing = true;
-                        initialHeight = widget.height * scale;
-                        initialY = e.sceneY.intValue();
+                        initialHeight = widget.stage.height * scale;
+                        initialY = e.getStageY().intValue();
                     }
                 }
                 onMouseDragged: function(e:MouseEvent) {
                     if (resizing) {
-                        instance.setHeight(initialHeight + (e.sceneY.intValue() - initialY) / scale);
-                        if (widget.height < WidgetInstance.MIN_HEIGHT) {
-                            instance.setHeight(WidgetInstance.MIN_HEIGHT);
+                        widget.stage.height = (initialHeight + (e.getStageY().intValue() - initialY) / scale).intValue();
+                        if (widget.stage.height < WidgetInstance.MIN_HEIGHT) {
+                            widget.stage.height = WidgetInstance.MIN_HEIGHT;
                         }
                         if (widget.aspectRatio != 0) {
-                            instance.setWidth(widget.height * widget.aspectRatio);
-                            if (widget.width > maxWidth) {
-                                instance.setWidth(maxWidth);
-                                instance.setHeight(widget.width / widget.aspectRatio);
+                            widget.stage.width = (widget.stage.height * widget.aspectRatio).intValue();
+                            if (widget.stage.width > maxWidth) {
+                                widget.stage.width = maxWidth.intValue();
+                                widget.stage.height = (widget.stage.width / widget.aspectRatio).intValue();
                             }
                         }
                     }
@@ -220,7 +197,7 @@ public class WidgetView extends Group, Constrained {
                 onMouseReleased: function(e) {
                     if (resizing) {
                         if (widget.onResize != null) {
-                            widget.onResize(widget.width, widget.height);
+                            widget.onResize(widget.stage.width, widget.stage.height);
                         }
                         instance.saveWithoutNotification();
                         resizing = false;
@@ -228,64 +205,58 @@ public class WidgetView extends Group, Constrained {
                 }
             }
         ];
-    }
-        
-    override var onMousePressed = function(e:MouseEvent):Void {
-        initialScreenPosX = -e.sceneX.intValue();
-        initialScreenPosY = -e.sceneY.intValue();
-    };
-
-    override var onMouseDragged = function(e:MouseEvent):Void {
-        if (not docking) {
-            var xPos;
-            var yPos;
-            if (instance.docked) {
-                container.dragging = true;
-                var bounds = container.layout.getScreenBounds(this);
-                xPos = (bounds.x + (bounds.width - widget.width * scale) / 2 - WidgetFrame.BORDER).intValue();
-                var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
-                yPos = bounds.y + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
-                //embeddedWidget = null;
-                instance.frame = WidgetFrame {
-                    instance: instance
-                    x: xPos, y: yPos
+        onMousePressed = function(e:MouseEvent):Void {
+            initialScreenPosX = -e.getStageX().intValue();
+            initialScreenPosY = -e.getStageY().intValue();
+        };
+        onMouseDragged = function(e:MouseEvent):Void {
+            if (not docking) {
+                var xPos;
+                var yPos;
+                if (instance.docked) {
+                    container.dragging = true;
+                    var bounds = container.layout.getScreenBounds(this);
+                    xPos = (bounds.x + (bounds.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
+                    var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
+                    yPos = bounds.y + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
+                    instance.frame = WidgetFrame {
+                        instance: instance
+                        x: xPos, y: yPos
+                    }
+                    initialScreenPosX += xPos;
+                    initialScreenPosY += yPos;
                 }
-                initialScreenPosX += xPos;
-                initialScreenPosY += yPos;
-            }
-            var hoverOffset:Number[] = [0, 0];
-//            for (container in WidgetContainer.containers) {
-//                var offset = container.hover(instance, e.screenX, e.screenY, e.x, e.y, not instance.docked);
-//                if (offset != [0, 0]) {
-//                    hoverOffset = offset;
-//                }
-//            }
-            instance.docked = false;
-            instance.frame.x = e.sceneX.intValue() + initialScreenPosX + hoverOffset[0];
-            instance.frame.y = e.sceneY.intValue() + initialScreenPosY + hoverOffset[1];
-        }
-    };
-    
-    override var onMouseReleased = function(e:MouseEvent):Void {
-        if (not docking and not instance.docked) {
-            for (container in WidgetContainer.containers) {
-                var targetBounds = container.finishHover(instance, e.screenX, e.screenY);
-                if (targetBounds != null) {
-                    docking = true;
-                    instance.frame.dock(targetBounds.x + (targetBounds.width - widget.width) / 2, targetBounds.y);
-                } else {
-                    // todo - don't call onResize multiple times
-                    if (instance.widget.onResize != null) {
-                        instance.widget.onResize(instance.widget.width, instance.widget.height);
+                var hoverOffset = [0, 0];
+                for (container in WidgetContainer.containers) {
+                    var offset = container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), not instance.docked);
+                    if (offset != [0, 0]) {
+                        hoverOffset = offset;
                     }
                 }
+                instance.docked = false;
+                instance.frame.x = e.getStageX().intValue() + initialScreenPosX + hoverOffset[0];
+                instance.frame.y = e.getStageY().intValue() + initialScreenPosY + hoverOffset[1];
             }
-            container.dragging = false;
-            instance.saveWithoutNotification();
-        }
-    };
-    
-    override var onMouseEntered = function(e) {requestFocus(true)}
-    
-    override var onMouseExited = function(e) {requestFocus(false)}
+        };
+        onMouseReleased = function(e:MouseEvent):Void {
+            if (not docking and not instance.docked) {
+                for (container in WidgetContainer.containers) {
+                    var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
+                    if (targetBounds != null) {
+                        docking = true;
+                        instance.frame.dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
+                    } else {
+                        // todo - don't call onResize multiple times
+                        if (instance.widget.onResize != null) {
+                            instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                        }
+                    }
+                }
+                container.dragging = false;
+                instance.saveWithoutNotification();
+            }
+        };
+        onMouseEntered = function(e) {requestFocus(true)}
+        onMouseExited = function(e) {requestFocus(false)}
+    }
 }

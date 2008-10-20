@@ -26,18 +26,16 @@ import java.lang.Runnable;
 import java.lang.System;
 import java.lang.Throwable;
 import java.net.URL;
-import javafx.lang.FX;
-import javafx.scene.layout.Resizable;
-import javafx.scene.Group;
+import javafx.application.Application;
 import javax.jnlp.BasicService;
 import javax.jnlp.ServiceManager;
 
 /**
  * Instance class for Widgets that can be deployed in the WidgetFX container.
- * This class extends Stage so that any valid Widget can also be easily
+ * This class extends Application so that any valid Widget can also be easily
  * tested or deployed as an Applet.
  * <p>
- * In addition to the functionality provided by the Stage base class,
+ * In addition to the functionality provided by the Application base class,
  * this class also supports additional properties specific to widgets to
  * control resizing, aspectRatio, and configuration.  There are also event
  * handler callbacks for resize and dock operations.
@@ -49,23 +47,25 @@ import javax.jnlp.ServiceManager;
  * Sample JavaFX file for an ellipse widget:
  * <blockquote><pre>
  * import org.widgetfx.Widget;
- * import javafx.scene.Scene;
- * import javafx.scene.shape.Ellipse;
+ * import javafx.application.Stage;
+ * import javafx.scene.geometry.Ellipse;
  * import javafx.scene.paint.Color;
- * import javafx.stage.Stage;
- * var widget:Widget = Widget {
- *     width = 100;
- *     height = 100;
- *     content: Ellipse {
- *         centerX: bind widget.width / 2
- *         centerY: bind widget.height / 2
- *         radiusX: bind widget.width / 2
- *         radiusY: bind widget.height / 2
- *         fill: Color.RED
+ * var width = 100;
+ * var height = 100;
+ * widget = Widget {
+ *     resizable: true
+ *     stage: Stage {
+ *         width: bind width with inverse;
+ *         height: bind height with inverse;
+ *         content: Ellipse {
+ *             centerX: bind width / 2
+ *             centerY: bind height / 2
+ *             radiusX: bind width / 2
+ *             radiusY: bind height / 2
+ *             fill: Color.RED
+ *         }
  *     }
- * }
- * return widget;
- * </pre></blockquote>
+ * }</pre></blockquote>
  * <p>
  * Sample JNLP file for the above widget:
  * <blockquote><pre>
@@ -87,7 +87,15 @@ import javax.jnlp.ServiceManager;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class Widget extends Group, Resizable {
+public class Widget extends Application {
+    /**
+     * Whether or not this widget supports resizing.  Default is false to prevent
+     * fixed size widgets from being resized.
+     * <p>
+     * To enable resizing of a widget, set this to true when instantiating your
+     * widget instance.
+     */
+    public attribute resizable:Boolean = false;
     
     /**
      * Used to give widgets a fixed aspectRatio.  The default value of 0 allows
@@ -101,16 +109,14 @@ public class Widget extends Group, Resizable {
      * aspectRatio: 4.0/3.0</pre></blockquote>
      * In this example, the width will be 4/3 greater than the height.
      */
-    public var aspectRatio:Number = 0;
+    public attribute aspectRatio:Number = 0;
     
     /**
      * Configuration object for widgets.  This must be set in order to persist
      * state between invocations of the widget container.  See the {@link Configuration}
      * class for more information.
      */
-    public-init var configuration:Configuration;
-    
-    public-init var resizable:Boolean = true;
+    public attribute configuration:Configuration;
     
     /**
      * Event handler called on resize of a widget.  This method is always
@@ -122,21 +128,21 @@ public class Widget extends Group, Resizable {
      * to be called only once per resize operation regardless of the intermediate
      * values of stage.width and stage.height.
      */
-    public-init var onResize:function(width:Number, height:Number):Void;
+    public attribute onResize:function(width:Integer, height:Integer):Void;
     
     /**
      * Event handler called when a widget is docked.  This can be used to change
      * the presentation of a widget to something more suitable to a space limited
      * dock.
      */
-    public-init var onDock:function():Void;
+    public attribute onDock:function():Void;
 
     /**
      * Event handler called when a widget is undocked.  This can be used to change
      * the presentation of a widget to reflect the larger space available for
      * display.
      */
-    public-init var onUndock:function():Void;
+    public attribute onUndock:function():Void;
     
     /**
      * Enables or disabled auto launch facility for testing widgets.  The default value
@@ -147,23 +153,23 @@ public class Widget extends Group, Resizable {
      * parameters to the Widget Runner.  Once the Widget Runner has been started, this
      * process will exit.
      */
-    protected var autoLaunch = true;
+    protected attribute autoLaunch = true;
     
     /**
      * The href used to launch the Widget Runner process.  The default value is "launch.jnlp",
      * and must be updated if you use a different jnlp filename.
      */
-    protected var launchHref = "launch.jnlp";
+    protected attribute launchHref = "launch.jnlp";
     
     postinit {
-        // todo - replace with deferAction when it is safe to call it from the sandbox
+        // todo - replace with DeferredTask when it is safe to call it from the sandbox
         EventQueue.invokeLater(Runnable {
-            override function run() {
+            public function run() {
                 if (autoLaunch) {
                     try {
                         var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
                         basicService.showDocument(new URL("http://widgetfx.org/dock/runner.jnlp?arg={basicService.getCodeBase()}{launchHref}"));
-                        FX.exit();
+                        System.exit(0);
                     } catch (e:Throwable) {
                         // not running in Web Start, continue running the applet
                     }
