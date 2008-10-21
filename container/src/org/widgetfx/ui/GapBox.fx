@@ -20,8 +20,7 @@
  */
 package org.widgetfx.ui;
 
-import java.awt.Point;
-import java.awt.Rectangle;
+import javafx.geometry.*;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.util.Sequences;
@@ -39,9 +38,13 @@ public abstract class GapBox extends Group, Constrained {
         impl_requestLayout();
     }
     
-    override var maxWidth = 300;
+    override var maxWidth = 300 on replace {
+        impl_requestLayout();
+    }
     
-    override var maxHeight = 300;
+    override var maxHeight = 300 on replace {
+        impl_requestLayout();
+    }
     
     protected var gapIndex:Integer = -1;
     
@@ -49,28 +52,43 @@ public abstract class GapBox extends Group, Constrained {
         return gapIndex;
     }
     
+    protected function screenToLocal(screenX:Integer, screenY:Integer):Point2D {
+        return sceneToLocal(screenX - scene.x - scene.stage.x, screenY - scene.y - scene.stage.y);
+    }
+    
+    protected function localToScreen(localX:Integer, localY:Integer):Point2D {
+        var sceneCoord = localToScene(localX, localY);
+        java.lang.System.out.println("sceneX: {sceneCoord.x}, sceneY: {sceneCoord.y}, scene.x: {scene.x}, scene.y: {scene.y}, scene.stage.x: {scene.stage.x}, scene.stage.y: {scene.stage.y}");
+        return Point2D {
+            x: sceneCoord.x + scene.x + scene.stage.x
+            y: sceneCoord.y + scene.y + scene.stage.y
+        }
+    }
+    
     public function containsScreenXY(screenX:Integer, screenY:Integer):Boolean {
-        var point = new Point(screenX, screenY);
-        SwingUtilities.convertPointFromScreen(point, impl_getSGNode().getPanel());
-        impl_getSGNode().globalToLocal(point, point);
-        return (new Rectangle(0, 0, maxWidth, maxHeight)).contains(new Point(point.x, point.y));
+        return Rectangle2D {
+            minX: 0, minY: 0, width: maxWidth, height: maxHeight
+        }.contains(screenToLocal(screenX, screenY));
     }
     
-    protected abstract function getBounds(index:Integer):Rectangle;
+    protected abstract function getBounds(index:Integer):Rectangle2D;
     
-    function getScreenBounds(index:Integer):Rectangle {
+    function getScreenBounds(index:Integer):Rectangle2D {
         var bounds = getBounds(index);
-        var location = bounds.getLocation();
-        impl_getSGNode().localToGlobal(location, location);
-        SwingUtilities.convertPointToScreen(location, impl_getSGNode().getPanel());
-        return new Rectangle(location.x, location.y, bounds.width, bounds.height);
+        var location = localToScreen(bounds.minX, bounds.minY);
+        return Rectangle2D {
+            minX: location.x
+            minY: location.y
+            width: bounds.width
+            height: bounds.height
+        }
     }
     
-    public function getScreenBounds(node:Node):Rectangle {
+    public function getScreenBounds(node:Node):Rectangle2D {
         return getScreenBounds(Sequences.indexOf(content, node));
     }
     
-    public function getGapScreenBounds():Rectangle {
+    public function getGapScreenBounds():Rectangle2D {
         return getScreenBounds(gapIndex);
     }
     

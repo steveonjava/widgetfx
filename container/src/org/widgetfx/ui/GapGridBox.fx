@@ -22,11 +22,10 @@ package org.widgetfx.ui;
 
 import com.sun.scenario.scenegraph.SGNode;
 import com.sun.scenario.scenegraph.SGGroup;
-import java.awt.Point;
-import java.awt.Rectangle;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Interpolator;
+import javafx.geometry.*;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javax.swing.SwingUtilities;
@@ -47,19 +46,17 @@ public class GapGridBox extends GapBox {
     
     var timeline:Timeline;
 
-    override function getBounds(index:Integer):Rectangle {
-        return new Rectangle(
-            (index mod columns) * (nodeWidth + spacing),
-            index / columns * (nodeHeight + spacing),
-            nodeWidth,
-            nodeHeight
-        );
+    override function getBounds(index:Integer):Rectangle2D {
+        return Rectangle2D {
+            minX: (index mod columns) * (nodeWidth + spacing)
+            minY: index / columns * (nodeHeight + spacing)
+            width: nodeWidth
+            height: nodeHeight
+        };
     }
     
     override function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
-        var point = new Point(screenX, screenY);
-        SwingUtilities.convertPointFromScreen(point, impl_getSGNode().getPanel());
-        impl_getSGNode().globalToLocal(point, point);
+        var point = screenToLocal(screenX, screenY);
         var xCell = (point.x * columns / maxWidth).intValue();
         var yCell = (point.y * rows / maxHeight).intValue();
         var index = yCell * columns + xCell;

@@ -33,8 +33,9 @@ import org.widgetfx.config.*;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public var VERSION = "0.1.5";
-public var TRANSPARENT = true;
+public var VERSION = "0.2";
+// todo - turn back on transparency when this is fixed in the next partner preview sdk
+public var TRANSPARENT = false;//true;
 public var IS_MAC = System.getProperty("os.name").contains("Mac OS");
 
 var instance = WidgetFXConfiguration {}

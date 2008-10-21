@@ -102,6 +102,14 @@ function createEntryDisplay(entry:SyndEntryImpl):Node {
     Group {
         var groupOpacity = 0.0;
         var groupFill = Color.BLACK;
+        var since:Text = Text {
+            font: Font {size: 9}
+            content: dateSince(entry.getPublishedDate())
+            fill: Color.CYAN
+            textOrigin: TextOrigin.TOP
+            textAlignment: TextAlignment.RIGHT
+            translateX: bind entryWidth - since.layoutBounds.width
+        }
         content: [
             Rectangle {
                 width: bind entryWidth
@@ -116,7 +124,7 @@ function createEntryDisplay(entry:SyndEntryImpl):Node {
                         fill: Color.WHITE
                         textOrigin: TextOrigin.TOP
                         content: StringEscapeUtils.unescapeHtml(entry.getTitle());
-                        wrappingWidth: bind entryWidth - border * 2
+                        //wrappingWidth: bind entryWidth - border * 2
                     },
                     Group {content: [
                         Text {
@@ -125,16 +133,9 @@ function createEntryDisplay(entry:SyndEntryImpl):Node {
                             textOrigin: TextOrigin.TOP
                             textAlignment: TextAlignment.LEFT
                             content: feed.getTitle()
-                            wrappingWidth: bind entryWidth - 55
+                            //wrappingWidth: bind entryWidth - 55
                         },
-                        Text {
-                            font: Font {size: 9}
-                            content: dateSince(entry.getPublishedDate())
-                            fill: Color.CYAN
-                            textOrigin: TextOrigin.TOP
-                            textAlignment: TextAlignment.RIGHT
-                            translateX: bind entryWidth
-                        }
+                        since
                     ]}
                 ],
             }
