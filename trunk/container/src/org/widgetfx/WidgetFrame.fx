@@ -331,7 +331,7 @@ public class WidgetFrame extends Stage {
                     for (container in WidgetContainer.containers) {
                         var targetBounds = container.finishHover(instance, e.screenX, e.screenY);
                         if (targetBounds != null) {
-                            dock(targetBounds.x, targetBounds.y);
+                            dock(targetBounds.minX, targetBounds.minY);
                         }
                     }
                     instance.saveWithoutNotification();

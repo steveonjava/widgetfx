@@ -21,8 +21,10 @@
 package org.widgetfx.ui;
 
 import javafx.animation.*;
+import javafx.geometry.*;
 import javafx.lang.*;
 import javafx.scene.*;
+import javafx.scene.layout.*;
 import org.widgetfx.*;
 
 /**
@@ -31,7 +33,7 @@ import org.widgetfx.*;
  */
 public var containers:WidgetContainer[];
 
-public class WidgetContainer extends Group {
+public class WidgetContainer extends Container {
     
     public var widgets:WidgetInstance[];
     
@@ -46,11 +48,11 @@ public class WidgetContainer extends Group {
         content = [layout];
     }
     
-    public var width:Number on replace {
+    override var width on replace {
         layout.maxWidth = width;
     }
     
-    public var height:Number on replace {
+    override var height on replace {
         layout.maxHeight = height;
     }
     
@@ -143,7 +145,7 @@ public class WidgetContainer extends Group {
         return [xHoverOffset, yHoverOffset];
     }
     
-    public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):java.awt.Rectangle {
+    public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):Rectangle2D {
         if (layout.containsScreenXY(screenX, screenY)) {
             animateHover.stop();
             animateHover = null;

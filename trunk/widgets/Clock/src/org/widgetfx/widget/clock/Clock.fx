@@ -89,7 +89,7 @@ var clock:Widget = Widget {
                     }
                 },
                 Group { // Clock Digits
-                    translateX: bind clock.width / 2 + 2, translateY: bind clock.height / 2 + 2
+                    translateX: bind clock.width / 2 - 3, translateY: bind clock.height / 2 + 4
                     content: for( i in [1..12] )
                         Text {
                             var radians = Math.toRadians(30 * i - 90)
@@ -97,7 +97,7 @@ var clock:Widget = Widget {
                             translateY: bind (clock.height / 2 * .8) * Math.sin(radians)
                             content: "{i}"
                             font: Font {name: "SansSerif", size: 9}
-                            textOrigin: TextOrigin.TOP
+                            textOrigin: TextOrigin.BASELINE
                             textAlignment: TextAlignment.CENTER
                             fill: Color.WHITE
                         }
@@ -113,7 +113,7 @@ var clock:Widget = Widget {
                     effect: DropShadow {offsetY: 1, offsetX: 0, radius: 2}
                     content: Line {startX: 0, startY: bind clock.width / 2 * .2, endX: 0, endY: bind -clock.width / 2 * .46
                         strokeWidth: 4, stroke: Color.WHITE
-                        rotate: bind hours * 30 + minutes / 2
+                        transforms: bind Transform.rotate(hours * 30 + minutes / 2, 0, 0)
                     }
                 },
                 Group { // Minute Hand
@@ -121,7 +121,7 @@ var clock:Widget = Widget {
                     effect: DropShadow {offsetY: 2, offsetX: 0, radius: 2}
                     content: Line {startX: 0, startY: bind clock.width / 2 * .2, endX: 0, endY: bind -clock.width / 2 * .7
                         strokeWidth: 4, stroke: Color.WHITE
-                        rotate: bind minutes * 6 + seconds / 10
+                        transforms: bind Transform.rotate(minutes * 6 + seconds / 10, 0, 0)
                     }
                 },
                 Group { // Second Hand
@@ -135,7 +135,7 @@ var clock:Widget = Widget {
                                 strokeWidth: 3, stroke: Color.DODGERBLUE
                             }
                         ]
-                        rotate: bind seconds * 6 + (if (bounce) 2 else 0)
+                        transforms: bind Transform.rotate(seconds * 6 + (if (bounce) 2 else 0), 0, 0)
                     }
                 }
             ]

@@ -242,10 +242,10 @@ public class WidgetView extends Group, Constrained {
             if (instance.docked) {
                 container.dragging = true;
                 var bounds = container.layout.getScreenBounds(this);
-                xPos = (bounds.x + (bounds.width - widget.width * scale) / 2 - WidgetFrame.BORDER).intValue();
+                xPos = (bounds.minX + (bounds.width - widget.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                 var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
-                yPos = bounds.y + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
-                //embeddedWidget = null;
+                yPos = bounds.minY + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
+                embeddedWidget = null;
                 instance.frame = WidgetFrame {
                     instance: instance
                     x: xPos, y: yPos
@@ -254,12 +254,12 @@ public class WidgetView extends Group, Constrained {
                 initialScreenPosY += yPos;
             }
             var hoverOffset:Number[] = [0, 0];
-//            for (container in WidgetContainer.containers) {
-//                var offset = container.hover(instance, e.screenX, e.screenY, e.x, e.y, not instance.docked);
-//                if (offset != [0, 0]) {
-//                    hoverOffset = offset;
-//                }
-//            }
+            for (container in WidgetContainer.containers) {
+                var offset = container.hover(instance, e.screenX, e.screenY, e.x, e.y, not instance.docked);
+                if (offset != [0, 0]) {
+                    hoverOffset = offset;
+                }
+            }
             instance.docked = false;
             instance.frame.x = e.sceneX.intValue() + initialScreenPosX + hoverOffset[0];
             instance.frame.y = e.sceneY.intValue() + initialScreenPosY + hoverOffset[1];
@@ -272,7 +272,7 @@ public class WidgetView extends Group, Constrained {
                 var targetBounds = container.finishHover(instance, e.screenX, e.screenY);
                 if (targetBounds != null) {
                     docking = true;
-                    instance.frame.dock(targetBounds.x + (targetBounds.width - widget.width) / 2, targetBounds.y);
+                    instance.frame.dock(targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
                 } else {
                     // todo - don't call onResize multiple times
                     if (instance.widget.onResize != null) {

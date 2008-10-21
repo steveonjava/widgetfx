@@ -33,39 +33,39 @@ import javafx.stage.*;
 WidgetManager.createPortalInstance();
 WidgetFXConfiguration.getInstance().mergeProperties = true;
 WidgetFXConfiguration.getInstance().load();
-Stage {
+var grid:Stage = Stage {
     onClose: function() {FX.exit()}
     x: 100
     y: 200
     title: "Portal 1"
-    var scene:Scene = Scene {
         width: 500
         height: 500
+    var scene:Scene = Scene {
         fill: Color.SLATEGRAY
         content: WidgetContainer {
+            width: bind grid.width
+            height: bind grid.height
             widgets: WidgetManager.getInstance().widgets[w|w.docked];
-            width: bind scene.width
-            height: bind scene.height
             layout: GapGridBox {rows: 2, columns: 3, spacing: 5}
         }
     }
     scene: scene
 }
 
-Stage {
+var list:Stage = Stage {
     onClose: function() {FX.exit()}
     x: 700
     y: 200
     title: "Portal 2"
-    var scene:Scene = Scene {
         width: 200
         height: 500
+    var scene:Scene = Scene {
         var widgetList:WidgetInstance[];
         fill: Color.SLATEGRAY
         content: WidgetContainer {
+            width: bind list.width
+            height: bind list.height
             widgets: widgetList
-            width: bind scene.width
-            height: bind scene.height
             layout: GapGridBox {rows: 4, columns: 1, spacing: 5}
         }
     }

@@ -22,8 +22,7 @@ package org.widgetfx.ui;
 
 import com.sun.scenario.scenegraph.SGNode;
 import com.sun.scenario.scenegraph.SGGroup;
-import java.awt.Point;
-import java.awt.Rectangle;
+import javafx.geometry.*;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Interpolator;
@@ -40,17 +39,27 @@ public class GapVBox extends GapBox {
         
     var timeline:Timeline;
 
-    override function getBounds(index:Integer):Rectangle {
+    override function getBounds(index:Integer):Rectangle2D {
         var y:Number = 0;
         for (node in content) {
             if (indexof node == gapIndex) {
                 if (gapIndex == index) {
-                    return new Rectangle(0, y, maxWidth, gapHeight);
+                    return Rectangle2D {
+                        minX: 0
+                        minY: y
+                        width: maxWidth
+                        height: gapHeight
+                    }
                 }
                 y += gapHeight;
             }
             if (indexof node == index) {
-                return new Rectangle(0, y, maxWidth, node.boundsInLocal.height);
+                return Rectangle2D {
+                    minX: 0
+                    minY: y
+                    width: maxWidth
+                    height: node.boundsInLocal.height
+                }
             }
             if (node.visible) {
                 y += node.boundsInLocal.height + spacing;
@@ -60,9 +69,7 @@ public class GapVBox extends GapBox {
     }
 
     override function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
-        var point = new Point(screenX, screenY);
-        SwingUtilities.convertPointFromScreen(point, impl_getSGNode().getPanel());
-        impl_getSGNode().globalToLocal(point, point);
+        var point = screenToLocal(screenX, screenY);
         var index = content.size();
         for (node in content) {
             var viewY = node.boundsInLocal.minY;
