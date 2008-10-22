@@ -146,12 +146,11 @@ public class Dock extends BaseDialog {
         }
     }
     private attribute headerHeight:Integer = bind BORDER * 2 + logo.getHeight().intValue();
-    private attribute dockedWidgets = bind WidgetManager.getInstance().widgets[w|w.docked];
     attribute container:WidgetContainer = WidgetContainer {
         resizing: bind resizing
         translateX: BORDER
         translateY: bind headerHeight
-        widgets: bind dockedWidgets;
+        widgets: bind WidgetManager.getInstance().widgets with inverse
         width: bind width - BORDER * 2
         height: bind height - headerHeight
         layout: GapVBox {}
@@ -511,7 +510,7 @@ public class Dock extends BaseDialog {
                         width = if (draggedWidth < MIN_WIDTH) MIN_WIDTH else if (draggedWidth > MAX_WIDTH) MAX_WIDTH else draggedWidth;
                     }
                     onMouseReleased: function(e) {
-                        for (instance in dockedWidgets) {
+                        for (instance in container.dockedWidgets) {
                             if (instance.widget.resizable) {
                                 if (instance.widget.onResize != null) {
                                     instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
