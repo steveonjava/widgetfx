@@ -36,6 +36,8 @@ public class WidgetContainer extends Group {
     
     public attribute widgets:WidgetInstance[];
     
+    public attribute dockedWidgets = bind widgets[w|w.docked];
+    
     // if this is set, copy widget when dropped on a new container, but place the original
     // widget back in the source container
     public attribute copyOnContainerDrop:Boolean;
@@ -59,7 +61,7 @@ public class WidgetContainer extends Group {
     
     public attribute dragging:Boolean;
     
-    private attribute widgetViews:WidgetView[] = bind for (instance in widgets) createWidgetView(instance) on replace {
+    private attribute widgetViews:WidgetView[] = bind for (instance in dockedWidgets) createWidgetView(instance) on replace {
         layout.content = widgetViews;
     }
     
@@ -121,7 +123,6 @@ public class WidgetContainer extends Group {
     public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, localX:Integer, localY:Integer, animate:Boolean) {
         setupHoverAnimation(instance, localX, localY);
         if (layout.containsScreenXY(screenX, screenY)) {
-            delete instance from widgets;
             var dockedHeight = if (instance.dockedHeight == 0) instance.widget.stage.height else instance.dockedHeight;
             layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
             if (animateHover != null and not animateDocked) {
@@ -156,8 +157,14 @@ public class WidgetContainer extends Group {
     }
     
     public function dockAfterHover(instance:WidgetInstance) {
+        delete instance from widgets;
         instance.docked = true;
-        insert instance before widgets[layout.getGapIndex()];
+        if (layout.getGapIndex() >= dockedWidgets.size()) {
+            insert instance into widgets;
+        } else {
+            var index = Sequences.indexOf(widgets, dockedWidgets[layout.getGapIndex()]);
+            insert instance before widgets[index];
+        }
         layout.clearGap(false);
         layout.doLayout();
     }

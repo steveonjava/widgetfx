@@ -56,7 +56,7 @@ public class GapVBox extends GapBox {
                 y += node.getBoundsHeight() + spacing;
             }
         }
-        return null;
+        return new Rectangle(0, y, maxWidth, gapHeight);
     }
 
     public function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void {
