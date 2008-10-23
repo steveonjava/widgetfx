@@ -234,6 +234,9 @@ public class WidgetView extends Group, Constrained {
                     }
                 }
                 instance.docked = false;
+                if (instance.widget.onUndock != null) {
+                    instance.widget.onUndock();
+                }
                 instance.frame.x = e.getStageX().intValue() + initialScreenPosX + hoverOffset[0];
                 instance.frame.y = e.getStageY().intValue() + initialScreenPosY + hoverOffset[1];
             }

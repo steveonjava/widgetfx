@@ -16,6 +16,9 @@
 <!--${JNLP.RESOURCES.MAIN.JAR}-->
 <!--${JNLP.RESOURCES.JARS}-->
     </resources>
+  <resources os="Windows" arch="x86">
+    <nativelib href="lib/JDICplus_native.jar" />
+  </resources>
     <application-desc main-class="${jnlp.main.class}">
 <!--${JNLP.APPLICATION.ARGS}-->
     </application-desc>
