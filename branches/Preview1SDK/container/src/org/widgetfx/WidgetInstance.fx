@@ -24,6 +24,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.NodeList;
 import org.widgetfx.config.*;
 import org.widgetfx.ui.ErrorWidget;
+import org.widgetfx.ui.FlashWidget;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
 import com.sun.javafx.runtime.Entry;
@@ -115,6 +116,10 @@ public class WidgetInstance {
     public attribute jnlpUrl:String on replace {
         if (jnlpUrl.length() == 0) {
             mainClass = "";
+        } else if (jnlpUrl.toLowerCase().endsWith(".swf")) {
+            widget = FlashWidget {
+                url: jnlpUrl
+            }
         } else {
             try {
                 var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -260,6 +265,9 @@ public class WidgetInstance {
         frame.close();
         frame = null;
         docked = true;
+        if (widget.onDock != null) {
+            widget.onDock();
+        }
     }
     
     public function dockIfOffscreen() {

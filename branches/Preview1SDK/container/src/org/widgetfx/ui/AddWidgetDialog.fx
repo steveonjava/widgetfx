@@ -79,10 +79,10 @@ public class AddWidgetDialog {
                 var chooser = new JFileChooser(jnlpUrl);
                 chooser.setFileFilter(FileFilter {
                     public function accept(f:File):Boolean {
-                        return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp");
+                        return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp") or f.getName().toLowerCase().endsWith(".swf");
                     }
                     public function getDescription():String {
-                        return "Java Network Launch Protocol (JNLP)"
+                        return "WidgetFX Widget (JNLP or SWF)"
                     }
                 });
                 var returnVal = chooser.showOpenDialog(browsebutton.getJButton());

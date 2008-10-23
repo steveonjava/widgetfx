@@ -47,9 +47,11 @@ import javafx.scene.paint.RadialGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
+import java.awt.Component;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseMotionAdapter;
+import javax.swing.event.MouseInputAdapter;
 import javax.swing.RootPaneContainer;
+import javax.swing.SwingUtilities;
 
 /**
  * @author Stephen Chin
@@ -102,13 +104,13 @@ public class WidgetFrame extends BaseDialog {
     private attribute initialScreenX;
     private attribute initialScreenY;
         
-    private attribute saveInitialPos = function(e:MouseEvent):Void {
+    private attribute saveInitialPos = function(stageX:Number, stageY:Number):Void {
         initialX = x;
         initialY = y;
         initialWidth = widget.stage.width;
         initialHeight = widget.stage.height;
-        initialScreenX = e.getStageX().intValue() + x;
-        initialScreenY = e.getStageY().intValue() + y;
+        initialScreenX = stageX.intValue() + x;
+        initialScreenY = stageY.intValue() + y;
     }
     
     private function mouseDelta(deltaFunction:function(a:Integer, b:Integer):Void):function(c:MouseEvent):Void {
@@ -121,7 +123,7 @@ public class WidgetFrame extends BaseDialog {
     
     private attribute startResizing = function(e:MouseEvent):Void {
         resizing = true;
-        saveInitialPos(e);
+        saveInitialPos(e.getStageX(), e.getStageY());
     }
     
     private attribute doneResizing = function(e:MouseEvent):Void {
@@ -166,6 +168,7 @@ public class WidgetFrame extends BaseDialog {
     public attribute onClose = function(frame:WidgetFrame) {
         WidgetManager.getInstance().removeWidget(instance);
         frame.close();
+        WidgetEventQueue.getInstance().removeInterceptor(window);
     }
     
     private function resize(widthDelta:Integer, heightDelta:Integer, updateX:Boolean, updateY:Boolean, widthOnly:Boolean, heightOnly:Boolean) {
@@ -339,39 +342,39 @@ public class WidgetFrame extends BaseDialog {
                     stroke: Color.WHITESMOKE
                 }
             ]
-            onMousePressed: function(e) {
-                if (e.getButton() == 1) {
-                    dragging = true;
-                    saveInitialPos(e);
-                }
-            }
-            onMouseDragged: function(e) {
-                if (dragging and not docking) {
-                    var hoverOffset = [0, 0];
-                    for (container in WidgetContainer.containers) {
-                        var offset = container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
-                        if (offset != [0, 0]) {
-                            hoverOffset = offset;
-                        }
-                    }
-                    mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        x = initialX + xDelta + hoverOffset[0];
-                        y = initialY + yDelta + hoverOffset[1];
-                    })(e);
-                }
-            }
-            onMouseReleased: function(e) {
-                if (e.getButton() == 1 and not docking) {
-                    dragging = false;
-                    for (container in WidgetContainer.containers) {
-                        var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
-                        if (targetBounds != null) {
-                            dock(targetBounds.x, targetBounds.y);
-                        }
-                    }
-                    instance.saveWithoutNotification();
-                }
-            }
+//            onMousePressed: function(e) {
+//                if (e.getButton() == 1) {
+//                    dragging = true;
+//                    saveInitialPos(e.getStageX(), e.getStageY());
+//                }
+//            }
+//            onMouseDragged: function(e) {
+//                if (dragging and not docking) {
+//                    var hoverOffset = [0, 0];
+//                    for (container in WidgetContainer.containers) {
+//                        var offset = container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), true);
+//                        if (offset != [0, 0]) {
+//                            hoverOffset = offset;
+//                        }
+//                    }
+//                    mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
+//                        x = initialX + xDelta + hoverOffset[0];
+//                        y = initialY + yDelta + hoverOffset[1];
+//                    })(e);
+//                }
+//            }
+//            onMouseReleased: function(e) {
+//                if (e.getButton() == 1 and not docking) {
+//                    dragging = false;
+//                    for (container in WidgetContainer.containers) {
+//                        var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
+//                        if (targetBounds != null) {
+//                            dock(targetBounds.x, targetBounds.y);
+//                        }
+//                    }
+//                    instance.saveWithoutNotification();
+//                }
+//            }
             opacity: bind if (widget.resizable) rolloverOpacity * 0.8 else 0.0;
         }
         var slider = Slider {
@@ -442,21 +445,133 @@ public class WidgetFrame extends BaseDialog {
             ]
             fill: null
         }
-        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
-            public function mouseEntered(e) {
-                requestFocus(true);
-            }
-            public function mouseExited(e) {
-                requestFocus(false);
+        WidgetEventQueue.getInstance().registerInterceptor(window, EventInterceptor {
+            public function shouldIntercept(event):Boolean {
+                if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
+                    requestFocus(true);
+                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
+                    requestFocus(false);
+                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_PRESSED) {
+                    //java.lang.System.out.println("pressed: {event.getComponent()}");
+                    if (event.getButton() == java.awt.event.MouseEvent.BUTTON1) {
+                        dragging = true;
+                        saveInitialPos(event.getX(), event.getY());
+                    }
+                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_DRAGGED) {
+                    if (not docking) {
+                        if (not dragging) {
+                            dragging = true;
+                            saveInitialPos(event.getX(), event.getY());
+                        } else {
+                            var hoverOffset = [0, 0];
+                            for (container in WidgetContainer.containers) {
+                                var offset = container.hover(instance, event.getXOnScreen(), event.getYOnScreen(), event.getX(), event.getY(), true);
+                                if (offset != [0, 0]) {
+                                    hoverOffset = offset;
+                                }
+                            }
+                            x += initialX + event.getX() - initialScreenX + hoverOffset[0];
+                            y += initialY + event.getY() - initialScreenY + hoverOffset[1];
+                        }
+                    }
+                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_RELEASED) {
+                    if (dragging and event.getButton() == java.awt.event.MouseEvent.BUTTON1 and not docking) {
+                        dragging = false;
+                        for (container in WidgetContainer.containers) {
+                            var targetBounds = container.finishHover(instance, event.getXOnScreen(), event.getYOnScreen());
+                            if (targetBounds != null) {
+                                dock(targetBounds.x, targetBounds.y);
+                            }
+                        }
+                        instance.saveWithoutNotification();
+                    }
+                }
+                return false;
             }
         });
+//        var glassPane = (window as RootPaneContainer).getGlassPane();
+//        glassPane.setVisible(true);
+//        var adapter = MouseInputAdapter {
+//            var activeComponent:Component;
+//            var overComponent:Component;
+//            public function mouseClicked(e) {
+//                redispatchMouseEvent(e);
+//            }
+//            public function mouseDragged(e) {
+//                redispatchMouseEvent(e);
+//            }
+//            public function mouseEntered(e) {
+//                requestFocus(true);
+//            }
+//            public function mouseExited(e) {
+//                mouseOverComponent(e, null);
+//                requestFocus(false);
+//            }
+//            public function mouseMoved(e) {
+//                mouseOverComponent(e, redispatchMouseEvent(e));
+//            }
+//            public function mousePressed(e) {
+//                activeComponent = redispatchMouseEvent(e);
+//            }
+//            public function mouseReleased(e) {
+//                redispatchMouseEvent(e);
+//                activeComponent = null;
+//            }
+//            public function mouseWheelMoved(e) {
+//                redispatchMouseEvent(e);
+//            }
+//            function mouseOverComponent(e:java.awt.event.MouseEvent, newComponent:Component) {
+//                if (overComponent != newComponent) {
+//                    if (overComponent != null) {
+//                        java.lang.System.out.println("exited: {overComponent}");
+//                        var componentPoint = SwingUtilities.convertPoint(glassPane, e.getPoint(), overComponent);
+//                        overComponent.dispatchEvent(new java.awt.event.MouseEvent(overComponent,
+//                                                             java.awt.event.MouseEvent.MOUSE_EXITED,
+//                                                             e.getWhen(),
+//                                                             e.getModifiers(),
+//                                                             componentPoint.x,
+//                                                             componentPoint.y,
+//                                                             e.getClickCount(),
+//                                                             e.isPopupTrigger()));
+//                    }
+//                    if (newComponent != null) {
+//                        java.lang.System.out.println("entered: {newComponent}");
+//                        var componentPoint = SwingUtilities.convertPoint(glassPane, e.getPoint(), newComponent);
+//                        newComponent.dispatchEvent(new java.awt.event.MouseEvent(newComponent,
+//                                                             java.awt.event.MouseEvent.MOUSE_ENTERED,
+//                                                             e.getWhen(),
+//                                                             e.getModifiers(),
+//                                                             componentPoint.x,
+//                                                             componentPoint.y,
+//                                                             e.getClickCount(),
+//                                                             e.isPopupTrigger()));
+//                    }
+//                    overComponent = newComponent;
+//                }
+//            }
+//            function redispatchMouseEvent(e:java.awt.event.MouseEvent) {
+//                var glassPanePoint = e.getPoint();
+//                var contentPane = (window as RootPaneContainer).getContentPane();
+//                var containerPoint = SwingUtilities.convertPoint(glassPane, glassPanePoint, contentPane);
+//                var component = if (activeComponent != null) activeComponent else SwingUtilities.getDeepestComponentAt(contentPane, containerPoint.x, containerPoint.y);
+//                if (component != null) {
+//                    var componentPoint = SwingUtilities.convertPoint(glassPane, glassPanePoint, component);
+//                    component.dispatchEvent(new java.awt.event.MouseEvent(component,
+//                                                         e.getID(),
+//                                                         e.getWhen(),
+//                                                         e.getModifiers(),
+//                                                         componentPoint.x,
+//                                                         componentPoint.y,
+//                                                         e.getClickCount(),
+//                                                         e.isPopupTrigger()));
+//                }
+//                return component;
+//            }
+//        }
+//        glassPane.addMouseListener(adapter);
+//        glassPane.addMouseMotionListener(adapter);
+//        glassPane.addMouseWheelListener(adapter);
         slider.getJSlider().addMouseListener(MouseAdapter {
-            public function mouseEntered(e) {
-                requestFocus(true);
-            }
-            public function mouseExited(e) {
-                requestFocus(false);
-            }
             public function mousePressed(e) {
                 changingOpacity = true;
             }

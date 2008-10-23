@@ -159,7 +159,7 @@ public class WidgetContainer extends Group {
     public function dockAfterHover(instance:WidgetInstance) {
         delete instance from widgets;
         instance.docked = true;
-        if (layout.getGapIndex() >= dockedWidgets.size()) {
+        if (layout.getGapIndex() < 0 or layout.getGapIndex() >= dockedWidgets.size()) {
             insert instance into widgets;
         } else {
             var index = Sequences.indexOf(widgets, dockedWidgets[layout.getGapIndex()]);
@@ -167,5 +167,8 @@ public class WidgetContainer extends Group {
         }
         layout.clearGap(false);
         layout.doLayout();
+        if (instance.widget.onDock != null) {
+            instance.widget.onDock();
+        }
     }
 }

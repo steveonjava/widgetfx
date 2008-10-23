@@ -107,7 +107,7 @@ public class WidgetManager {
     }
     
     public function loadParams(params:String[]) {
-        for (param in params where param.toLowerCase().endsWith(".jnlp")) {
+        for (param in params where param.toLowerCase().endsWith(".jnlp") or param.toLowerCase().endsWith(".swf")) {
             addWidget(param);
         }
         for (param in params where param.toLowerCase().endsWith(".theme")) {
@@ -125,7 +125,7 @@ public class WidgetManager {
                 }
             }
         }
-    };
+    }
 
     init {
         if (not widgetRunner and not portal) {
@@ -172,15 +172,15 @@ public class WidgetManager {
         delete instance from widgets;
     }
     
-    public function addWidget(jnlpUrl:String):WidgetInstance {
+    public function addWidget(url:String):WidgetInstance {
         for (widget in widgets) {
-            if (widget.jnlpUrl.equals(jnlpUrl)) {
-                System.out.println("Widget already loaded: " + jnlpUrl);
+            if (widget.jnlpUrl.equals(url)) {
+                System.out.println("Widget already loaded: " + url);
                 return null;
             }
         }
         var maxId = if (widgetIds.isEmpty()) 0 else (Sequences.max(widgetIds) as Integer).intValue();
-        var instance = WidgetInstance{jnlpUrl: jnlpUrl, id: maxId + 1};
+        var instance = WidgetInstance{jnlpUrl: url, id: maxId + 1};
         insert instance into widgets;
         instance.load();
         addRecentWidget(instance);
