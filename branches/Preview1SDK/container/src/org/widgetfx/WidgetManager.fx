@@ -107,7 +107,7 @@ public class WidgetManager {
     }
     
     public function loadParams(params:String[]) {
-        for (param in params where param.toLowerCase().endsWith(".jnlp") or param.toLowerCase().endsWith(".swf")) {
+        for (param in params where param.toLowerCase().endsWith(".jnlp") or param.toLowerCase().endsWith(".swf") or param.toLowerCase().endsWith(".swfi")) {
             addWidget(param);
         }
         for (param in params where param.toLowerCase().endsWith(".theme")) {

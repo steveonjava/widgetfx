@@ -116,7 +116,7 @@ public class WidgetInstance {
     public attribute jnlpUrl:String on replace {
         if (jnlpUrl.length() == 0) {
             mainClass = "";
-        } else if (jnlpUrl.toLowerCase().endsWith(".swf")) {
+        } else if (jnlpUrl.toLowerCase().endsWith(".swf") or jnlpUrl.toLowerCase().endsWith(".swfi")) {
             widget = FlashWidget {
                 url: jnlpUrl
             }

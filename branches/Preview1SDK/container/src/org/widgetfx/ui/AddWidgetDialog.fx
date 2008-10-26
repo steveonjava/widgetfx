@@ -79,7 +79,7 @@ public class AddWidgetDialog {
                 var chooser = new JFileChooser(jnlpUrl);
                 chooser.setFileFilter(FileFilter {
                     public function accept(f:File):Boolean {
-                        return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp") or f.getName().toLowerCase().endsWith(".swf");
+                        return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp") or f.getName().toLowerCase().endsWith(".swf") or f.getName().toLowerCase().endsWith(".swfi");
                     }
                     public function getDescription():String {
                         return "WidgetFX Widget (JNLP or SWF)"

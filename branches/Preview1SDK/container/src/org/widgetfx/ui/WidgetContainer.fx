@@ -20,6 +20,7 @@
  */
 package org.widgetfx.ui;
 
+import java.awt.Window;
 import javafx.animation.*;
 import javafx.application.*;
 import javafx.lang.*;
@@ -37,6 +38,8 @@ public class WidgetContainer extends Group {
     public attribute widgets:WidgetInstance[];
     
     public attribute dockedWidgets = bind widgets[w|w.docked];
+    
+    public attribute window:Window;
     
     // if this is set, copy widget when dropped on a new container, but place the original
     // widget back in the source container
@@ -158,7 +161,7 @@ public class WidgetContainer extends Group {
     
     public function dockAfterHover(instance:WidgetInstance) {
         delete instance from widgets;
-        instance.docked = true;
+        instance.dock();
         if (layout.getGapIndex() < 0 or layout.getGapIndex() >= dockedWidgets.size()) {
             insert instance into widgets;
         } else {
@@ -167,8 +170,5 @@ public class WidgetContainer extends Group {
         }
         layout.clearGap(false);
         layout.doLayout();
-        if (instance.widget.onDock != null) {
-            instance.widget.onDock();
-        }
     }
 }

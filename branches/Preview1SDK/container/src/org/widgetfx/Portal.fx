@@ -31,7 +31,7 @@ import javafx.scene.paint.*;
 WidgetManager.createPortalInstance();
 WidgetFXConfiguration.getInstance().mergeProperties = true;
 WidgetFXConfiguration.getInstance().load();
-Frame {
+var portal1:Frame = Frame {
     closeAction: function() {java.lang.System.exit(0)}
     x: 100
     y: 200
@@ -45,6 +45,7 @@ Frame {
         width: bind width with inverse
         height: bind height with inverse
         content: WidgetContainer {
+            window: portal1.window
             widgets: WidgetManager.getInstance().widgets[w|w.docked];
             width: bind width
             height: bind height
@@ -54,7 +55,7 @@ Frame {
     visible: true
 }
 
-Frame {
+var portal2:Frame = Frame {
     closeAction: function() {java.lang.System.exit(0)}
     x: 700
     y: 200
@@ -69,6 +70,7 @@ Frame {
         width: bind width with inverse
         height: bind height with inverse
         content: WidgetContainer {
+            window: portal2.window
             widgets: widgetList
             width: bind width
             height: bind height
