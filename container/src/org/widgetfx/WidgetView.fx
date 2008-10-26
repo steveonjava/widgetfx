@@ -21,8 +21,8 @@
 package org.widgetfx;
 
 import org.widgetfx.toolbar.WidgetToolbar;
-import org.widgetfx.ui.Constrained;
-import org.widgetfx.ui.WidgetContainer;
+import org.widgetfx.ui.*;
+import java.awt.Point;
 import java.lang.*;
 import javafx.animation.*;
 import javafx.input.*;
@@ -32,12 +32,13 @@ import javafx.scene.effect.*;
 import javafx.scene.geometry.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
+import javax.swing.RootPaneContainer;
 
 /**
  * @author Stephen Chin
  */
 public class WidgetView extends Group, Constrained {
-    public static attribute TOP_BORDER = 3;
+    public static attribute TOP_BORDER = 13;
     public static attribute BOTTOM_BORDER = 7;
     
     public attribute container:WidgetContainer;
@@ -86,7 +87,7 @@ public class WidgetView extends Group, Constrained {
         }
     }
     
-    private attribute rolloverOpacity = 0.0;
+    private attribute rolloverOpacity = if (widget instanceof FlashWidget) 1.0 else 0.0;
     private attribute rolloverTimeline = Timeline {
         autoReverse: true, toggle: true
         keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
@@ -111,12 +112,30 @@ public class WidgetView extends Group, Constrained {
         }
     }
     
+    override attribute translateX on replace {
+        updateFlashBounds();
+    }
+    
+    override attribute translateY on replace {
+        updateFlashBounds();
+    }
+    
+    override attribute impl_layoutX on replace {
+        updateFlashBounds();
+    }
+    
+    override attribute impl_layoutY on replace {
+        updateFlashBounds();
+    }
+    
     override attribute maxWidth on replace {
         resize();
+        updateFlashBounds();
     }
     
     override attribute maxHeight on replace {
         resize();
+        updateFlashBounds();
     }
     
     init {
@@ -158,6 +177,7 @@ public class WidgetView extends Group, Constrained {
                 onMouseEntered: function(e) {requestFocus(true)}
                 onMouseExited: function(e) {requestFocus(false)}
                 onClose: function() {
+                    removeFlash();
                     WidgetManager.getInstance().removeWidget(instance);
                 }
             },
@@ -192,6 +212,7 @@ public class WidgetView extends Group, Constrained {
                                 widget.stage.height = (widget.stage.width / widget.aspectRatio).intValue();
                             }
                         }
+                        updateFlashBounds();
                     }
                 }
                 onMouseReleased: function(e) {
@@ -214,6 +235,10 @@ public class WidgetView extends Group, Constrained {
                 var xPos;
                 var yPos;
                 if (instance.docked) {
+                    removeFlash();
+                    if (instance.widget.onUndock != null) {
+                        instance.widget.onUndock();
+                    }
                     container.dragging = true;
                     var bounds = container.layout.getScreenBounds(this);
                     xPos = (bounds.x + (bounds.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
@@ -234,9 +259,6 @@ public class WidgetView extends Group, Constrained {
                     }
                 }
                 instance.docked = false;
-                if (instance.widget.onUndock != null) {
-                    instance.widget.onUndock();
-                }
                 instance.frame.x = e.getStageX().intValue() + initialScreenPosX + hoverOffset[0];
                 instance.frame.y = e.getStageY().intValue() + initialScreenPosY + hoverOffset[1];
             }
@@ -261,5 +283,32 @@ public class WidgetView extends Group, Constrained {
         };
         onMouseEntered = function(e) {requestFocus(true)}
         onMouseExited = function(e) {requestFocus(false)}
+        addFlash();
+    }
+    
+    private function addFlash() {
+        if (widget instanceof FlashWidget) {
+            var flash = widget as FlashWidget;
+            var layeredPane = (container.window as RootPaneContainer).getLayeredPane();
+            layeredPane.add(flash.panel, new java.lang.Integer(1000));
+            updateFlashBounds();
+        }
+    }
+    
+    private function removeFlash() {
+        if (widget instanceof FlashWidget) {
+            var flash = widget as FlashWidget;
+            var layeredPane = (container.window as RootPaneContainer).getLayeredPane();
+            layeredPane.remove(flash.panel);
+        }
+    }
+    
+    private function updateFlashBounds() {
+        if (widget instanceof FlashWidget) {
+            var flash = widget as FlashWidget;
+            var location = new Point(0, 0);
+            impl_getSGNode().localToGlobal(location, location);
+            flash.panel.setBounds(location.x, location.y + TOP_BORDER, widget.stage.width, widget.stage.height);
+        }
     }
 }

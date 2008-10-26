@@ -66,15 +66,6 @@ public class WidgetEventQueue extends EventQueue {
     protected void dispatchEvent(AWTEvent awtEvent) {
         if (awtEvent instanceof MouseEvent) {
             MouseEvent event = (MouseEvent) awtEvent;
-//            // todo - remove this when the scene graph event queue bug with dragging is fixed
-//            if (event.getX() == Integer.MAX_VALUE || event.getX() == Integer.MIN_VALUE) {
-//                System.out.println("fixed a bad event!");
-//                return;
-//            }
-//            if (event.getY() == Integer.MAX_VALUE || event.getY() == Integer.MIN_VALUE) {
-//                System.out.println("fixed a bad event!");
-//                return;
-//            }
             Object source = event.getSource();
             if (source instanceof Component) {
                 Component component = (Component) source;

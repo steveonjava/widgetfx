@@ -21,6 +21,7 @@
 package org.widgetfx.ui;
 
 import org.jdic.web.BrComponent;
+import org.jdic.web.event.*;
 import org.widgetfx.*;
 import javafx.application.*;
 import javafx.ext.swing.*;
@@ -31,7 +32,7 @@ import javafx.lang.DeferredTask;
  * @author Stephen Chin
  */
 
-public class FlashWidget extends Widget {
+public class FlashWidget extends Widget, BrComponentListener {
     
     override attribute autoLaunch = false;
     
@@ -47,11 +48,15 @@ public class FlashWidget extends Widget {
     
     public attribute height = "100%";
 
-    private attribute flashPlayer;
+    private attribute player:BrComponent;
+    
+    public attribute panel:javax.swing.JPanel;
+    
+    private attribute flashComponent = bind Component.fromJComponent(panel);
     
     private attribute html = bind
 "<html><body border=\"no\" scroll=\"no\" style=\"margin: 0px 0px 0px 0px;\">
-<object style=\"margin: 0px 0px 0px 0px; width:{width}; height:{height}\" classid=\"clsid:D27CDB6E-AE6D-11cf-96B8-444553540000\" codebase=\"http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0\">
+<object id=\"flash\" style=\"margin: 0px 0px 0px 0px; width:{width}; height:{height}\" classid=\"clsid:D27CDB6E-AE6D-11cf-96B8-444553540000\" codebase=\"http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0\">
     <param name=\"movie\" value=\"{url}\">
     <param name=\"quality\" value=\"{quality}\">
     <param name=bgcolor VALUE={bgcolor}>
@@ -59,51 +64,48 @@ public class FlashWidget extends Widget {
 </body></html>";
     
     init {
+        BrComponent.DESIGN_MODE = false;
+        BrComponent.setDefaultPaintAlgorithm(BrComponent.PAINT_NATIVE);
         createPlayer();
     }
     
     private function createPlayer() {
-        DeferredTask {
-            action: function() {
-                BrComponent.DESIGN_MODE = false;
-                BrComponent.setDefaultPaintAlgorithm(BrComponent.PAINT_JAVA_NATIVE);
-                flashPlayer = new BrComponent();
-                flashPlayer.setHTML(new java.io.StringBufferInputStream(html), url);
-                updatePlayerSize();
-            }
+        panel = new javax.swing.JPanel(new java.awt.GridLayout(1, 1));
+        player = new BrComponent();
+        player.addBrComponentListener(this);
+        player.setPreferredSize(new java.awt.Dimension(stage.width, stage.height));
+        player.setHTML(new java.io.StringBufferInputStream(html), url);
+        panel.add(player);
+    }
+    
+    
+    public function sync(event:BrComponentEvent):String {
+        if (event.getID() == event.DISPID_DOCUMENTCOMPLETE) {
+//            updatePlayerSize();
+//            DeferredTask {
+//                action: function() {
+//                    flashPlayer.execJS(":document.getElementById('flash').login();");
+//                }
+//            }
         }
+        return null;
     }
     
-    private function updatePlayerSize() {
-        flashPlayer.setBounds(0, 0, stage.width, stage.height);
-        flashPlayer.setPreferredSize(new java.awt.Dimension(stage.width, stage.height));
-    }
+    private attribute stageWidth = 300;
     
-    private attribute stageWidth = 300 on replace {
-        updatePlayerSize();
-    }
-    
-    private attribute stageHeight = 150 on replace {
-        updatePlayerSize();
-    }
+    private attribute stageHeight = 300;
     
     override attribute onDock = function() {
-        java.lang.System.out.println("creating a new player");
         createPlayer();
     }
     
     override attribute onUndock = function() {
-        java.lang.System.out.println("creating a new player");
         createPlayer();
     }
     
     override attribute stage = Stage {
         width: bind stageWidth with inverse
         height: bind stageHeight with inverse
-        content: [
-            ComponentView {
-                component: bind Component.fromJComponent(flashPlayer)
-            }
-        ]
+        content: javafx.scene.geometry.Rectangle {width: bind stageWidth, height: bind stageHeight, fill: bind javafx.scene.paint.Color.BLUE}
     }
 }

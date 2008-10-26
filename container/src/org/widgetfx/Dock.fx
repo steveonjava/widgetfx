@@ -147,6 +147,7 @@ public class Dock extends BaseDialog {
     }
     private attribute headerHeight:Integer = bind BORDER * 2 + logo.getHeight().intValue();
     attribute container:WidgetContainer = WidgetContainer {
+        window: window
         resizing: bind resizing
         translateX: BORDER
         translateY: bind headerHeight
