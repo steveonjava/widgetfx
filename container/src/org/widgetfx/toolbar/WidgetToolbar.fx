@@ -67,63 +67,63 @@ public class WidgetToolbar extends Group {
     
     var visibleButtons = bind buttons[b|b.visible];
 
-    public-read var toolbarWidth = 100;//bind visibleButtons.size() * (BUTTON_SIZE + BUTTON_SPACING) - BUTTON_SPACING + BUTTON_BORDER * 2;
+    public-read var toolbarWidth = bind visibleButtons.size() * (BUTTON_SIZE + BUTTON_SPACING) - BUTTON_SPACING + BUTTON_BORDER * 2;
     
-    var text = Text {
-        visible: bind not selectedName.isEmpty()
-        translateX: bind -toolbarWidth - BUTTON_BORDER * 2
-        translateY: BUTTON_BORDER
-        content: bind selectedName
-        textOrigin: TextOrigin.TOP
-        textAlignment: TextAlignment.RIGHT
-        fill: Color.BLACK
-        font: Font {size: 10}
-    }
+    var text:Text;
 
-    override var content = bind [
-        Group { // Buttons
-            translateX: bind -toolbarWidth - 1
-            clip: Rectangle { // Clip
-                width: bind toolbarWidth + 1
-                height: TOOLBAR_HEIGHT + 1
-            }
-            content: bind [
-                Rectangle { // Border
-                    width: bind toolbarWidth
-                    height: TOOLBAR_HEIGHT
-                    arcWidth: TOOLBAR_HEIGHT
-                    arcHeight: TOOLBAR_HEIGHT
-                    stroke: Color.BLACK
-                },
-                Rectangle { // Background
-                    translateX: 1
-                    translateY: 1
-                    width: bind toolbarWidth - 2
-                    height: TOOLBAR_HEIGHT - 2
-                    arcWidth: TOOLBAR_HEIGHT - 2
-                    arcHeight: TOOLBAR_HEIGHT - 2
-                    stroke: Color.WHITE
-                    fill: BACKGROUND
-                    opacity: 0.7
-                },
-                for (button in visibleButtons) Group {
-                    translateX: BUTTON_SIZE / 2 + BUTTON_BORDER + (BUTTON_SIZE + BUTTON_SPACING) * indexof button
-                    translateY: BUTTON_SIZE / 2 + BUTTON_BORDER
-                    content: button
+    init {
+        content = [
+            Group { // Buttons
+                clip: Rectangle { // Clip
+                    width: bind toolbarWidth + 1
+                    height: TOOLBAR_HEIGHT + 1
                 }
-            ]
-        },
-        Rectangle {
-            visible: bind selectedName != null
-            translateX: bind -toolbarWidth - BUTTON_BORDER
-            width: bind text.boundsInLocal.width + BUTTON_BORDER * 2
-            height: TOOLBAR_HEIGHT
-            arcWidth: TOOLBAR_HEIGHT
-            arcHeight: TOOLBAR_HEIGHT
-            // todo - wants to be aligned right
-            fill: Color.WHITESMOKE
-            opacity: .7
-        },
-        text
-    ];
+                content: bind [
+                    Rectangle { // Border
+                        width: bind toolbarWidth
+                        height: TOOLBAR_HEIGHT
+                        arcWidth: TOOLBAR_HEIGHT
+                        arcHeight: TOOLBAR_HEIGHT
+                        stroke: Color.BLACK
+                    },
+                    Rectangle { // Background
+                        translateX: 1
+                        translateY: 1
+                        width: bind toolbarWidth - 2
+                        height: TOOLBAR_HEIGHT - 2
+                        arcWidth: TOOLBAR_HEIGHT - 2
+                        arcHeight: TOOLBAR_HEIGHT - 2
+                        stroke: Color.WHITE
+                        fill: BACKGROUND
+                        opacity: 0.7
+                    },
+                    for (button in visibleButtons) Group {
+                        translateX: BUTTON_SIZE / 2 + BUTTON_BORDER + (BUTTON_SIZE + BUTTON_SPACING) * indexof button
+                        translateY: BUTTON_SIZE / 2 + BUTTON_BORDER
+                        content: button
+                    }
+                ]
+            },
+            Rectangle {
+                visible: bind selectedName != null
+                translateX: bind - (BUTTON_BORDER + text.boundsInLocal.width)
+                width: bind text.boundsInLocal.width + BUTTON_BORDER * 2
+                height: TOOLBAR_HEIGHT
+                arcWidth: TOOLBAR_HEIGHT
+                arcHeight: TOOLBAR_HEIGHT
+                // todo - wants to be aligned right
+                fill: Color.WHITESMOKE
+                opacity: .7
+            },
+            text = Text {
+                visible: bind not selectedName.isEmpty()
+                translateX: bind - (BUTTON_BORDER * 2 + text.boundsInLocal.width)
+                translateY: BUTTON_BORDER
+                content: bind selectedName
+                textOrigin: TextOrigin.TOP
+                fill: Color.BLACK
+                font: Font {size: 10}
+            }
+        ];
+    }
 }

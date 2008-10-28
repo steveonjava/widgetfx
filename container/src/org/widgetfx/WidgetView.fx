@@ -64,39 +64,29 @@ public class WidgetView extends Group, Constrained {
         }
     }
     
-    var firstRollover = true;
-        
-    var hasFocus:Boolean on replace {
-        if (firstRollover) {
-            firstRollover = false;
-        } else {
-            rolloverTimeline.play();
-        }
-    }
+    var toolbar:WidgetToolbar;
     
-    var needsFocus:Boolean;
-    
-    // this is a workaround for the issue with toggle timelines that are stopped and started immediately triggering a full animation
-    function requestFocus(focus:Boolean):Void {
-        needsFocus = focus;
+    var hovering = bind hover or toolbar.hover on replace {
         FX.deferAction(
             function():Void {
-                hasFocus = needsFocus;
+                var newRate = if (hovering) 1 else -1;
+                if (rolloverTimeline.rate != newRate) {
+                    rolloverTimeline.rate = newRate;
+                    rolloverTimeline.play();
+                }
             }
-        );
+        )
     }
     
     var rolloverOpacity = 0.0;
     var rolloverTimeline = Timeline {
-        autoReverse: true
-        keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
+        keyFrames: at (500ms) {rolloverOpacity => 1.0 tween Interpolator.EASEIN}
     }
     
     function resize() {
         if (instance.widget.resizable) {
             if (maxWidth != Constrained.UNBOUNDED) {
                 instance.setWidth(maxWidth);
-        System.out.println("setting width: {maxWidth}")
             }
             if (maxHeight != Constrained.UNBOUNDED) {
                 instance.setHeight(maxHeight);
@@ -173,13 +163,11 @@ public class WidgetView extends Group, Constrained {
                     }
                 }
             },
-            WidgetToolbar {
+            toolbar = WidgetToolbar {
                 blocksMouse: true
-                translateX: bind (maxWidth + widget.width * scale) / 2
+                translateX: bind (maxWidth + widget.width * scale) / 2 - toolbar.boundsInLocal.width
                 opacity: bind rolloverOpacity
                 instance: instance
-                onMouseEntered: function(e) {requestFocus(true)}
-                onMouseExited: function(e) {requestFocus(false)}
                 onClose: function() {
                     WidgetManager.getInstance().removeWidget(instance);
                 }
@@ -284,8 +272,4 @@ public class WidgetView extends Group, Constrained {
             instance.saveWithoutNotification();
         }
     };
-    
-    override var onMouseEntered = function(e) {requestFocus(true)}
-    
-    override var onMouseExited = function(e) {requestFocus(false)}
 }

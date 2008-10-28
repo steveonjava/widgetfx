@@ -58,7 +58,6 @@ public abstract class GapBox extends Group, Constrained {
     
     protected function localToScreen(localX:Integer, localY:Integer):Point2D {
         var sceneCoord = localToScene(localX, localY);
-        java.lang.System.out.println("sceneX: {sceneCoord.x}, sceneY: {sceneCoord.y}, scene.x: {scene.x}, scene.y: {scene.y}, scene.stage.x: {scene.stage.x}, scene.stage.y: {scene.stage.y}");
         return Point2D {
             x: sceneCoord.x + scene.x + scene.stage.x
             y: sceneCoord.y + scene.y + scene.stage.y
