@@ -50,12 +50,16 @@ public class WidgetFrame extends Stage {
     
     public-init var instance:WidgetInstance;
     
-    var boxHeight:Number;
+    var widget = bind instance.widget;
     
-    var widget = bind instance.widget on replace {
-        width = widget.width + BORDER * 2 + 1;
-        boxHeight = widget.height + BORDER * 2 + 1;
-        height = boxHeight + toolbarHeight;
+    var widgetWidth = bind widget.width + BORDER * 2 + 1 on replace {
+        width = widgetWidth;
+    }
+    
+    var boxHeight = bind widget.height + BORDER * 2 + 1;
+    
+    var widgetHeight = bind boxHeight + toolbarHeight on replace {
+        height = widgetHeight;
     }
     
     var xSync = bind x on replace {
@@ -66,15 +70,9 @@ public class WidgetFrame extends Stage {
         instance.undockedY = y;
     }
 
-    public var resizing:Boolean on replace {
-        updateFocus();
-    }
-    var dragging:Boolean on replace {
-        updateFocus();
-    }
-    var changingOpacity:Boolean on replace {
-        updateFocus();
-    }
+    public var resizing:Boolean;
+    var dragging:Boolean;
+    var changingOpacity:Boolean;
     var docking:Boolean;
     
     var initialX:Number;
@@ -114,8 +112,7 @@ public class WidgetFrame extends Stage {
         resizing = false;
     }
     
-    // todo - there is a defect in Javafx which does not allow transparent windows. (their own example doesn't work)
-    override var style = StageStyle.UNDECORATED;//if (WidgetFXConfiguration.TRANSPARENT) StageStyle.TRANSPARENT else StageStyle.UNDECORATED;
+    override var style = if (WidgetFXConfiguration.TRANSPARENT) StageStyle.TRANSPARENT else StageStyle.UNDECORATED;
     override var title = instance.title;
     
     public function dock(dockX:Integer, dockY:Integer):Void {
@@ -160,34 +157,21 @@ public class WidgetFrame extends Stage {
     
     var rolloverOpacity = 0.0;
     var rolloverTimeline = Timeline {
-        autoReverse: true
-        keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
+        keyFrames: at (500ms) {rolloverOpacity => 1.0 tween Interpolator.EASEIN}
     }
     
-    var firstRollover = true;
-        
-    var hasFocus:Boolean on replace {
-        if (firstRollover) {
-            firstRollover = false;
-        } else {
-            rolloverTimeline.play();
-        }
-    }
+    var sceneContents:Group;
     
-    var needsFocus:Boolean;
-    
-    // this is a workaround for the issue with toggle timelines that are stopped and started immediately triggering a full animation
-    function requestFocus(focus:Boolean):Void {
-        needsFocus = focus;
-        updateFocus();
-    }
-    
-    function updateFocus():Void {
-        FX.deferAction (
+    var hovering = bind sceneContents.hover or dragging or resizing or changingOpacity on replace {
+        FX.deferAction(
             function():Void {
-                hasFocus = needsFocus or dragging or resizing or changingOpacity;
+                var newRate = if (hovering) 1 else -1;
+                if (rolloverTimeline.rate != newRate) {
+                    rolloverTimeline.rate = newRate;
+                    rolloverTimeline.play();
+                }
             }
-        );
+        )
     }
     
     init {
@@ -206,7 +190,6 @@ public class WidgetFrame extends Stage {
                         width: BORDER, height: BORDER
                         stroke: null, fill: backgroundColor
                         cursor: Cursor.NW_RESIZE
-                        blocksMouse: true
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                             resize(-xDelta, -yDelta, true, true, false, false);
@@ -217,7 +200,6 @@ public class WidgetFrame extends Stage {
                         translateX: BORDER, width: bind width - BORDER * 2, height: BORDER
                         stroke: null, fill: backgroundColor
                         cursor: Cursor.N_RESIZE
-                        blocksMouse: true
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                             resize(0, -yDelta, false, true, false, true);
@@ -228,7 +210,6 @@ public class WidgetFrame extends Stage {
                         translateX: bind width - BORDER, width: BORDER, height: BORDER
                         stroke: null, fill: backgroundColor
                         cursor: Cursor.NE_RESIZE
-                        blocksMouse: true
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                             resize(xDelta, -yDelta, false, true, false, false);
@@ -240,7 +221,6 @@ public class WidgetFrame extends Stage {
                         width: BORDER, height: bind boxHeight - BORDER * 2
                         stroke: null, fill: backgroundColor
                         cursor: Cursor.E_RESIZE
-                        blocksMouse: true
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                             resize(xDelta, 0, false, false, true, false);
@@ -252,7 +232,6 @@ public class WidgetFrame extends Stage {
                         width: BORDER, height: BORDER
                         stroke: null, fill: backgroundColor
                         cursor: Cursor.SE_RESIZE
-                        blocksMouse: true
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                             resize(xDelta, yDelta, false, false, false, false);
@@ -264,7 +243,6 @@ public class WidgetFrame extends Stage {
                         width: bind width - BORDER * 2, height: BORDER
                         stroke: null, fill: backgroundColor
                         cursor: Cursor.S_RESIZE
-                        blocksMouse: true
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                             resize(0, yDelta, false, false, false, true);
@@ -275,7 +253,6 @@ public class WidgetFrame extends Stage {
                         translateY: bind boxHeight - BORDER, width: BORDER, height: BORDER
                         stroke: null, fill: backgroundColor
                         cursor: Cursor.SW_RESIZE
-                        blocksMouse: true
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                             resize(-xDelta, yDelta, true, false, false, false);
@@ -286,7 +263,6 @@ public class WidgetFrame extends Stage {
                         translateY: BORDER, width: BORDER, height: bind boxHeight - BORDER * 2
                         stroke: null, fill: backgroundColor
                         cursor: Cursor.W_RESIZE
-                        blocksMouse: true
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
                             resize(-xDelta, 0, true, false, true, false);
@@ -305,13 +281,13 @@ public class WidgetFrame extends Stage {
                 }
             ]
             onMousePressed: function(e) {
-                if (e.button == MouseButton.PRIMARY) {
+                if (e.button == MouseButton.PRIMARY and not resizing) {
                     dragging = true;
                     saveInitialPos(e);
                 }
             }
             onMouseDragged: function(e) {
-                if (dragging and not docking) {
+                if (dragging and not docking and not resizing) {
                     var hoverOffset:Number[] = [0, 0];
                     for (container in WidgetContainer.containers) {
                         var offset = container.hover(instance, e.screenX, e.screenY, e.x, e.y, true);
@@ -326,7 +302,7 @@ public class WidgetFrame extends Stage {
                 }
             }
             onMouseReleased: function(e) {
-                if (e.button == MouseButton.PRIMARY and not docking) {
+                if (dragging and e.button == MouseButton.PRIMARY and not docking) {
                     dragging = false;
                     for (container in WidgetContainer.containers) {
                         var targetBounds = container.finishHover(instance, e.screenX, e.screenY);
@@ -343,60 +319,65 @@ public class WidgetFrame extends Stage {
             minimum: 20
             maximum: 99 // todo - hack to prevent swing component defect -- needs further investigation
             value: bind instance.opacity with inverse
-            width: width * 2 / 5
+            width: bind width * 2 / 5
         }
         scene = Scene {
-            content: [
-                dragRect,
-                Group { // Widget
-                    translateX: BORDER, translateY: BORDER + toolbarHeight
-                    cache: true
-                    content: Group { // Drop Shadow
-                        effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
-                        content: Group { // Clip Group
-                            content: widget
-                            clip: Rectangle {width: bind widget.width, height: bind widget.height}
+            content: sceneContents = Group {
+                var toolbar:WidgetToolbar;
+                content: [
+                    dragRect,
+                    Group { // Widget
+                        translateX: BORDER, translateY: BORDER + toolbarHeight
+                        cache: true
+                        content: Group { // Drop Shadow
+                            effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                            content: Group { // Clip Group
+                                content: widget
+                                clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                            }
+                        }
+                        opacity: bind (instance.opacity as Number) / 100
+                    },
+                    Group { // Transparency Slider
+                        content: [
+                            Rectangle { // Border
+                                width: bind width * 2 / 5 + 2
+                                height: 16
+                                arcWidth: 16
+                                arcHeight: 16
+                                stroke: Color.BLACK
+                            },
+                            Rectangle { // Background
+                                translateX: 1
+                                translateY: 1
+                                width: bind width * 2 / 5
+                                height: 14
+                                arcWidth: 14
+                                arcHeight: 14
+                                stroke: Color.WHITE
+                                fill: WidgetToolbar.BACKGROUND
+                                opacity: 0.7
+                            },
+                            Group { // Slider
+                                translateX: 1
+                                content: slider
+                            }
+                        ]
+                        opacity: bind rolloverOpacity
+                    },
+                    toolbar = WidgetToolbar {
+                        translateX: bind width - toolbar.boundsInLocal.width
+                        opacity: bind rolloverOpacity
+                        instance: instance
+                        onClose: function() {
+                            // todo - this will remove widgets from the WidgetRunner, but should be fixed when we refactor the widget lists
+                            WidgetManager.getInstance().removeWidget(instance);
+                            close();
                         }
                     }
-                },
-                Group { // Transparency Slider
-                    content: [
-                        Rectangle { // Border
-                            width: bind width * 2 / 5 + 2
-                            height: 16
-                            arcWidth: 16
-                            arcHeight: 16
-                            stroke: Color.BLACK
-                        },
-                        Rectangle { // Background
-                            translateX: 1
-                            translateY: 1
-                            width: bind width * 2 / 5
-                            height: 14
-                            arcWidth: 14
-                            arcHeight: 14
-                            stroke: Color.WHITE
-                            fill: WidgetToolbar.BACKGROUND
-                            opacity: 0.7
-                        },
-                        Group { // Slider
-                            translateX: 1
-                            content: slider
-                        }
-                    ]
-                    opacity: bind rolloverOpacity
-                },
-                WidgetToolbar {
-                    translateX: bind width
-                    opacity: bind rolloverOpacity
-                    instance: instance
-                    onClose: function() {
-                        // todo - this will remove widgets from the WidgetRunner, but should be fixed when we refactor the widget lists
-                        WidgetManager.getInstance().removeWidget(instance);
-                        close();
-                    }
-                }
-            ]
+                ]
+            }
+            fill: null;
         }
         // todo - find a way to get the window
 //        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {

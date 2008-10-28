@@ -38,13 +38,13 @@ var grid:Stage = Stage {
     x: 100
     y: 200
     title: "Portal 1"
-        width: 500
-        height: 500
+    width: 500
+    height: 500
     var scene:Scene = Scene {
         fill: Color.SLATEGRAY
         content: WidgetContainer {
-            width: bind grid.width
-            height: bind grid.height
+            width: bind scene.width
+            height: bind scene.height
             widgets: WidgetManager.getInstance().widgets[w|w.docked];
             layout: GapGridBox {rows: 2, columns: 3, spacing: 5}
         }
@@ -57,14 +57,14 @@ var list:Stage = Stage {
     x: 700
     y: 200
     title: "Portal 2"
-        width: 200
-        height: 500
+    width: 200
+    height: 500
     var scene:Scene = Scene {
         var widgetList:WidgetInstance[];
         fill: Color.SLATEGRAY
         content: WidgetContainer {
-            width: bind list.width
-            height: bind list.height
+            width: bind scene.width
+            height: bind scene.height
             widgets: widgetList
             layout: GapGridBox {rows: 4, columns: 1, spacing: 5}
         }
