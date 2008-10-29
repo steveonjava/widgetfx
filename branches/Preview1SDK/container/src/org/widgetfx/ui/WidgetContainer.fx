@@ -78,53 +78,62 @@ public class WidgetContainer extends Group {
     private attribute animateHover:Timeline;
     private attribute animatingInstance:WidgetInstance;
     private attribute animating = bind if (animateHover == null) false else animateHover.running on replace {
-        animatingInstance.frame.resizing = animating;
+        animatingInstance.frame.animating = animating;
     }
     private attribute animateDocked:Boolean;
     private attribute saveUndockedWidth:Integer;
     private attribute saveUndockedHeight:Integer;
-    private attribute xHoverOffset;
-    private attribute yHoverOffset;
+    private attribute xHoverOffset:Integer on replace oldValue {
+        animatingInstance.frame.x += xHoverOffset - oldValue;
+    }
+    private attribute yHoverOffset:Integer on replace oldValue {
+        animatingInstance.frame.y += yHoverOffset - oldValue;
+    }
     
     init {
         insert this into containers;
     }
     
-    public function setupHoverAnimation(instance:WidgetInstance, localX:Integer, localY:Integer) {
-        if (animateHover == null) {
-            animatingInstance = instance;
-            xHoverOffset = 0;
-            yHoverOffset = 0;
-            saveUndockedWidth = instance.undockedWidth;
-            saveUndockedHeight = instance.undockedHeight;
-            var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
-            var newHeight = if (instance.docked) instance.undockedHeight else instance.dockedHeight;
-            animateHover = Timeline {
-                autoReverse: true, toggle: true
-                keyFrames: KeyFrame {
-                    time: 300ms
-                    values: [
-                        if (newWidth > 0) {[
-                            instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH,
-                            xHoverOffset => localX - localX * newWidth / instance.widget.stage.width tween Interpolator.EASEBOTH
-                        ]} else {
-                            []
-                        },
-                        if (newHeight > 0) {[
-                            instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH,
-                            yHoverOffset => localY - localY * newHeight / instance.widget.stage.height tween Interpolator.EASEBOTH
-                        ]} else {
-                            []
-                        }
-                    ]
-                }
+    public function setupHoverAnimation(instance:WidgetInstance, localX:Integer, localY:Integer):Void {
+        animatingInstance = instance;
+        xHoverOffset = 0;
+        yHoverOffset = 0;
+        saveUndockedWidth = instance.undockedWidth;
+        saveUndockedHeight = instance.undockedHeight;
+        var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
+        var newHeight = if (instance.docked) instance.undockedHeight else instance.dockedHeight;
+        var newXHoverOffset = localX - localX * newWidth / instance.widget.stage.width;
+        var newYHoverOffset = localY - localY * newHeight / instance.widget.stage.height;
+        java.lang.System.out.println("newXHoverOffset: {newXHoverOffset}, newYHoverOffset: {newYHoverOffset}");
+        animateHover = Timeline {
+            autoReverse: true, toggle: true
+            keyFrames: KeyFrame {
+                time: 300ms
+                values: [
+                    if (newWidth > 0) {[
+                        instance.widget.stage.width => newWidth tween Interpolator.EASEBOTH,
+                        xHoverOffset => newXHoverOffset tween Interpolator.EASEBOTH
+                    ]} else {
+                        []
+                    },
+                    if (newHeight > 0) {[
+                        instance.widget.stage.height => newHeight tween Interpolator.EASEBOTH,
+                        yHoverOffset => newYHoverOffset tween Interpolator.EASEBOTH
+                    ]} else {
+                        []
+                    }
+                ]
             }
-            animateDocked = instance.docked;
         }
+        animateDocked = instance.docked;
     }
     
-    public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, localX:Integer, localY:Integer, animate:Boolean) {
+    public function prepareHover(instance:WidgetInstance, localX:Integer, localY:Integer):Void {
+        java.lang.System.out.println("localX: {localX}, localY: {localY}");
         setupHoverAnimation(instance, localX, localY);
+    }
+    
+    public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, animate:Boolean) {
         if (layout.containsScreenXY(screenX, screenY)) {
             var dockedHeight = if (instance.dockedHeight == 0) instance.widget.stage.height else instance.dockedHeight;
             layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
