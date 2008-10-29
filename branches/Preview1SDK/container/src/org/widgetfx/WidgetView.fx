@@ -38,7 +38,7 @@ import javax.swing.RootPaneContainer;
  * @author Stephen Chin
  */
 public class WidgetView extends Group, Constrained {
-    public static attribute TOP_BORDER = 13;
+    public static attribute TOP_BORDER = 13; // todo - set this back to 3 when the flash floating toolbars are fixed
     public static attribute BOTTOM_BORDER = 7;
     
     public attribute container:WidgetContainer;
@@ -75,19 +75,27 @@ public class WidgetView extends Group, Constrained {
         }
     }
     
+    private attribute flashHover = bind if (widget instanceof FlashWidget) then (widget as FlashWidget).hover else false on replace {
+        updateFocus();
+    }
+    
     private attribute needsFocus:Boolean;
     
     // this is a workaround for the issue with toggle timelines that are stopped and started immediately triggering a full animation
     private function requestFocus(focus:Boolean):Void {
         needsFocus = focus;
+        updateFocus();
+    }
+    
+    private function updateFocus() {
         DeferredTask {
             action: function() {
-                hasFocus = needsFocus;
+                hasFocus = needsFocus or flashHover;
             }
         }
     }
     
-    private attribute rolloverOpacity = if (widget instanceof FlashWidget) 1.0 else 0.0;
+    private attribute rolloverOpacity = 0.0;
     private attribute rolloverTimeline = Timeline {
         autoReverse: true, toggle: true
         keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
