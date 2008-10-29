@@ -258,6 +258,7 @@ public class WidgetInstance {
                 instance: this
                 x: undockedX, y: undockedY
             }
+            frame.addFlash();
         }
     }
     
@@ -319,7 +320,9 @@ public class WidgetInstance {
     }
     
     public function showConfigDialog():Void {
-        if (widget.configuration != null) {
+        if (widget instanceof FlashWidget) {
+            (widget as FlashWidget).configure();
+        } else if (widget.configuration != null) {
             configDialog = SwingDialog {
                 icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
                 title: "{title} Configuration"

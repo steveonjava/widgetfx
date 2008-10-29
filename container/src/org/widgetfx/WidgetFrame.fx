@@ -87,6 +87,9 @@ public class WidgetFrame extends BaseDialog {
         updateFlashBounds();
     }
 
+    public attribute animating:Boolean on replace {
+        updateFocus();
+    }
     public attribute resizing:Boolean on replace {
         updateFocus();
     }
@@ -225,7 +228,7 @@ public class WidgetFrame extends BaseDialog {
     private function updateFocus():Void {
         DeferredTask {
             action: function() {
-                hasFocus = needsFocus or dragging or resizing or changingOpacity;
+                hasFocus = needsFocus or dragging or resizing or changingOpacity or animating;
             }
         }
     }
@@ -361,7 +364,7 @@ public class WidgetFrame extends BaseDialog {
                         Group { // Rear Slice
                             cache: true
                             content: Group { // Drop Shadow
-                                effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                                effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                                 content: Group { // Clip Group
                                     content: bind widget.stage.content[0]
                                     clip: Rectangle {width: bind widget.stage.width, height: bind widget.stage.height}
@@ -430,16 +433,22 @@ public class WidgetFrame extends BaseDialog {
                     if (event.getButton() == java.awt.event.MouseEvent.BUTTON1) {
                         dragging = true;
                         saveInitialPos(event.getXOnScreen(), event.getYOnScreen());
+                        for (container in WidgetContainer.containers) {
+                            container.prepareHover(instance, event.getX(), event.getY());
+                        }
                     }
                 } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_DRAGGED) {
                     if (not docking and not resizing and not draggingSlider) {
                         if (not dragging) {
                             dragging = true;
                             saveInitialPos(event.getXOnScreen(), event.getYOnScreen());
+                            for (container in WidgetContainer.containers) {
+                                container.prepareHover(instance, event.getX(), event.getY());
+                            }
                         } else {
                             var hoverOffset = [0, 0];
                             for (container in WidgetContainer.containers) {
-                                var offset = container.hover(instance, event.getXOnScreen(), event.getYOnScreen(), event.getX(), event.getY(), true);
+                                var offset = container.hover(instance, event.getXOnScreen(), event.getYOnScreen(), true);
                                 if (offset != [0, 0]) {
                                     hoverOffset = offset;
                                 }
@@ -450,15 +459,17 @@ public class WidgetFrame extends BaseDialog {
                     }
                 } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_RELEASED) {
                     draggingSlider = false;
-                    if (dragging and event.getButton() == java.awt.event.MouseEvent.BUTTON1 and not docking and not resizing) {
+                    if (dragging and event.getButton() == java.awt.event.MouseEvent.BUTTON1 and not docking) {
                         dragging = false;
-                        for (container in WidgetContainer.containers) {
-                            var targetBounds = container.finishHover(instance, event.getXOnScreen(), event.getYOnScreen());
-                            if (targetBounds != null) {
-                                dock(targetBounds.x, targetBounds.y);
+                        if (not resizing) {
+                            for (container in WidgetContainer.containers) {
+                                var targetBounds = container.finishHover(instance, event.getXOnScreen(), event.getYOnScreen());
+                                if (targetBounds != null) {
+                                    dock(targetBounds.x, targetBounds.y);
+                                }
                             }
+                            instance.saveWithoutNotification();
                         }
-                        instance.saveWithoutNotification();
                     }
                 }
                 return false;
@@ -473,13 +484,16 @@ public class WidgetFrame extends BaseDialog {
                 instance.saveWithoutNotification();
             }
         });
+        visible = true;
+    }
+    
+    public function addFlash() {
         if (widget instanceof FlashWidget) {
             var flash = widget as FlashWidget;
             var layeredPane = (window as RootPaneContainer).getLayeredPane();
             layeredPane.add(flash.panel, new java.lang.Integer(1000));
         }
         updateFlashBounds();
-        visible = true;
     }
     
     private function updateFlashBounds() {

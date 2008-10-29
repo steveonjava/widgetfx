@@ -23,9 +23,12 @@ package org.widgetfx.ui;
 import org.jdic.web.BrComponent;
 import org.jdic.web.event.*;
 import org.widgetfx.*;
+import org.widgetfx.install.InstallUtil;
+import java.io.*;
 import javafx.application.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
+import javafx.scene.paint.*;
 import javafx.lang.DeferredTask;
 
 /**
@@ -52,16 +55,9 @@ public class FlashWidget extends Widget, BrComponentListener {
     
     public attribute panel:javax.swing.JPanel;
     
-    private attribute flashComponent = bind Component.fromJComponent(panel);
-    
-    private attribute html = bind
-"<html><body border=\"no\" scroll=\"no\" style=\"margin: 0px 0px 0px 0px;\">
-<object id=\"flash\" style=\"margin: 0px 0px 0px 0px; width:{width}; height:{height}\" classid=\"clsid:D27CDB6E-AE6D-11cf-96B8-444553540000\" codebase=\"http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0\">
-    <param name=\"movie\" value=\"{url}\">
-    <param name=\"quality\" value=\"{quality}\">
-    <param name=bgcolor VALUE={bgcolor}>
-</object>
-</body></html>";
+    private attribute flashComponent = bind Component.fromJComponent(panel) on replace {
+        java.lang.System.out.println("created a new flashComponent");
+    }
     
     init {
         BrComponent.DESIGN_MODE = false;
@@ -69,43 +65,71 @@ public class FlashWidget extends Widget, BrComponentListener {
         createPlayer();
     }
     
+    private function createHTML(resource:String):String {
+        var stream = getClass().getResourceAsStream(resource);
+        var tm = File.createTempFile("flash", ".htm");
+        InstallUtil.copyStream(stream, new FileOutputStream(tm));
+        tm.deleteOnExit();
+        return tm.toURL().toString();
+    }
+    
     private function createPlayer() {
         panel = new javax.swing.JPanel(new java.awt.GridLayout(1, 1));
         player = new BrComponent();
         player.addBrComponentListener(this);
         player.setPreferredSize(new java.awt.Dimension(stage.width, stage.height));
-        player.setHTML(new java.io.StringBufferInputStream(html), url);
+        player.setURL(createHTML("flash.html"));
         panel.add(player);
     }
     
+    private attribute loaded = false;
+    
+    public function processJSEvents(st:String) {
+        var args = st.split(",");
+        var type = args[1].toLowerCase();
+        if (type.equals("loaded")) {
+            java.lang.System.out.println("loading");
+            player.execJS(":document.getElementById('flash').movie=\"{url}\"");
+        } else if (type.equals("getCredentials")) {
+            java.lang.System.out.println("getting credentials...");
+        }
+    }
     
     public function sync(event:BrComponentEvent):String {
-        if (event.getID() == event.DISPID_DOCUMENTCOMPLETE) {
-//            updatePlayerSize();
-//            DeferredTask {
-//                action: function() {
-//                    flashPlayer.execJS(":document.getElementById('flash').login();");
-//                }
-//            }
+        if (BrComponentEvent.DISPID_STATUSTEXTCHANGE == event.getID()) {
+            java.lang.System.out.print("got a status text change");
+            var st = event.getValue();
+            java.lang.System.out.println("with value: {st}");
+            if (st.startsWith("javaevent,")) {
+                processJSEvents(st);
+                //block message echo
+                player.execJS(":window.status=\"\"");
+            }
         }
         return null;
+    }
+    
+//    override attribute onDock = function() {
+//        java.lang.System.out.println("dock called");
+//        loaded = false;
+//    }
+//    
+//    override attribute onUndock = function() {
+//        java.lang.System.out.println("undock called");
+//        player.execJSLater(":document.getElementById('flash').movie=\"{url}\"");
+//    }
+    
+    public function configure() {
+        player.execJSLater(":document.getElementById('flash').login()");
     }
     
     private attribute stageWidth = 300;
     
     private attribute stageHeight = 300;
     
-    override attribute onDock = function() {
-        createPlayer();
-    }
-    
-    override attribute onUndock = function() {
-        createPlayer();
-    }
-    
     override attribute stage = Stage {
         width: bind stageWidth with inverse
         height: bind stageHeight with inverse
-        content: javafx.scene.geometry.Rectangle {width: bind stageWidth, height: bind stageHeight, fill: bind javafx.scene.paint.Color.BLUE}
+        content: javafx.scene.geometry.Rectangle {width: bind stageWidth, height: bind stageHeight, fill: Color.rgb(0xD9, 0xD9, 0xD9)}
     }
 }

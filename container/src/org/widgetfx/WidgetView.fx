@@ -227,19 +227,21 @@ public class WidgetView extends Group, Constrained {
             }
         ];
         onMousePressed = function(e:MouseEvent):Void {
+            java.lang.System.out.println("Mouse pressed");
             initialScreenPosX = -e.getStageX().intValue();
             initialScreenPosY = -e.getStageY().intValue();
+            for (container in WidgetContainer.containers) {
+                container.prepareHover(instance, e.getX(), e.getY());
+            }
         };
         onMouseDragged = function(e:MouseEvent):Void {
+            java.lang.System.out.println("mouse dragged, docking = {docking}");
             if (not docking) {
                 var xPos;
                 var yPos;
                 if (instance.docked) {
-                    removeFlash();
-                    if (instance.widget.onUndock != null) {
-                        instance.widget.onUndock();
-                    }
                     container.dragging = true;
+                    hideFlash();
                     var bounds = container.layout.getScreenBounds(this);
                     xPos = (bounds.x + (bounds.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                     var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
@@ -253,7 +255,7 @@ public class WidgetView extends Group, Constrained {
                 }
                 var hoverOffset = [0, 0];
                 for (container in WidgetContainer.containers) {
-                    var offset = container.hover(instance, e.getScreenX(), e.getScreenY(), e.getX(), e.getY(), not instance.docked);
+                    var offset = container.hover(instance, e.getScreenX(), e.getScreenY(), not instance.docked);
                     if (offset != [0, 0]) {
                         hoverOffset = offset;
                     }
@@ -264,16 +266,22 @@ public class WidgetView extends Group, Constrained {
             }
         };
         onMouseReleased = function(e:MouseEvent):Void {
+            java.lang.System.out.println("mouse released");
             if (not docking and not instance.docked) {
+                showFlash();
                 for (container in WidgetContainer.containers) {
                     var targetBounds = container.finishHover(instance, e.getScreenX(), e.getScreenY());
                     if (targetBounds != null) {
                         docking = true;
                         instance.frame.dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
                     } else {
-                        // todo - don't call onResize multiple times
+                        // todo - don't call this block multiple times
                         if (instance.widget.onResize != null) {
                             instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                        }
+                        instance.frame.addFlash();
+                        if (instance.widget.onUndock != null) {
+                            instance.widget.onUndock();
                         }
                     }
                 }
@@ -300,6 +308,20 @@ public class WidgetView extends Group, Constrained {
             var flash = widget as FlashWidget;
             var layeredPane = (container.window as RootPaneContainer).getLayeredPane();
             layeredPane.remove(flash.panel);
+        }
+    }
+    
+    private function hideFlash() {
+        if (widget instanceof FlashWidget) {
+            var flash = widget as FlashWidget;
+            flash.panel.setVisible(false);
+        }
+    }
+    
+    private function showFlash() {
+        if (widget instanceof FlashWidget) {
+            var flash = widget as FlashWidget;
+            flash.panel.setVisible(true);
         }
     }
     
