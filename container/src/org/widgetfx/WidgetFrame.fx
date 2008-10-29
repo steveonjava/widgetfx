@@ -201,7 +201,7 @@ public class WidgetFrame extends BaseDialog {
     
     override attribute opacity = bind if (widget instanceof FlashWidget) instance.opacity / 100.0 else 1.0;
     
-    private attribute rolloverOpacity = if (widget instanceof FlashWidget) 1.0 else 0.0;
+    private attribute rolloverOpacity = 0.0;
     private attribute rolloverTimeline = Timeline {
         autoReverse: true, toggle: true
         keyFrames: KeyFrame {time: 500ms, values: rolloverOpacity => 1.0 tween Interpolator.EASEIN}
@@ -217,6 +217,10 @@ public class WidgetFrame extends BaseDialog {
         }
     }
     
+    private attribute flashHover = bind if (widget instanceof FlashWidget) then (widget as FlashWidget).hover else false on replace {
+        updateFocus();
+    }
+    
     private attribute needsFocus:Boolean;
     
     // this is a workaround for the issue with toggle timelines that are stopped and started immediately triggering a full animation
@@ -228,7 +232,7 @@ public class WidgetFrame extends BaseDialog {
     private function updateFocus():Void {
         DeferredTask {
             action: function() {
-                hasFocus = needsFocus or dragging or resizing or changingOpacity or animating;
+                hasFocus = needsFocus or dragging or resizing or changingOpacity or animating or flashHover;
             }
         }
     }

@@ -1,4 +1,4 @@
-<html>
+<html style="allowtransparency: true">
 <head>
 <script language="JavaScript" type="text/javascript">
     function getCredentials() {
@@ -8,16 +8,52 @@
         credentials[1]='password';
         return credentials;
     }
+    function mouseOver() {
+        window.status = "javaevent,mouseover";
+    }
+    function mouseOut() {
+        window.status = "javaevent,mouseout";
+    }
+    function mouseDown() {
+        window.status = "javaevent,mousedown";
+    }
+    function mouseUp() {
+        window.status = "javaevent,mouseup";
+    }
     function _onload() {
         window.status = "javaevent,loaded";
     }
+    
+document.onmousemove = mouseMove;
+document.onmouseover = mouseOver;
+document.onmouseout = mouseOut;
+document.onmousedown = mouseDown;
+document.onmouseup = mouseUp;
+
+function mouseMove(ev){
+	ev           = ev || window.event;
+	var mousePos = mouseCoords(ev);
+        window.status = "javaevent,x=" + ev.x + ",y=" + ev.y;
+}
+
+function mouseCoords(ev){
+	if(ev.pageX || ev.pageY){
+		return {x:ev.pageX, y:ev.pageY};
+	}
+	return {
+		x:ev.clientX + document.body.scrollLeft - document.body.clientLeft,
+		y:ev.clientY + document.body.scrollTop  - document.body.clientTop
+	};
+}
+
 </script>
 </head>
-<body border="no" scroll="no" style="margin: 0px 0px 0px 0px;" onload="_onload();">
+<body border="no" scroll="no" style="margin: 0px 0px 0px 0px" onload="_onload();">
 <object id="flash" style="margin: 0px 0px 0px 0px; width:100%; height:100%" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab">
     <param name="movie" value="x">
     <param name="quality" value="high">
-    <param name="bgcolor" VALUE=#D9D9D9>
+    <PARAM NAME="wmode" VALUE="opaque">
+    <!--<param name="bgcolor" VALUE=#D9D9D9>-->
     <param name="allowScriptAccess" VALUE="always">
 </object>
 </body></html>

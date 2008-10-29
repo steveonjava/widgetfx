@@ -43,14 +43,8 @@ public class FlashWidget extends Widget, BrComponentListener {
     
     public attribute url:String;
     
-    public attribute quality = "high";
+    public attribute hover = false;
     
-    public attribute bgcolor = "#D9D9D9";
-    
-    public attribute width = "100%";
-    
-    public attribute height = "100%";
-
     private attribute player:BrComponent;
     
     public attribute panel:javax.swing.JPanel;
@@ -92,6 +86,10 @@ public class FlashWidget extends Widget, BrComponentListener {
             player.execJS(":document.getElementById('flash').movie=\"{url}\"");
         } else if (type.equals("getCredentials")) {
             java.lang.System.out.println("getting credentials...");
+        } else if (type.equals("mouseover")) {
+            hover = true;
+        } else if (type.equals("mouseout")) {
+            hover = false;
         }
     }
     
@@ -109,18 +107,8 @@ public class FlashWidget extends Widget, BrComponentListener {
         return null;
     }
     
-//    override attribute onDock = function() {
-//        java.lang.System.out.println("dock called");
-//        loaded = false;
-//    }
-//    
-//    override attribute onUndock = function() {
-//        java.lang.System.out.println("undock called");
-//        player.execJSLater(":document.getElementById('flash').movie=\"{url}\"");
-//    }
-    
     public function configure() {
-        player.execJSLater(":document.getElementById('flash').login()");
+        //player.execJSLater(":document.getElementById('flash').login()");
     }
     
     private attribute stageWidth = 300;
