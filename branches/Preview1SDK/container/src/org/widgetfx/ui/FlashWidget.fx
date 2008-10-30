@@ -24,7 +24,10 @@ import org.jdic.web.BrComponent;
 import org.jdic.web.event.*;
 import org.widgetfx.*;
 import org.widgetfx.install.InstallUtil;
+import java.awt.EventQueue;
+import java.awt.event.MouseEvent;
 import java.io.*;
+import java.lang.*;
 import javafx.application.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
@@ -45,13 +48,13 @@ public class FlashWidget extends Widget, BrComponentListener {
     
     public attribute hover = false;
     
+    public attribute dragging = false;
+    
     private attribute player:BrComponent;
     
     public attribute panel:javax.swing.JPanel;
     
-    private attribute flashComponent = bind Component.fromJComponent(panel) on replace {
-        java.lang.System.out.println("created a new flashComponent");
-    }
+    override attribute dragAnywhere = true;
     
     init {
         BrComponent.DESIGN_MODE = false;
@@ -78,26 +81,79 @@ public class FlashWidget extends Widget, BrComponentListener {
     
     private attribute loaded = false;
     
+    private function getXY(args:String[]):Integer[] {
+        return [Integer.parseInt(args[2]), Integer.parseInt(args[3])];
+    }
+    
     public function processJSEvents(st:String) {
         var args = st.split(",");
         var type = args[1].toLowerCase();
+        var eventQueue = java.awt.Toolkit.getDefaultToolkit().getSystemEventQueue();
         if (type.equals("loaded")) {
             java.lang.System.out.println("loading");
-            player.execJS(":document.getElementById('flash').movie=\"{url}\"");
-        } else if (type.equals("getCredentials")) {
-            java.lang.System.out.println("getting credentials...");
+            player.execJS(":setMovie(\"{url}\")");
+        } else if (type.equals("requestlogin")) {
+            DeferredTask {
+                action: function() {
+                    Login {// u=bandit@v, password=bandit
+                        token: args[2]
+                        onLogin: function(username, password) {
+                            player.execJSLater(":login('{username}','{password}')");
+                        }
+                    }
+                }
+            }
+        } else if (type.equals("inconfiguration")) {
+            inConfigure = Boolean.valueOf(args[2]);
+            java.lang.System.out.println("inConfigure: {inConfigure}");
         } else if (type.equals("mouseover")) {
-            hover = true;
+            DeferredTask {
+                action: function() {
+                    hover = true;
+                }
+            }
         } else if (type.equals("mouseout")) {
-            hover = false;
+            DeferredTask {
+                action: function() {
+                    hover = false;
+                }
+            }
+        } else if (type.equals("mousedown")) {
+            var coords = getXY(args);
+            dragging = true;
+            DeferredTask {
+                action: function() {
+                    eventQueue.postEvent(new MouseEvent(player, MouseEvent.MOUSE_PRESSED,
+                            System.currentTimeMillis(), 0, coords[0], coords[1], 0, false, MouseEvent.BUTTON1));
+                }
+            }
+        } else if (type.equals("mouseup")) {
+            var coords = getXY(args);
+            dragging = false;
+            DeferredTask {
+                action: function() {
+                    eventQueue.postEvent(new MouseEvent(player, MouseEvent.MOUSE_RELEASED,
+                            System.currentTimeMillis(), 0, coords[0], coords[1], 0, false, MouseEvent.BUTTON1));
+                }
+            }
+        } else if (type.equals("mousemove")) {
+            if (dragging) {
+                var coords = getXY(args);
+                DeferredTask {
+                    action: function() {
+                        eventQueue.postEvent(new MouseEvent(player, MouseEvent.MOUSE_DRAGGED,
+                            System.currentTimeMillis(), 0, coords[0], coords[1], 0, false, MouseEvent.BUTTON1));
+                    }
+                }
+            }
+        } else {
+            System.err.println("Unknown javascript command: " + st);
         }
     }
     
     public function sync(event:BrComponentEvent):String {
         if (BrComponentEvent.DISPID_STATUSTEXTCHANGE == event.getID()) {
-            java.lang.System.out.print("got a status text change");
             var st = event.getValue();
-            java.lang.System.out.println("with value: {st}");
             if (st.startsWith("javaevent,")) {
                 processJSEvents(st);
                 //block message echo
@@ -107,8 +163,11 @@ public class FlashWidget extends Widget, BrComponentListener {
         return null;
     }
     
-    public function configure() {
-        //player.execJSLater(":document.getElementById('flash').login()");
+    private attribute inConfigure = false;
+    
+    public function configure():Void {
+        player.execJSLater(":toggleConfiguration()");
+        inConfigure = not inConfigure;
     }
     
     private attribute stageWidth = 300;

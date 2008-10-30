@@ -71,6 +71,12 @@ public class WidgetManager {
     
     public attribute recentWidgets:String[] = [];
     
+    private attribute loginTokens:String[] = [];
+    
+    private attribute loginUsernames:String[] = [];
+    
+    private attribute loginPasswords:String[] = [];
+    
     private attribute configuration = WidgetFXConfiguration.getInstanceWithProperties([
         IntegerSequenceProperty {
             name: "widgets"
@@ -79,8 +85,40 @@ public class WidgetManager {
         StringSequenceProperty {
             name: "recentWidgets"
             value: bind recentWidgets with inverse
+        },
+        StringSequenceProperty {
+            name: "loginTokens"
+            value: bind loginTokens with inverse
+        },
+        StringSequenceProperty {
+            name: "loginUsernames"
+            value: bind loginUsernames with inverse
+        },
+        StringSequenceProperty {
+            name: "loginPasswords"
+            value: bind loginPasswords with inverse
         }
     ]);
+
+    public function lookupCredentials(token:String):String[] {
+        var index = Sequences.indexOf(loginTokens, token);
+        if (index == -1) {
+            return null;
+        }
+        return [loginUsernames[index], loginPasswords[index]];
+    }
+    
+    public function storeCredentials(token:String, username:String, password:String) {
+        var index = Sequences.indexOf(loginTokens, token);
+        if (index == -1) {
+            insert token into loginTokens;
+            insert username into loginUsernames;
+            insert password into loginPasswords;
+        } else {
+            loginUsernames[index] = username;
+            loginPasswords[index] = password;
+        }
+    }
 
     private attribute updating:Boolean;
 
@@ -173,6 +211,7 @@ public class WidgetManager {
     }
     
     public function addWidget(url:String):WidgetInstance {
+        java.lang.System.out.println("adding widget: {url}");
         for (widget in widgets) {
             if (widget.jnlpUrl.equals(url)) {
                 System.out.println("Widget already loaded: " + url);

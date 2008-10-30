@@ -65,6 +65,8 @@ public class WidgetFrame extends BaseDialog {
     
     public attribute instance:WidgetInstance;
     
+    public attribute hidden = false;
+    
     private attribute widget = bind instance.widget;
     
     private attribute xSync = bind x on replace {
@@ -237,7 +239,7 @@ public class WidgetFrame extends BaseDialog {
         }
     }
     
-    postinit {
+    public function populateContents() {
         var dragRect:Group = Group {
             var backgroundColor = Color.rgb(0xF5, 0xF5, 0xF5, 0.6);
             translateY: toolbarHeight,
@@ -352,6 +354,19 @@ public class WidgetFrame extends BaseDialog {
                 }
             ]
             opacity: bind if (widget.resizable) rolloverOpacity * 0.8 else 0.0;
+            onMousePressed: function(e:MouseEvent) {
+                if (not widget.dragAnywhere and e.getButton() == 1) {
+                    prepareDrag(e.getX(), e.getY(), e.getScreenX(), e.getScreenY());
+                }
+            }
+            onMouseDragged: function(e:MouseEvent) {
+                doDrag(e.getScreenX(), e.getScreenY());
+            }
+            onMouseReleased: function(e:MouseEvent) {
+                if (not widget.dragAnywhere and e.getButton() == 1) {
+                    finishDrag(e.getScreenX(), e.getScreenY());
+                }
+            }
         }
         var slider = Slider {
             minimum: 20
@@ -423,57 +438,29 @@ public class WidgetFrame extends BaseDialog {
         }
         WidgetEventQueue.getInstance().registerInterceptor(window, EventInterceptor {
             var draggingSlider = false;
+            var draggingSource;
             public function shouldIntercept(event):Boolean {
                 if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
                     requestFocus(true);
                 } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
                     requestFocus(false);
-                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_PRESSED) {
-                    if (SwingUtilities.getDeepestComponentAt(event.getComponent(), event.getX(), event.getY()) == slider.getJComponent()) {
-                        draggingSlider = true;
-                        return false;
-                    }
-                    //java.lang.System.out.println("pressed: {event.getComponent()}");
-                    if (event.getButton() == java.awt.event.MouseEvent.BUTTON1) {
-                        dragging = true;
-                        saveInitialPos(event.getXOnScreen(), event.getYOnScreen());
-                        for (container in WidgetContainer.containers) {
-                            container.prepareHover(instance, event.getX(), event.getY());
+                }
+                if (widget.dragAnywhere) {
+                    if (event.getID() == java.awt.event.MouseEvent.MOUSE_PRESSED) {
+                        draggingSource = event.getSource();
+                        if (SwingUtilities.getDeepestComponentAt(event.getComponent(), event.getX(), event.getY()) == slider.getJComponent()) {
+                            draggingSlider = true;
+                        } else if (not resizing and event.getButton() == java.awt.event.MouseEvent.BUTTON1) {
+                            prepareDrag(event.getX(), event.getY(), event.getXOnScreen(), event.getYOnScreen());
                         }
-                    }
-                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_DRAGGED) {
-                    if (not docking and not resizing and not draggingSlider) {
-                        if (not dragging) {
-                            dragging = true;
-                            saveInitialPos(event.getXOnScreen(), event.getYOnScreen());
-                            for (container in WidgetContainer.containers) {
-                                container.prepareHover(instance, event.getX(), event.getY());
-                            }
-                        } else {
-                            var hoverOffset = [0, 0];
-                            for (container in WidgetContainer.containers) {
-                                var offset = container.hover(instance, event.getXOnScreen(), event.getYOnScreen(), true);
-                                if (offset != [0, 0]) {
-                                    hoverOffset = offset;
-                                }
-                            }
-                            x = initialX + event.getXOnScreen() - initialScreenX + hoverOffset[0];
-                            y = initialY + event.getYOnScreen() - initialScreenY + hoverOffset[1];
+                    } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_DRAGGED and event.getSource() == draggingSource) {
+                        if (not draggingSlider and not resizing) {
+                            doDrag(event.getXOnScreen(), event.getYOnScreen());
                         }
-                    }
-                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_RELEASED) {
-                    draggingSlider = false;
-                    if (dragging and event.getButton() == java.awt.event.MouseEvent.BUTTON1 and not docking) {
-                        dragging = false;
-                        if (not resizing) {
-                            for (container in WidgetContainer.containers) {
-                                var targetBounds = container.finishHover(instance, event.getXOnScreen(), event.getYOnScreen());
-                                if (targetBounds != null) {
-                                    dock(targetBounds.x, targetBounds.y);
-                                }
-                            }
-                            instance.saveWithoutNotification();
-                        }
+                    } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_RELEASED and event.getButton() == java.awt.event.MouseEvent.BUTTON1 and event.getSource() == draggingSource) {
+                        draggingSlider = false;
+                        finishDrag(event.getXOnScreen(), event.getYOnScreen());
+                        draggingSource = null;
                     }
                 }
                 return false;
@@ -488,22 +475,74 @@ public class WidgetFrame extends BaseDialog {
                 instance.saveWithoutNotification();
             }
         });
+    }
+    
+    postinit {
+        if (hidden) {
+            x = -10000;
+            y = -10000;
+        } else {
+            populateContents();
+        }
         visible = true;
     }
+    
+    private function prepareDrag(dragX:Integer, dragY:Integer, screenX:Integer, screenY:Integer) {
+        dragging = true;
+        saveInitialPos(screenX, screenY);
+        for (container in WidgetContainer.containers) {
+            container.prepareHover(instance, dragX, dragY);
+        }
+    }
+    
+    private function doDrag(screenX:Integer, screenY:Integer) {
+        if (not docking and dragging) {
+            var hoverOffset = [0, 0];
+            for (container in WidgetContainer.containers) {
+                var offset = container.hover(instance, screenX, screenY, true);
+                if (offset != [0, 0]) {
+                    hoverOffset = offset;
+                }
+            }
+            x = initialX + screenX - initialScreenX + hoverOffset[0];
+            y = initialY + screenY - initialScreenY + hoverOffset[1];
+        }
+    }
+    
+    private function finishDrag(screenX:Integer, screenY:Integer) {
+        if (dragging and not docking) {
+            dragging = false;
+            if (not resizing) {
+                for (container in WidgetContainer.containers) {
+                    var targetBounds = container.finishHover(instance, screenX, screenY);
+                    if (targetBounds != null) {
+                        dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
+                    }
+                }
+                instance.saveWithoutNotification();
+            }
+        }
+    }
+    
+    private attribute added = false;
     
     public function addFlash() {
         if (widget instanceof FlashWidget) {
             var flash = widget as FlashWidget;
             var layeredPane = (window as RootPaneContainer).getLayeredPane();
             layeredPane.add(flash.panel, new java.lang.Integer(1000));
+            added = true;
+            updateFlashBounds();
         }
-        updateFlashBounds();
     }
     
     private function updateFlashBounds() {
-        if (widget instanceof FlashWidget) {
+        if (widget instanceof FlashWidget and added) {
             var flash = widget as FlashWidget;
-            flash.panel.setBounds(BORDER, BORDER + toolbarHeight, widget.stage.width, widget.stage.height);
+            var layeredPane = (window as RootPaneContainer).getLayeredPane();
+            if (flash.panel.getParent() == layeredPane) {
+                flash.panel.setBounds(BORDER, BORDER + toolbarHeight, widget.stage.width, widget.stage.height);
+            }
         }
     }
 }

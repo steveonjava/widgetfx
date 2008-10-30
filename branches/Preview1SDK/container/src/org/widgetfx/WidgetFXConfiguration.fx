@@ -34,7 +34,7 @@ import org.widgetfx.config.*;
  * @author Keith Combs
  */
 public class WidgetFXConfiguration {
-    public static attribute VERSION = "0.1.5";
+    public static attribute VERSION = "0.1.6";
     public static attribute TRANSPARENT = true;
     public static attribute IS_MAC = System.getProperty("os.name").contains("Mac OS");
     

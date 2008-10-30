@@ -1,42 +1,39 @@
 <html style="allowtransparency: true">
 <head>
 <script language="JavaScript" type="text/javascript">
-    function getCredentials() {
-        window.status = "javaevent,getCredentials";
-        var credentials = new Array();
-        credentials[0]='user';
-        credentials[1]='password';
-        return credentials;
+    // viswa wants to know this
+    function loginRequest(token) {
+        window.status = "javaevent,requestlogin," + token;
+        return true;
     }
-    function mouseOver() {
-        window.status = "javaevent,mouseover";
+    function requestLogin(token) {
+        window.status = "javaevent,requestlogin," + token;
+        return true;
     }
-    function mouseOut() {
-        window.status = "javaevent,mouseout";
-    }
-    function mouseDown() {
-        window.status = "javaevent,mousedown";
-    }
-    function mouseUp() {
-        window.status = "javaevent,mouseup";
-    }
-    function _onload() {
-        window.status = "javaevent,loaded";
+    function inConfiguration(inConfig) {
+        window.status = "javascript,inconfiguration," + inConfig;
     }
     
-document.onmousemove = mouseMove;
-document.onmouseover = mouseOver;
-document.onmouseout = mouseOut;
-document.onmousedown = mouseDown;
-document.onmouseup = mouseUp;
-
-function mouseMove(ev){
-	ev           = ev || window.event;
-	var mousePos = mouseCoords(ev);
-        window.status = "javaevent,x=" + ev.x + ",y=" + ev.y;
-}
-
-function mouseCoords(ev){
+    function login(user, password) {
+        return document.getElementById("flash").login(user, password);
+    }
+    function setMovie(url) {
+        document.getElementById("flash").movie = url;
+    }
+    function toggleConfiguration() {
+        try {
+            document.getElementById("flash").toggleConfiguration();
+        } catch (e) {
+            // ignore
+        }
+    }
+    
+    document.onmousemove = mouseMove;
+    document.onmouseover = mouseOver;
+    document.onmouseout = mouseOut;
+    document.onmousedown = mouseDown;
+    document.onmouseup = mouseUp;
+    function mouseCoords(ev){
 	if(ev.pageX || ev.pageY){
 		return {x:ev.pageX, y:ev.pageY};
 	}
@@ -44,8 +41,36 @@ function mouseCoords(ev){
 		x:ev.clientX + document.body.scrollLeft - document.body.clientLeft,
 		y:ev.clientY + document.body.scrollTop  - document.body.clientTop
 	};
-}
+    }
+    function mouseOver(ev) {
+	ev = ev || window.event;
+	var mousePos = mouseCoords(ev);
+        window.status = "javaevent,mouseover," + ev.x + "," + ev.y;
+    }
+    function mouseOut(ev) {
+	ev = ev || window.event;
+	var mousePos = mouseCoords(ev);
+        window.status = "javaevent,mouseout," + ev.x + "," + ev.y;
+    }
+    function mouseDown(ev) {
+	ev = ev || window.event;
+	var mousePos = mouseCoords(ev);
+        window.status = "javaevent,mousedown," + ev.x + "," + ev.y;
+    }
+    function mouseUp(ev) {
+	ev = ev || window.event;
+	var mousePos = mouseCoords(ev);
+        window.status = "javaevent,mouseup," + ev.x + "," + ev.y;
+    }
+    function mouseMove(ev){
+	ev = ev || window.event;
+	var mousePos = mouseCoords(ev);
+        window.status = "javaevent,mousemove," + ev.x + "," + ev.y;
+    }
 
+    function _onload() {
+        window.status = "javaevent,loaded";
+    }
 </script>
 </head>
 <body border="no" scroll="no" style="margin: 0px 0px 0px 0px" onload="_onload();">

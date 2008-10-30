@@ -54,12 +54,22 @@ public class WidgetEventQueue extends EventQueue {
         });
     }
     
-    public void registerInterceptor(Component parent, EventInterceptor interceptor) {
-        interceptors.put(parent, interceptor);
+    public void registerInterceptor(final Component parent, final EventInterceptor interceptor) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                interceptors.put(parent, interceptor);
+            }
+        });
     }
     
-    public void removeInterceptor(Component parent) {
-        interceptors.remove(parent);
+    public void removeInterceptor(final Component parent) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                interceptors.remove(parent);
+            }
+        });
     }
 
     @Override
@@ -70,7 +80,7 @@ public class WidgetEventQueue extends EventQueue {
             if (source instanceof Component) {
                 Component component = (Component) source;
                 for (Map.Entry<Component, EventInterceptor> interceptor: interceptors.entrySet()) {
-                    if (component.equals(interceptor.getKey())) {
+                    if (component.equals(interceptor.getKey()) || SwingUtilities.isDescendingFrom(component, interceptor.getKey())) {
                         if (interceptor.getValue().shouldIntercept(event)) {
                             return;
                         }
