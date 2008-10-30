@@ -134,6 +134,10 @@ public class Dock extends BaseDialog {
         BooleanProperty {
             name: "visible"
             value: bind visible with inverse;
+        },
+        StringProperty {
+            name: "theme"
+            value: bind theme with inverse;
         }
     ]);
     
@@ -148,6 +152,7 @@ public class Dock extends BaseDialog {
     private attribute headerHeight:Integer = bind BORDER * 2 + logo.getHeight().intValue();
     attribute container:WidgetContainer = WidgetContainer {
         window: window
+        rolloverOpacity: bind rolloverOpacity
         resizing: bind resizing
         translateX: BORDER
         translateY: bind headerHeight

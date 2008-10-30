@@ -119,6 +119,14 @@ public class Widget extends Application {
     public attribute configuration:Configuration;
     
     /**
+     * If set to true, this var allows widgets to be dragged from any point in their
+     * bounds including embedded Swing components and nodes with blocksMouse set to true.
+     *
+     * The default value is false, which only allows dragging on unblocked nodes.
+     */
+    public attribute dragAnywhere = false;
+    
+    /**
      * Event handler called on resize of a widget.  This method is always
      * called with the current value of stage.width and stage.height
      * as the parameters.
