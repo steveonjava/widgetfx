@@ -266,6 +266,7 @@ public class WidgetView extends Group, Constrained {
         if (not docking and dragging) {
             var xPos;
             var yPos;
+            var beginningFlashOffset = flashOffset;
             if (instance.docked) {
                 container.dragging = true;
                 hideFlash();
@@ -293,7 +294,7 @@ public class WidgetView extends Group, Constrained {
                 }
             }
             instance.frame.x = initialX + screenX - initialScreenX + hoverOffset[0];
-            instance.frame.y = initialY + screenY - initialScreenY + hoverOffset[1] + flashOffset;
+            instance.frame.y = initialY + screenY - initialScreenY + hoverOffset[1] + beginningFlashOffset;
         }
     }
     

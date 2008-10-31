@@ -34,8 +34,6 @@ public class CloseButton extends ToolbarButton {
     
     override attribute name = "Close";
     
-    override attribute visible = bind toolbar.instance.widget.configuration == null;
-    
     protected function performAction() {
         if (toolbar.onClose != null) {
             toolbar.onClose();

@@ -90,13 +90,13 @@ public class FlashWidget extends Widget, BrComponentListener {
         var type = args[1].toLowerCase();
         var eventQueue = java.awt.Toolkit.getDefaultToolkit().getSystemEventQueue();
         if (type.equals("loaded")) {
-            java.lang.System.out.println("loading");
             player.execJS(":setMovie(\"{url}\")");
         } else if (type.equals("requestlogin")) {
             DeferredTask {
                 action: function() {
                     Login {// u=bandit@v, password=bandit
                         token: args[2]
+                        forceLogin: Boolean.valueOf(args[3]);
                         onLogin: function(username, password) {
                             player.execJSLater(":login('{username}','{password}')");
                         }

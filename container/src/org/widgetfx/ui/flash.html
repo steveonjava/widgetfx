@@ -6,8 +6,8 @@
         window.status = "javaevent,requestlogin," + token;
         return true;
     }
-    function requestLogin(token) {
-        window.status = "javaevent,requestlogin," + token;
+    function requestLogin(token, forceLogin) {
+        window.status = "javaevent,requestlogin," + token + "," + forceLogin;
         return true;
     }
     function inConfiguration(inConfig) {
