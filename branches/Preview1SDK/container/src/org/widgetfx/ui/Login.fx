@@ -32,6 +32,8 @@ public class Login {
     
     public attribute token:String;
     
+    public attribute forceLogin:Boolean;
+    
     public attribute onLogin:function(username:String, password:String):Void;
     
     public attribute onCancel:function():Void;
@@ -43,7 +45,7 @@ public class Login {
     private attribute password:String;
     
     postinit {
-        var credentials = WidgetManager.getInstance().lookupCredentials(token);
+        var credentials = if (forceLogin) null else WidgetManager.getInstance().lookupCredentials(token);
         if (credentials != null) {
             onLogin(credentials[0], credentials[1]);
         } else {

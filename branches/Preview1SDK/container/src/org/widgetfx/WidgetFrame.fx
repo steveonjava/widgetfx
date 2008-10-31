@@ -201,7 +201,7 @@ public class WidgetFrame extends BaseDialog {
         widget.stage.height = newHeight;
     }
     
-    override attribute opacity = bind if (widget instanceof FlashWidget) instance.opacity / 100.0 else 1.0;
+    override attribute opacity = bind if (widget instanceof FlashWidget and WidgetFXConfiguration.TRANSPARENT) instance.opacity / 100.0 else 1.0;
     
     private attribute rolloverOpacity = 0.0;
     private attribute rolloverTimeline = Timeline {
