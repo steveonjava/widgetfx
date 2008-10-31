@@ -25,6 +25,7 @@ import org.jdic.web.event.*;
 import org.widgetfx.*;
 import org.widgetfx.install.InstallUtil;
 import java.awt.EventQueue;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.io.*;
 import java.lang.*;
@@ -33,6 +34,7 @@ import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.paint.*;
 import javafx.lang.DeferredTask;
+import javax.swing.SwingUtilities;
 
 /**
  * @author Stephen Chin
@@ -54,7 +56,7 @@ public class FlashWidget extends Widget, BrComponentListener {
     
     public attribute panel:javax.swing.JPanel;
     
-    override attribute dragAnywhere = true;
+    public attribute dragContainer:DragContainer;
     
     init {
         BrComponent.DESIGN_MODE = false;
@@ -85,6 +87,8 @@ public class FlashWidget extends Widget, BrComponentListener {
         return [Integer.parseInt(args[2]), Integer.parseInt(args[3])];
     }
     
+    private attribute gone = false;
+    
     public function processJSEvents(st:String) {
         var args = st.split(",");
         var type = args[1].toLowerCase();
@@ -94,7 +98,7 @@ public class FlashWidget extends Widget, BrComponentListener {
         } else if (type.equals("requestlogin")) {
             DeferredTask {
                 action: function() {
-                    Login {// u=bandit@v, password=bandit
+                    Login {
                         token: args[2]
                         forceLogin: Boolean.valueOf(args[3]);
                         onLogin: function(username, password) {
@@ -118,13 +122,26 @@ public class FlashWidget extends Widget, BrComponentListener {
                     hover = false;
                 }
             }
+            var coords = getXY(args);
+            if (coords == [-1, -1]) {
+                gone = true;
+                DeferredTask {
+                    action: function() {
+                        if (gone) {
+                            dragging = false;
+                            var pt = java.awt.MouseInfo.getPointerInfo().getLocation();
+                            dragContainer.finishDrag(pt.x, pt.y);
+                        }
+                    }
+                }
+            }
         } else if (type.equals("mousedown")) {
             var coords = getXY(args);
             dragging = true;
             DeferredTask {
                 action: function() {
-                    eventQueue.postEvent(new MouseEvent(player, MouseEvent.MOUSE_PRESSED,
-                            System.currentTimeMillis(), 0, coords[0], coords[1], 0, false, MouseEvent.BUTTON1));
+                    var pt = java.awt.MouseInfo.getPointerInfo().getLocation();
+                    dragContainer.prepareDrag(coords[0], coords[1], pt.x, pt.y);
                 }
             }
         } else if (type.equals("mouseup")) {
@@ -132,17 +149,18 @@ public class FlashWidget extends Widget, BrComponentListener {
             dragging = false;
             DeferredTask {
                 action: function() {
-                    eventQueue.postEvent(new MouseEvent(player, MouseEvent.MOUSE_RELEASED,
-                            System.currentTimeMillis(), 0, coords[0], coords[1], 0, false, MouseEvent.BUTTON1));
+                    var pt = java.awt.MouseInfo.getPointerInfo().getLocation();
+                    dragContainer.finishDrag(pt.x, pt.y);
                 }
             }
         } else if (type.equals("mousemove")) {
+            gone = false;
             if (dragging) {
                 var coords = getXY(args);
                 DeferredTask {
                     action: function() {
-                        eventQueue.postEvent(new MouseEvent(player, MouseEvent.MOUSE_DRAGGED,
-                            System.currentTimeMillis(), 0, coords[0], coords[1], 0, false, MouseEvent.BUTTON1));
+                        var pt = java.awt.MouseInfo.getPointerInfo().getLocation();
+                        dragContainer.doDrag(pt.x, pt.y);
                     }
                 }
             }

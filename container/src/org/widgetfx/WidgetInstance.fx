@@ -239,7 +239,7 @@ public class WidgetInstance {
         }
     }
     
-    function saveWithoutNotification() {
+    public function saveWithoutNotification() {
         persister.save();
     }
 
@@ -258,7 +258,6 @@ public class WidgetInstance {
                 instance: this
                 x: undockedX, y: undockedY
             }
-            frame.addFlash();
         }
     }
     

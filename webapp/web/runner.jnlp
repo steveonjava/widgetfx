@@ -14,7 +14,7 @@
     <resources>
         <property name="jnlp.packEnabled" value="true"/>
         <j2se version="1.6+" java-vm-args="-Xmx512m"/>
-        <jar href="widgetfx.jar" main="true" download="eager" version="0.1.5"/>
+        <jar href="widgetfx.jar" main="true" download="eager" version="0.1.7"/>
         <jar href="lib/Decora-D3D.jar" download="eager" version="0.9-pre-1"/>
         <jar href="lib/Decora-HW.jar" download="eager" version="0.9-pre-1"/>
         <jar href="lib/Decora-OGL.jar" download="eager" version="0.9-pre-1"/>
@@ -25,7 +25,11 @@
         <jar href="lib/javafxrt.jar" download="eager" version="0.9-pre-1"/>
         <jar href="lib/jmc.jar" download="eager" version="0.9-pre-1"/>
         <jar href="lib/jnlp.jar" download="eager" version="1.6.0_10"/>
-        <jar href="lib/widgetfx-api.jar" download="eager" version="0.1.5"/>
+        <jar href="lib/widgetfx-api.jar" download="eager" version="0.1.7"/>
+        <jar href="lib/JDICplus.jar" download="eager" version="0.2.2"/>
+    </resources>
+    <resources os="Windows" arch="x86">
+        <nativelib href="lib/JDICplus_native.jar" version="0.2.2"/>
     </resources>
     <application-desc main-class="org.widgetfx.WidgetRunner">
         $$args

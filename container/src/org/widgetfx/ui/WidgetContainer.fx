@@ -44,16 +44,8 @@ public class WidgetContainer extends Group {
     
     public attribute window:Window on replace {
         WidgetEventQueue.getInstance().registerInterceptor(window, EventInterceptor {
-            var draggingViews:WidgetView[];
-            var draggingSources:Object[];
             public function shouldIntercept(event):Boolean {
-                if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
-                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
-                    for (view in draggingViews) {
-                        view.finishDrag(event.getXOnScreen(), event.getYOnScreen());
-                    }
-                    draggingViews = [];
-                    draggingSources = [];
+                if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
                     for (view in widgetViews) {
                         view.requestFocus(false);
                     }
@@ -61,28 +53,6 @@ public class WidgetContainer extends Group {
                     for (view in widgetViews) {
                         view.requestFocus(layout.getScreenBounds(view).contains(event.getLocationOnScreen()));
                     }
-                }
-                if (event.getID() == java.awt.event.MouseEvent.MOUSE_PRESSED and event.getButton() == java.awt.event.MouseEvent.BUTTON1) {
-                    for (view in widgetViews where not view.resizing) {
-                        if (view.widget.dragAnywhere and layout.getScreenBounds(view).contains(event.getLocationOnScreen())) {
-                            view.prepareDrag(event.getX(), event.getY(), event.getXOnScreen(), event.getYOnScreen());
-                            insert view into draggingViews;
-                            insert event.getSource() into draggingSources;
-                        }
-                    }
-                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_DRAGGED and Sequences.indexOf(draggingSources, event.getSource()) != -1) {
-                    var view = draggingViews[Sequences.indexOf(draggingSources, event.getSource())];
-                    if (view.resizing) {
-                        delete view from draggingViews;
-                        delete event.getSource() from draggingSources;
-                    } else {
-                        view.doDrag(event.getXOnScreen(), event.getYOnScreen());
-                    }
-                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_RELEASED and event.getButton() == java.awt.event.MouseEvent.BUTTON1 and Sequences.indexOf(draggingSources, event.getSource()) != -1) {
-                    var view = draggingViews[Sequences.indexOf(draggingSources, event.getSource())];
-                    view.finishDrag(event.getXOnScreen(), event.getYOnScreen());
-                    delete view from draggingViews;
-                    delete event.getSource() from draggingSources;
                 }
                 return false;
             }
