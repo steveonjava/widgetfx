@@ -55,7 +55,7 @@ import javax.swing.SwingUtilities;
 /**
  * @author Stephen Chin
  */
-public class WidgetFrame extends BaseDialog {
+public class WidgetFrame extends BaseDialog, DragContainer {
     public static attribute BORDER = 5;
     public static attribute RESIZABLE_TOOLBAR_HEIGHT = 18;
     public static attribute NONRESIZABLE_TOOLBAR_HEIGHT = RESIZABLE_TOOLBAR_HEIGHT - BORDER;
@@ -63,11 +63,17 @@ public class WidgetFrame extends BaseDialog {
     
     private attribute toolbarHeight = bind if (instance.widget.configuration == null) NONRESIZABLE_TOOLBAR_HEIGHT else RESIZABLE_TOOLBAR_HEIGHT;
     
-    public attribute instance:WidgetInstance;
-    
     public attribute hidden = false;
     
     private attribute widget = bind instance.widget;
+    
+    private attribute isFlash = bind widget instanceof FlashWidget;
+    
+    private attribute supportsTransparency = bind WidgetFXConfiguration.TRANSPARENT and not isFlash;
+    
+    private attribute useOpacity = bind WidgetFXConfiguration.TRANSPARENT and isFlash and WidgetFXConfiguration.IS_VISTA;
+    
+    private attribute sliderEnabled = bind supportsTransparency or useOpacity;
     
     private attribute xSync = bind x on replace {
         instance.undockedX = x;
@@ -95,20 +101,15 @@ public class WidgetFrame extends BaseDialog {
     public attribute resizing:Boolean on replace {
         updateFocus();
     }
-    private attribute dragging:Boolean on replace {
+    override attribute dragging on replace {
         updateFocus();
     }
     private attribute changingOpacity:Boolean on replace {
         updateFocus();
     }
-    private attribute docking:Boolean;
     
-    private attribute initialX:Integer;
-    private attribute initialY:Integer;
     private attribute initialWidth:Integer;
     private attribute initialHeight:Integer;
-    private attribute initialScreenX;
-    private attribute initialScreenY;
         
     private attribute saveInitialPos = function(screenX:Integer, screenY:Integer):Void {
         initialX = x;
@@ -141,7 +142,7 @@ public class WidgetFrame extends BaseDialog {
     }
     
     init {
-        windowStyle = if (WidgetFXConfiguration.TRANSPARENT and not (widget instanceof FlashWidget)) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
+        windowStyle = if (supportsTransparency) WindowStyle.TRANSPARENT else WindowStyle.UNDECORATED;
         title = instance.title;
     }
     
@@ -158,7 +159,7 @@ public class WidgetFrame extends BaseDialog {
                         container.dockAfterHover(instance);
                     }
                     if (instance.widget.onResize != null) {
-                        instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
+                        instance.widget.onResize(widget.stage.width, widget.stage.height);
                     }
                 }
             }
@@ -201,7 +202,7 @@ public class WidgetFrame extends BaseDialog {
         widget.stage.height = newHeight;
     }
     
-    override attribute opacity = bind if (widget instanceof FlashWidget and WidgetFXConfiguration.TRANSPARENT) instance.opacity / 100.0 else 1.0;
+    override attribute opacity = bind if (useOpacity) instance.opacity / 100.0 else 1.0;
     
     private attribute rolloverOpacity = 0.0;
     private attribute rolloverTimeline = Timeline {
@@ -219,7 +220,7 @@ public class WidgetFrame extends BaseDialog {
         }
     }
     
-    private attribute flashHover = bind if (widget instanceof FlashWidget) then (widget as FlashWidget).hover else false on replace {
+    private attribute flashHover = bind if (isFlash) then (widget as FlashWidget).hover else false on replace {
         updateFocus();
     }
     
@@ -239,7 +240,7 @@ public class WidgetFrame extends BaseDialog {
         }
     }
     
-    public function populateContents() {
+    postinit {
         var dragRect:Group = Group {
             var backgroundColor = Color.rgb(0xF5, 0xF5, 0xF5, 0.6);
             translateY: toolbarHeight,
@@ -355,7 +356,7 @@ public class WidgetFrame extends BaseDialog {
             ]
             opacity: bind if (widget.resizable) rolloverOpacity * 0.8 else 0.0;
             onMousePressed: function(e:MouseEvent) {
-                if (not widget.dragAnywhere and e.getButton() == 1) {
+                if (e.getButton() == 1) {
                     prepareDrag(e.getX(), e.getY(), e.getScreenX(), e.getScreenY());
                 }
             }
@@ -363,7 +364,7 @@ public class WidgetFrame extends BaseDialog {
                 doDrag(e.getScreenX(), e.getScreenY());
             }
             onMouseReleased: function(e:MouseEvent) {
-                if (not widget.dragAnywhere and e.getButton() == 1) {
+                if (e.getButton() == 1) {
                     finishDrag(e.getScreenX(), e.getScreenY());
                 }
             }
@@ -398,32 +399,36 @@ public class WidgetFrame extends BaseDialog {
                     ]
                     opacity: bind (instance.opacity as Number) / 100
                 },
-                Group { // Transparency Slider
-                    content: [
-                        Rectangle { // Border
-                            width: bind width * 2 / 5 + 2
-                            height: 16
-                            arcWidth: 16
-                            arcHeight: 16
-                            stroke: Color.BLACK
-                        },
-                        Rectangle { // Background
-                            translateX: 1
-                            translateY: 1
-                            width: bind width * 2 / 5
-                            height: 14
-                            arcWidth: 14
-                            arcHeight: 14
-                            stroke: Color.WHITE
-                            fill: WidgetToolbar.BACKGROUND
-                            opacity: 0.7
-                        },
-                        ComponentView { // Slider
-                            translateX: 1
-                            component: slider
-                        }
-                    ]
-                    opacity: bind rolloverOpacity
+                if (sliderEnabled) {
+                    Group { // Transparency Slider
+                        content: [
+                            Rectangle { // Border
+                                width: bind width * 2 / 5 + 2
+                                height: 16
+                                arcWidth: 16
+                                arcHeight: 16
+                                stroke: Color.BLACK
+                            },
+                            Rectangle { // Background
+                                translateX: 1
+                                translateY: 1
+                                width: bind width * 2 / 5
+                                height: 14
+                                arcWidth: 14
+                                arcHeight: 14
+                                stroke: Color.WHITE
+                                fill: WidgetToolbar.BACKGROUND
+                                opacity: 0.7
+                            },
+                            ComponentView { // Slider
+                                translateX: 1
+                                component: slider
+                            }
+                        ]
+                        opacity: bind rolloverOpacity
+                    }
+                } else {
+                    []
                 },
                 WidgetToolbar {
                     translateX: bind width
@@ -437,31 +442,11 @@ public class WidgetFrame extends BaseDialog {
             fill: null
         }
         WidgetEventQueue.getInstance().registerInterceptor(window, EventInterceptor {
-            var draggingSlider = false;
-            var draggingSource;
             public function shouldIntercept(event):Boolean {
                 if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
                     requestFocus(true);
                 } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
                     requestFocus(false);
-                }
-                if (widget.dragAnywhere) {
-                    if (event.getID() == java.awt.event.MouseEvent.MOUSE_PRESSED) {
-                        draggingSource = event.getSource();
-                        if (SwingUtilities.getDeepestComponentAt(event.getComponent(), event.getX(), event.getY()) == slider.getJComponent()) {
-                            draggingSlider = true;
-                        } else if (not resizing and event.getButton() == java.awt.event.MouseEvent.BUTTON1) {
-                            prepareDrag(event.getX(), event.getY(), event.getXOnScreen(), event.getYOnScreen());
-                        }
-                    } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_DRAGGED and event.getSource() == draggingSource) {
-                        if (not draggingSlider and not resizing) {
-                            doDrag(event.getXOnScreen(), event.getYOnScreen());
-                        }
-                    } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_RELEASED and event.getButton() == java.awt.event.MouseEvent.BUTTON1 and event.getSource() == draggingSource) {
-                        draggingSlider = false;
-                        finishDrag(event.getXOnScreen(), event.getYOnScreen());
-                        draggingSource = null;
-                    }
                 }
                 return false;
             }
@@ -475,19 +460,11 @@ public class WidgetFrame extends BaseDialog {
                 instance.saveWithoutNotification();
             }
         });
-    }
-    
-    postinit {
-        if (hidden) {
-            x = -10000;
-            y = -10000;
-        } else {
-            populateContents();
-        }
+        addFlash();
         visible = true;
     }
     
-    private function prepareDrag(dragX:Integer, dragY:Integer, screenX:Integer, screenY:Integer) {
+    public function prepareDrag(dragX:Integer, dragY:Integer, screenX:Integer, screenY:Integer) {
         dragging = true;
         saveInitialPos(screenX, screenY);
         for (container in WidgetContainer.containers) {
@@ -495,7 +472,7 @@ public class WidgetFrame extends BaseDialog {
         }
     }
     
-    private function doDrag(screenX:Integer, screenY:Integer) {
+    public function doDrag(screenX:Integer, screenY:Integer) {
         if (not docking and dragging) {
             var hoverOffset = [0, 0];
             for (container in WidgetContainer.containers) {
@@ -509,35 +486,27 @@ public class WidgetFrame extends BaseDialog {
         }
     }
     
-    private function finishDrag(screenX:Integer, screenY:Integer) {
-        if (dragging and not docking) {
-            dragging = false;
-            if (not resizing) {
-                for (container in WidgetContainer.containers) {
-                    var targetBounds = container.finishHover(instance, screenX, screenY);
-                    if (targetBounds != null) {
-                        dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
-                    }
-                }
-                instance.saveWithoutNotification();
-            }
+    protected function dragComplete(targetBounds:java.awt.Rectangle):Void {
+        if (targetBounds != null) {
+            dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
         }
     }
     
     private attribute added = false;
     
     public function addFlash() {
-        if (widget instanceof FlashWidget) {
+        if (isFlash) {
             var flash = widget as FlashWidget;
             var layeredPane = (window as RootPaneContainer).getLayeredPane();
             layeredPane.add(flash.panel, new java.lang.Integer(1000));
             added = true;
             updateFlashBounds();
+            flash.dragContainer = this;
         }
     }
     
     private function updateFlashBounds() {
-        if (widget instanceof FlashWidget and added) {
+        if (isFlash and added) {
             var flash = widget as FlashWidget;
             var layeredPane = (window as RootPaneContainer).getLayeredPane();
             if (flash.panel.getParent() == layeredPane) {

@@ -37,23 +37,16 @@ import javax.swing.RootPaneContainer;
 /**
  * @author Stephen Chin
  */
-public class WidgetView extends Group, Constrained {
+public class WidgetView extends Group, Constrained, DragContainer {
     public static attribute TOP_BORDER = 13; // todo - set this back to 3 when the flash floating toolbars are fixed
     public static attribute BOTTOM_BORDER = 7;
     
     public attribute container:WidgetContainer;
-    public attribute instance:WidgetInstance;
     public attribute widget = bind instance.widget;
     
     public attribute resizing = false;
-    public attribute dragging = false;
-    public attribute docking = false;
     
     private attribute dockedParent:Group;
-    private attribute initialX:Integer;
-    private attribute initialY:Integer;
-    private attribute initialScreenX:Integer;
-    private attribute initialScreenY:Integer;
     
     private attribute scale:Number = bind calculateScale();
     
@@ -110,6 +103,7 @@ public class WidgetView extends Group, Constrained {
                 instance.widget.stage.width = maxWidth.intValue();
             }
             if (maxHeight != Constrained.UNBOUNDED) {
+                System.out.println("setting height to {maxHeight}");
                 instance.widget.stage.height = maxHeight.intValue();
             }
             if (instance.widget.aspectRatio != 0) {
@@ -238,7 +232,7 @@ public class WidgetView extends Group, Constrained {
             }
         ];
         onMousePressed = function(e:MouseEvent):Void {
-            if (not widget.dragAnywhere and e.getButton() == 1) {
+            if (e.getButton() == 1) {
                 prepareDrag(e.getX(), e.getY(), e.getScreenX(), e.getScreenY());
             }
         };
@@ -246,84 +240,55 @@ public class WidgetView extends Group, Constrained {
             doDrag(e.getScreenX(), e.getScreenY());
         };
         onMouseReleased = function(e:MouseEvent):Void {
-            if (not widget.dragAnywhere and e.getButton() == 1) {
+            if (e.getButton() == 1) {
                 finishDrag(e.getScreenX(), e.getScreenY());
             }
         };
         addFlash();
     }
     
-    public function prepareDrag(dragX:Integer, dragY:Integer, screenX:Integer, screenY:Integer) {
-        dragging = true;
-        initialScreenX = screenX;
-        initialScreenY = screenY;
-        for (container in WidgetContainer.containers) {
-            container.prepareHover(instance, dragX, dragY);
-        }
-    }
-    
     public function doDrag(screenX:Integer, screenY:Integer) {
         if (not docking and dragging) {
-            var xPos;
-            var yPos;
-            var beginningFlashOffset = flashOffset;
+            container.dragging = true;
             if (instance.docked) {
-                container.dragging = true;
-                hideFlash();
                 var bounds = container.layout.getScreenBounds(this);
-                xPos = (bounds.x + (bounds.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
+                var xPos = (bounds.x + (bounds.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                 var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
-                yPos = bounds.y + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
-                if (instance.frame == null) {
-                    instance.frame = WidgetFrame {
-                        instance: instance
-                        x: xPos, y: yPos
-                    }
-                } else {
-                    instance.frame.populateContents();
+                var yPos = bounds.y + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
+                instance.frame = WidgetFrame {
+                    instance: instance
+                    x: xPos, y: yPos
                 }
-                initialX = xPos;
-                initialY = yPos;
+                if (widget instanceof FlashWidget) {
+                    var flash = widget as FlashWidget;
+                    flash.dragContainer = this;
+                }
                 instance.docked = false;
             }
-            var hoverOffset = [0, 0];
-            for (container in WidgetContainer.containers) {
-                var offset = container.hover(instance, screenX, screenY + flashOffset, not instance.docked);
-                if (offset != [0, 0]) {
-                    hoverOffset = offset;
-                }
-            }
-            instance.frame.x = initialX + screenX - initialScreenX + hoverOffset[0];
-            instance.frame.y = initialY + screenY - initialScreenY + hoverOffset[1] + beginningFlashOffset;
+            DragContainer.doDrag(screenX, screenY);
         }
     }
     
-    public function finishDrag(screenX:Integer, screenY:Integer) {
-        if (not docking and not instance.docked) {
-            dragging = false;
-            container.dragging = false;
-            for (container in WidgetContainer.containers) {
-                var targetBounds = container.finishHover(instance, screenX, screenY + flashOffset);
-                if (targetBounds != null) {
-                    docking = true;
-                    instance.frame.dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
-                } else {
-                    // todo - don't call this block multiple times
-                    if (instance.widget.onResize != null) {
-                        instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
-                    }
-                    java.lang.System.out.println("adding flash...");
-                    instance.frame.addFlash();
-                    if (instance.widget.onUndock != null) {
-                        instance.widget.onUndock();
-                    }
-                }
+    protected function dragComplete(targetBounds:java.awt.Rectangle):Void {
+        container.dragging = false;
+        if (targetBounds != null) {
+            docking = true;
+            instance.frame.dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
+        } else {
+            // todo - don't call this block multiple times
+            if (instance.widget.onResize != null) {
+                instance.widget.onResize(instance.widget.stage.width, instance.widget.stage.height);
             }
-            instance.saveWithoutNotification();
+            if (widget instanceof FlashWidget) {
+                var flash = widget as FlashWidget;
+                flash.dragContainer = instance.frame;
+            }
+            if (instance.widget.onUndock != null) {
+                instance.widget.onUndock();
+            }
         }
     }
     
-    private attribute flashOffset:Integer = 0;
     private attribute added = false;
     
     private function addFlash() {
@@ -333,12 +298,9 @@ public class WidgetView extends Group, Constrained {
             if (flash.panel.getParent() != layeredPane) {
                 layeredPane.add(flash.panel, new java.lang.Integer(1000));
             }
-            instance.frame = WidgetFrame {
-                instance: instance
-                hidden: true
-            }
             added = true;
             updateFlashBounds();
+            flash.dragContainer = this;
         }
     }
     
@@ -348,16 +310,6 @@ public class WidgetView extends Group, Constrained {
             var flash = widget as FlashWidget;
             var layeredPane = (container.window as RootPaneContainer).getLayeredPane();
             layeredPane.remove(flash.panel);
-        }
-    }
-    
-    private function hideFlash() {
-        if (widget instanceof FlashWidget) {
-            added = false;
-            var flash = widget as FlashWidget;
-            var currentLocation = flash.panel.getLocation();
-            flash.panel.setLocation(currentLocation.x, -widget.stage.height);
-            flashOffset = currentLocation.y + widget.stage.height;
         }
     }
     
