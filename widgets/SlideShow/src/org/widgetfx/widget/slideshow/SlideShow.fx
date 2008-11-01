@@ -99,6 +99,7 @@ private function updateImage():Void {
     }
     worker = JavaFXWorker {
         inBackground: function() {
+            
             var image = Image {url: currentFile, height: imageHeight};
             if (image.size == 0) {
                 throw new RuntimeException("Image has empty size: {currentFile}");
@@ -182,7 +183,10 @@ private function getImageFiles(directory:File):String[] {
                 getImageFiles(file);
             } else if (extension != null and ImageIO.getImageReadersBySuffix(extension).hasNext()) {
                 fileCount++;
-                file.toURL().toString();
+                var url = file.toURL();
+                var uri = new java.net.URI(url.getProtocol(), url.getUserInfo(), 
+                    url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
+                uri.toString().replaceAll("#", "%23");
             } else {
                 emptyFile;
             }
