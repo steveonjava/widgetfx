@@ -32,6 +32,7 @@ import javafx.scene.effect.*;
 import javafx.scene.geometry.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
+import javax.swing.JPanel;
 import javax.swing.RootPaneContainer;
 
 /**
@@ -42,6 +43,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
     public static attribute BOTTOM_BORDER = 7;
     
     public attribute container:WidgetContainer;
+    
     public attribute widget = bind instance.widget;
     
     public attribute resizing = false;
@@ -251,6 +253,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
         if (not docking and dragging) {
             container.dragging = true;
             if (instance.docked) {
+                flashPanel.setVisible(false);
                 var bounds = container.layout.getScreenBounds(this);
                 var xPos = (bounds.x + (bounds.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                 var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
@@ -271,6 +274,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
     
     protected function dragComplete(targetBounds:java.awt.Rectangle):Void {
         container.dragging = false;
+        removeFlash();
         if (targetBounds != null) {
             docking = true;
             instance.frame.dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
@@ -289,36 +293,32 @@ public class WidgetView extends Group, Constrained, DragContainer {
         }
     }
     
-    private attribute added = false;
+    private attribute flashPanel:JPanel;
     
     private function addFlash() {
         if (widget instanceof FlashWidget) {
             var flash = widget as FlashWidget;
+            flashPanel = flash.createPlayer();
             var layeredPane = (container.window as RootPaneContainer).getLayeredPane();
-            if (flash.panel.getParent() != layeredPane) {
-                layeredPane.add(flash.panel, new java.lang.Integer(1000));
-            }
-            added = true;
+            layeredPane.add(flashPanel, new java.lang.Integer(1000));
             updateFlashBounds();
             flash.dragContainer = this;
         }
     }
     
     private function removeFlash() {
-        if (widget instanceof FlashWidget) {
-            added = false;
-            var flash = widget as FlashWidget;
+        if (flashPanel != null) {
             var layeredPane = (container.window as RootPaneContainer).getLayeredPane();
-            layeredPane.remove(flash.panel);
+            layeredPane.remove(flashPanel);
+            flashPanel = null;
         }
     }
     
     private function updateFlashBounds() {
-        if (widget instanceof FlashWidget and added) {
-            var flash = widget as FlashWidget;
+        if (flashPanel != null) {
             var location = new Point(0, 0);
             impl_getSGNode().localToGlobal(location, location);
-            flash.panel.setBounds(location.x, location.y + TOP_BORDER, widget.stage.width, widget.stage.height);
+            flashPanel.setBounds(location.x, location.y + TOP_BORDER, widget.stage.width, widget.stage.height);
         }
     }
 }

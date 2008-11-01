@@ -28,6 +28,7 @@
         }
     }
     
+    document.onmousedrag = mouseDrag;
     document.onmousemove = mouseMove;
     document.onmouseover = mouseOver;
     document.onmouseout = mouseOut;
@@ -65,7 +66,12 @@
     function mouseMove(ev){
 	ev = ev || window.event;
 	var mousePos = mouseCoords(ev);
-        window.status = "javaevent,mousemove," + ev.x + "," + ev.y;
+        window.status = "javaevent,mousemove," + ev.x + "," + ev.y + "," + ev.button;
+    }
+    function mouseDrag(ev){
+	ev = ev || window.event;
+	var mousePos = mouseCoords(ev);
+        window.status = "javaevent,mousedrag," + ev.x + "," + ev.y + "," + ev.button;
     }
 
     function _onload() {
