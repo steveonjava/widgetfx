@@ -26,6 +26,7 @@ import javafx.animation.*;
 import javafx.application.*;
 import javafx.lang.*;
 import javafx.scene.*;
+import javax.swing.JPanel;
 import org.widgetfx.*;
 
 /**
@@ -150,7 +151,7 @@ public class WidgetContainer extends Group {
     }
     
     public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, animate:Boolean) {
-        if (layout.containsScreenXY(screenX, screenY)) {
+        if (visible and layout.containsScreenXY(screenX, screenY)) {
             var dockedHeight = if (instance.dockedHeight == 0) instance.widget.stage.height else instance.dockedHeight;
             layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
             if (animateHover != null and not animateDocked) {
@@ -168,7 +169,7 @@ public class WidgetContainer extends Group {
     }
     
     public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):java.awt.Rectangle {
-        if (layout.containsScreenXY(screenX, screenY)) {
+        if (visible and layout.containsScreenXY(screenX, screenY)) {
             animateHover.stop();
             animateHover = null;
             instance.undockedWidth = saveUndockedWidth;

@@ -43,8 +43,11 @@ public abstract class DragContainer {
     
     public attribute initialScreenY:Integer;
     
+    private attribute moved = false;
+    
     public function prepareDrag(dragX:Integer, dragY:Integer, screenX:Integer, screenY:Integer) {
         dragging = true;
+        moved = false;
         needsInitialXY = true;
         initialScreenX = screenX;
         initialScreenY = screenY;
@@ -55,6 +58,7 @@ public abstract class DragContainer {
     
     public function doDrag(screenX:Integer, screenY:Integer) {
         if (not docking and dragging) {
+            moved = true;
             var hoverOffset = [0, 0];
             for (container in WidgetContainer.containers) {
                 var offset = container.hover(instance, screenX, screenY, true);
@@ -73,8 +77,9 @@ public abstract class DragContainer {
     }
     
     public function finishDrag(screenX:Integer, screenY:Integer) {
-        if (dragging and not docking) {
+        if (moved and not docking) {
             dragging = false;
+            moved = false;
             for (container in WidgetContainer.containers) {
                 var targetBounds = container.finishHover(instance, screenX, screenY);
                 dragComplete(targetBounds);

@@ -160,6 +160,7 @@ public class Dock extends BaseDialog {
         width: bind width - BORDER * 2
         height: bind height - headerHeight
         layout: GapVBox {}
+        visible: bind visible
     }
     
     private attribute currentGraphics:java.awt.GraphicsConfiguration;

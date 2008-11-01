@@ -49,6 +49,7 @@ import javafx.scene.transform.Scale;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import javax.swing.event.MouseInputAdapter;
+import javax.swing.JPanel;
 import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 
@@ -464,53 +465,30 @@ public class WidgetFrame extends BaseDialog, DragContainer {
         visible = true;
     }
     
-    public function prepareDrag(dragX:Integer, dragY:Integer, screenX:Integer, screenY:Integer) {
-        dragging = true;
-        saveInitialPos(screenX, screenY);
-        for (container in WidgetContainer.containers) {
-            container.prepareHover(instance, dragX, dragY);
-        }
-    }
-    
-    public function doDrag(screenX:Integer, screenY:Integer) {
-        if (not docking and dragging) {
-            var hoverOffset = [0, 0];
-            for (container in WidgetContainer.containers) {
-                var offset = container.hover(instance, screenX, screenY, true);
-                if (offset != [0, 0]) {
-                    hoverOffset = offset;
-                }
-            }
-            x = initialX + screenX - initialScreenX + hoverOffset[0];
-            y = initialY + screenY - initialScreenY + hoverOffset[1];
-        }
-    }
-    
     protected function dragComplete(targetBounds:java.awt.Rectangle):Void {
         if (targetBounds != null) {
             dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
         }
     }
     
-    private attribute added = false;
+    private attribute flashPanel:JPanel;
     
     public function addFlash() {
         if (isFlash) {
             var flash = widget as FlashWidget;
+            flashPanel = flash.createPlayer();
             var layeredPane = (window as RootPaneContainer).getLayeredPane();
-            layeredPane.add(flash.panel, new java.lang.Integer(1000));
-            added = true;
+            layeredPane.add(flashPanel, new java.lang.Integer(1000));
             updateFlashBounds();
             flash.dragContainer = this;
         }
     }
     
     private function updateFlashBounds() {
-        if (isFlash and added) {
-            var flash = widget as FlashWidget;
+        if (flashPanel != null) {
             var layeredPane = (window as RootPaneContainer).getLayeredPane();
-            if (flash.panel.getParent() == layeredPane) {
-                flash.panel.setBounds(BORDER, BORDER + toolbarHeight, widget.stage.width, widget.stage.height);
+            if (flashPanel.getParent() == layeredPane) {
+                flashPanel.setBounds(BORDER, BORDER + toolbarHeight, widget.stage.width, widget.stage.height);
             }
         }
     }

@@ -34,6 +34,7 @@ import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.paint.*;
 import javafx.lang.DeferredTask;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 /**
@@ -54,14 +55,11 @@ public class FlashWidget extends Widget, BrComponentListener {
     
     private attribute player:BrComponent;
     
-    public attribute panel:javax.swing.JPanel;
-    
     public attribute dragContainer:DragContainer;
     
     init {
         BrComponent.DESIGN_MODE = false;
         BrComponent.setDefaultPaintAlgorithm(BrComponent.PAINT_NATIVE);
-        createPlayer();
     }
     
     private function createHTML(resource:String):String {
@@ -72,13 +70,14 @@ public class FlashWidget extends Widget, BrComponentListener {
         return tm.toURL().toString();
     }
     
-    private function createPlayer() {
-        panel = new javax.swing.JPanel(new java.awt.GridLayout(1, 1));
+    public function createPlayer():JPanel {
+        var panel = new JPanel(new java.awt.GridLayout(1, 1));
         player = new BrComponent();
         player.addBrComponentListener(this);
         player.setPreferredSize(new java.awt.Dimension(stage.width, stage.height));
         player.setURL(createHTML("flash.html"));
         panel.add(player);
+        return panel;
     }
     
     private attribute loaded = false;
@@ -155,17 +154,23 @@ public class FlashWidget extends Widget, BrComponentListener {
             }
         } else if (type.equals("mousemove")) {
             gone = false;
+            var button:Integer = Integer.valueOf(args[4]);
             if (dragging) {
                 var coords = getXY(args);
                 DeferredTask {
                     action: function() {
                         var pt = java.awt.MouseInfo.getPointerInfo().getLocation();
-                        dragContainer.doDrag(pt.x, pt.y);
+                        if (button == 0) {
+                            dragging = false;
+                            dragContainer.finishDrag(pt.x, pt.y);
+                        } else {
+                            dragContainer.doDrag(pt.x, pt.y);
+                        }
                     }
                 }
             }
         } else {
-            System.err.println("Unknown javascript command: " + st);
+            System.err.println("Unknown javascript->java bridge command: " + st);
         }
     }
     
