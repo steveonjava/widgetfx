@@ -359,6 +359,7 @@ var slideShow:Widget = Widget {
             image: bind currentImage
         },
         Group {
+            var text:Text;
             content: [
                 Rectangle {
                     width: bind slideShow.width
@@ -366,10 +367,9 @@ var slideShow:Widget = Widget {
                     fill: Color.BLACK
                     arcWidth: 8, arcHeight: 8
                 },
-                Text {
+                text = Text {
                     translateY: bind slideShow.height / 2
-                    translateX: bind slideShow.width / 2
-                    textAlignment: TextAlignment.CENTER
+                    translateX: bind (slideShow.width - text.boundsInLocal.width) / 2
                     content: bind status
                     fill: Color.WHITE
                 }
