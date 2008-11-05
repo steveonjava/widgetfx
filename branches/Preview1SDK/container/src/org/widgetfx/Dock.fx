@@ -51,6 +51,8 @@ import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.io.*;
 import java.lang.*;
 import java.net.URL;
@@ -163,10 +165,10 @@ public class Dock extends BaseDialog {
         visible: bind visible
     }
     
-    private attribute currentGraphics:java.awt.GraphicsConfiguration;
-    private attribute screenBounds = bind currentGraphics.getBounds() on replace {
-        updateDockLocation();
+    private attribute currentGraphics:java.awt.GraphicsConfiguration on replace {
+        updateDockLocation(true);
     }
+    private attribute screenBounds;
     private attribute displayId:String on replace {
         var newGraphics = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
         for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) where gd.getIDstring().equals(displayId)) {
@@ -177,15 +179,15 @@ public class Dock extends BaseDialog {
     }
     private attribute dockLeft:Boolean on replace {
         dockRight = not dockLeft;
-        updateDockLocation();
+        updateDockLocation(true);
     };
     private attribute dockRight:Boolean on replace {
         dockLeft = not dockRight;
-        updateDockLocation();
+        updateDockLocation(true);
     };
 
     private attribute widthTrigger = bind width on replace {
-        updateDockLocation();
+        updateDockLocation(false);
     }
 
     private attribute alwaysOnTop:Boolean on replace {
@@ -194,7 +196,10 @@ public class Dock extends BaseDialog {
     
     attribute resizing:Boolean;
     
-    private function updateDockLocation() {
+    private function updateDockLocation(recalculate:Boolean) {
+        if (recalculate) {
+            screenBounds = currentGraphics.getBounds();
+        }
         height = screenBounds.height - menuHeight;
         x = screenBounds.x + (if (dockLeft) 0 else screenBounds.width - width);
         y = screenBounds.y + menuHeight;
@@ -239,6 +244,21 @@ public class Dock extends BaseDialog {
         loadContent();
         createTrayIcon();
         WidgetManager.getInstance().dockOffscreenWidgets();
+        watchDisplayResolution();
+    }
+    
+    private function watchDisplayResolution() {
+        (new Timer("displayMonitor")).schedule(TimerTask {
+            public function run() {
+                if (not screenBounds.equals(currentGraphics.getBounds())) {
+                    DeferredTask {
+                        action: function() {
+                            updateDockLocation(true);
+                        }
+                    }
+                }
+            }
+        }, 0, 3000);
     }
     
     private function hideDock() {
@@ -248,7 +268,7 @@ public class Dock extends BaseDialog {
     public function showDock() {
         visible = true;
         DeferredTask { // workaround for defect where dock moves to center on show
-            action: function() {updateDockLocation();}
+            action: function() {updateDockLocation(true);}
         }
         toFront();
         WidgetManager.getInstance().dockOffscreenWidgets();

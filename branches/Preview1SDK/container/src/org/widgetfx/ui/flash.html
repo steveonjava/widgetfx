@@ -1,11 +1,6 @@
-<html style="allowtransparency: true">
+<html>
 <head>
 <script language="JavaScript" type="text/javascript">
-    // viswa wants to know this
-    function loginRequest(token) {
-        window.status = "javaevent,requestlogin," + token;
-        return true;
-    }
     function requestLogin(token, forceLogin) {
         window.status = "javaevent,requestlogin," + token + "," + forceLogin;
         return true;
@@ -28,7 +23,6 @@
         }
     }
     
-    document.onmousedrag = mouseDrag;
     document.onmousemove = mouseMove;
     document.onmouseover = mouseOver;
     document.onmouseout = mouseOut;
@@ -68,11 +62,6 @@
 	var mousePos = mouseCoords(ev);
         window.status = "javaevent,mousemove," + ev.x + "," + ev.y + "," + ev.button;
     }
-    function mouseDrag(ev){
-	ev = ev || window.event;
-	var mousePos = mouseCoords(ev);
-        window.status = "javaevent,mousedrag," + ev.x + "," + ev.y + "," + ev.button;
-    }
 
     function _onload() {
         window.status = "javaevent,loaded";
@@ -84,7 +73,6 @@
     <param name="movie" value="x">
     <param name="quality" value="high">
     <PARAM NAME="wmode" VALUE="opaque">
-    <!--<param name="bgcolor" VALUE=#D9D9D9>-->
     <param name="allowScriptAccess" VALUE="always">
 </object>
 </body></html>
