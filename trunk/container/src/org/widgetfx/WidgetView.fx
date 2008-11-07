@@ -21,8 +21,8 @@
 package org.widgetfx;
 
 import org.widgetfx.toolbar.WidgetToolbar;
-import org.widgetfx.ui.Constrained;
-import org.widgetfx.ui.WidgetContainer;
+import org.widgetfx.ui.*;
+import java.awt.Point;
 import java.lang.*;
 import javafx.animation.*;
 import javafx.lang.*;
@@ -32,24 +32,22 @@ import javafx.scene.input.*;
 import javafx.scene.shape.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
+import javax.swing.JPanel;
+import javax.swing.RootPaneContainer;
 
 /**
  * @author Stephen Chin
  */
-public var TOP_BORDER = 3;
+public var TOP_BORDER = 13;
 public var BOTTOM_BORDER = 7;
 
 public class WidgetView extends Group, Constrained {    
     public-init var container:WidgetContainer;
-    public-init var instance:WidgetInstance;
-    var widget = bind instance.widget;
     
     var resizing = false;
     public-read var docking = false;
     
     var dockedParent:Group;
-    var initialScreenPosX:Integer;
-    var initialScreenPosY:Integer;
     
     var scale:Number = bind calculateScale();
     
@@ -77,6 +75,11 @@ public class WidgetView extends Group, Constrained {
             }
         )
     }
+
+    // todo:merge - fix this, because updateFocus is gone
+    var flashHover = bind if (widget instanceof FlashWidget) then (widget as FlashWidget).hover else false on replace {
+        updateFocus();
+    }
     
     var rolloverOpacity = 0.0;
     var rolloverTimeline = Timeline {
@@ -102,12 +105,30 @@ public class WidgetView extends Group, Constrained {
         }
     }
     
+    override var translateX on replace {
+        updateFlashBounds();
+    }
+    
+    override var translateY on replace {
+        updateFlashBounds();
+    }
+    
+    override var impl_layoutX on replace {
+        updateFlashBounds();
+    }
+    
+    override var impl_layoutY on replace {
+        updateFlashBounds();
+    }
+    
     override var maxWidth on replace {
         resize();
+        updateFlashBounds();
     }
     
     override var maxHeight on replace {
         resize();
+        updateFlashBounds();
     }
     
     function wrapContent(content:Node[]):Node[] {
@@ -169,6 +190,7 @@ public class WidgetView extends Group, Constrained {
                 opacity: bind rolloverOpacity
                 instance: instance
                 onClose: function() {
+                    removeFlash();
                     WidgetManager.getInstance().removeWidget(instance);
                 }
             },
@@ -176,9 +198,9 @@ public class WidgetView extends Group, Constrained {
                 blocksMouse: true
                 translateY: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER - 3
                 content: [
-                    Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 4},
-                    Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity, translateY: 1},
-                    Line {endX: bind maxWidth, stroke: Color.WHITE, strokeWidth: 1, opacity: bind Dock.getInstance().rolloverOpacity / 3, translateY: 2}
+                    Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind container.rolloverOpacity / 4},
+                    Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind container.rolloverOpacity, translateY: 1},
+                    Line {endX: bind maxWidth, stroke: Color.WHITE, strokeWidth: 1, opacity: bind container.rolloverOpacity / 3, translateY: 2}
                 ]
                 cursor: Cursor.V_RESIZE
                 var initialHeight;
@@ -203,6 +225,7 @@ public class WidgetView extends Group, Constrained {
                                 instance.setHeight(widget.width / widget.aspectRatio);
                             }
                         }
+                        updateFlashBounds();
                     }
                 }
                 onMouseReleased: function(e) {
@@ -216,60 +239,98 @@ public class WidgetView extends Group, Constrained {
                 }
             }
         ];
-    }
-        
-    override var onMousePressed = function(e:MouseEvent):Void {
-        initialScreenPosX = -e.sceneX.intValue();
-        initialScreenPosY = -e.sceneY.intValue();
+        addFlash();
     };
+    
+	override var onMousePressed = function(e:MouseEvent):Void {
+        if (e.getButton() == 1) {
+            prepareDrag(e.getX(), e.getY(), e.getScreenX(), e.getScreenY());
+        }
+	}
 
     override var onMouseDragged = function(e:MouseEvent):Void {
         if (not docking) {
-            var xPos;
-            var yPos;
+        	doDrag(e.getScreenX(), e.getScreenY());
+		}
+    };
+    
+	override var onMouseReleased = function(e:MouseEvent):Void {
+        if (e.getButton() == 1) {
+            finishDrag(e.getScreenX(), e.getScreenY());
+        }
+    }
+    
+    public function doDrag(screenX:Integer, screenY:Integer) {
+        if (not docking and dragging) {
+            container.dragging = true;
             if (instance.docked) {
-                container.dragging = true;
+                flashPanel.setVisible(false);
                 var bounds = container.layout.getScreenBounds(this);
-                xPos = (bounds.minX + (bounds.width - widget.width * scale) / 2 - WidgetFrame.BORDER).intValue();
+                var xPos = (bounds.x + (bounds.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                 var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
-                yPos = bounds.minY + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
-                embeddedWidget = null;
+                var yPos = bounds.y + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
                 instance.frame = WidgetFrame {
                     instance: instance
                     x: xPos, y: yPos
                 }
-                initialScreenPosX += xPos;
-                initialScreenPosY += yPos;
+                if (widget instanceof FlashWidget) {
+                    var flash = widget as FlashWidget;
+                    flash.dragContainer = this;
             }
-            var hoverOffset:Number[] = [0, 0];
-            for (container in WidgetContainer.containers) {
-                var offset = container.hover(instance, e.screenX, e.screenY, e.x, e.y, not instance.docked);
-                if (offset != [0, 0]) {
-                    hoverOffset = offset;
-                }
+                instance.docked = false;
             }
-            instance.docked = false;
-            instance.frame.x = e.sceneX.intValue() + initialScreenPosX + hoverOffset[0];
-            instance.frame.y = e.sceneY.intValue() + initialScreenPosY + hoverOffset[1];
+            DragContainer.doDrag(screenX, screenY);
         }
-    };
+                instance.frame.y = e.getStageY().intValue() + initialScreenPosY + hoverOffset[1];
+    }
     
-    override var onMouseReleased = function(e:MouseEvent):Void {
-        if (not docking and not instance.docked) {
-            for (container in WidgetContainer.containers) {
-                var targetBounds = container.finishHover(instance, e.screenX, e.screenY);
-                if (targetBounds != null) {
-                    docking = true;
+    protected function dragComplete(targetBounds:java.awt.Rectangle):Void {
+        container.dragging = false;
+        removeFlash();
+        if (targetBounds != null) {
+            docking = true;
                     instance.frame.dock(targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
-                } else {
-                    // todo - don't call onResize multiple times
-                    if (instance.widget.onResize != null) {
+        } else {
+            // todo - don't call this block multiple times
+            if (instance.widget.onResize != null) {
                         instance.widget.onResize(instance.widget.width, instance.widget.height);
-                    }
-                }
             }
-            container.dragging = false;
-            instance.saveWithoutNotification();
+            if (widget instanceof FlashWidget) {
+                var flash = widget as FlashWidget;
+                flash.dragContainer = instance.frame;
+            }
+            if (instance.widget.onUndock != null) {
+                instance.widget.onUndock();
+            }
         }
-    };
+    }
+    
+    var flashPanel:JPanel;
+    
+    function addFlash() {
+        if (widget instanceof FlashWidget) {
+            var flash = widget as FlashWidget;
+            flashPanel = flash.createPlayer();
+            var layeredPane = (container.window as RootPaneContainer).getLayeredPane();
+            layeredPane.add(flashPanel, new java.lang.Integer(1000));
+            updateFlashBounds();
+            flash.dragContainer = this;
+        }
+    }
+    
+    function removeFlash() {
+        if (flashPanel != null) {
+            var layeredPane = (container.window as RootPaneContainer).getLayeredPane();
+            layeredPane.remove(flashPanel);
+            flashPanel = null;
+        }
+    }
+    
+    function updateFlashBounds() {
+        if (flashPanel != null) {
+            var location = new Point(0, 0);
+            impl_getSGNode().localToGlobal(location, location);
+            flashPanel.setBounds(location.x, location.y + TOP_BORDER, widget.stage.width, widget.stage.height);
+        }
+    }
 }

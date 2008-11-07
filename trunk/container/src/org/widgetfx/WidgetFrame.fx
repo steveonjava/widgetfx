@@ -35,6 +35,7 @@ import javafx.scene.shape.*;
 import javafx.scene.transform.*;
 import javafx.stage.*;
 import javax.swing.*;
+import javax.swing.SwingUtilities;
 
 /**
  * @author Stephen Chin
@@ -45,22 +46,23 @@ public var NONRESIZABLE_TOOLBAR_HEIGHT = RESIZABLE_TOOLBAR_HEIGHT - BORDER;
 public var DS_RADIUS = 5;
 
 // todo - figure out a way to create a dialog out of a stage
-public class WidgetFrame extends Stage {
+public class WidgetFrame extends Stage, DragContainer {
     var toolbarHeight = bind if (instance.widget.configuration == null) NONRESIZABLE_TOOLBAR_HEIGHT else RESIZABLE_TOOLBAR_HEIGHT;
     
-    public-init var instance:WidgetInstance;
+    public-init var hidden = false;
     
     var widget = bind instance.widget;
     
-    var widgetWidth = bind widget.width + BORDER * 2 + 1 on replace {
-        width = widgetWidth;
-    }
+    var isFlash = bind widget instanceof FlashWidget;
     
-    var boxHeight = bind widget.height + BORDER * 2 + 1;
+    var supportsTransparency = bind WidgetFXConfiguration.TRANSPARENT and not isFlash;
     
-    var widgetHeight = bind boxHeight + toolbarHeight on replace {
-        height = widgetHeight;
-    }
+    var useOpacity = bind WidgetFXConfiguration.TRANSPARENT and isFlash and WidgetFXConfiguration.IS_VISTA;
+    
+    var sliderEnabled = bind supportsTransparency or useOpacity;
+    
+    // todo - figure out a way to get this
+    var window:java.awt.Window;
     
     var xSync = bind x on replace {
         instance.undockedX = x;
@@ -69,32 +71,42 @@ public class WidgetFrame extends Stage {
     var ySync = bind y on replace {
         instance.undockedY = y;
     }
+    
+    var widgetWidth = bind widget.width + BORDER * 2 + 1 on replace {
+        width = widgetWidth;
+        updateFlashBounds();
+    }
+    
+    var boxHeight = bind widget.height + BORDER * 2 + 1;
+    
+    var widgetHeight = bind boxHeight + toolbarHeight on replace {
+        height = widgetHeight;
+        updateFlashBounds();
+    }
 
+	// todo:merge - need to hook up the animating var
+    public var animating:Boolean;
     public var resizing:Boolean;
     var dragging:Boolean;
     var changingOpacity:Boolean;
     var docking:Boolean;
     
-    var initialX:Number;
-    var initialY:Number;
     var initialWidth:Number;
     var initialHeight:Number;
-    var initialScreenX:Number;
-    var initialScreenY:Number;
         
     var saveInitialPos = function(e:MouseEvent):Void {
         initialX = x;
         initialY = y;
         initialWidth = widget.width;
         initialHeight = widget.height;
-        initialScreenX = e.sceneX.intValue() + x;
-        initialScreenY = e.sceneY.intValue() + y;
+        initialScreenX = e.sceneX + x;
+        initialScreenY = e.sceneY + y;
     }
     
     function mouseDelta(deltaFunction:function(a:Integer, b:Integer):Void):function(c:MouseEvent):Void {
         return function (e:MouseEvent):Void {
-            var xDelta = e.sceneX.intValue() + x - initialScreenX;
-            var yDelta = e.sceneY.intValue() + y - initialScreenY;
+            var xDelta = e.screenX - initialScreenX;
+            var yDelta = e.screenY - initialScreenY;
             deltaFunction(xDelta, yDelta);
         }
     }
@@ -112,7 +124,7 @@ public class WidgetFrame extends Stage {
         resizing = false;
     }
     
-    override var style = if (WidgetFXConfiguration.TRANSPARENT) StageStyle.TRANSPARENT else StageStyle.UNDECORATED;
+    override var style = if (supportsTransparency) StageStyle.TRANSPARENT else StageStyle.UNDECORATED;
     override var title = instance.title;
     
     public function dock(dockX:Integer, dockY:Integer):Void {
@@ -128,9 +140,8 @@ public class WidgetFrame extends Stage {
                         container.dockAfterHover(instance);
                     }
                     if (instance.widget.onResize != null) {
-                        instance.widget.onResize(instance.widget.width, instance.widget.height);
+                        instance.widget.onResize(widget.width, widget.height);
                     }
-                    instance.dock();
                 }
             }
         }.play();
@@ -155,6 +166,8 @@ public class WidgetFrame extends Stage {
         instance.setHeight(newHeight);
     }
     
+    override var opacity = bind if (useOpacity) instance.opacity / 100.0 else 1.0;
+
     var rolloverOpacity = 0.0;
     var rolloverTimeline = Timeline {
         keyFrames: at (500ms) {rolloverOpacity => 1.0 tween Interpolator.EASEIN}
@@ -172,6 +185,11 @@ public class WidgetFrame extends Stage {
                 }
             }
         )
+    }
+	
+    // todo:merge - this needs to work with the new focus mechanism (updateFocus is gone)
+    var flashHover = bind if (isFlash) then (widget as FlashWidget).hover else false on replace {
+        //updateFocus();
     }
     
     init {
@@ -280,40 +298,20 @@ public class WidgetFrame extends Stage {
                     stroke: Color.WHITESMOKE
                 }
             ]
-            onMousePressed: function(e) {
-                if (e.button == MouseButton.PRIMARY and not resizing) {
-                    dragging = true;
-                    saveInitialPos(e);
-                }
-            }
-            onMouseDragged: function(e) {
-                if (dragging and not docking and not resizing) {
-                    var hoverOffset:Number[] = [0, 0];
-                    for (container in WidgetContainer.containers) {
-                        var offset = container.hover(instance, e.screenX, e.screenY, e.x, e.y, true);
-                        if (offset != [0, 0]) {
-                            hoverOffset = offset;
-                        }
-                    }
-                    mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
-                        x = initialX + xDelta + hoverOffset[0];
-                        y = initialY + yDelta + hoverOffset[1];
-                    })(e);
-                }
-            }
-            onMouseReleased: function(e) {
-                if (dragging and e.button == MouseButton.PRIMARY and not docking) {
-                    dragging = false;
-                    for (container in WidgetContainer.containers) {
-                        var targetBounds = container.finishHover(instance, e.screenX, e.screenY);
-                        if (targetBounds != null) {
-                            dock(targetBounds.minX, targetBounds.minY);
-                        }
-                    }
-                    instance.saveWithoutNotification();
-                }
-            }
             opacity: bind if (widget.resizable) rolloverOpacity * 0.8 else 0.0;
+            onMousePressed: function(e:MouseEvent) {
+                if (e.button == MouseButton.PRIMARY and not resizing) {
+                    prepareDrag(e.x, e.y, e.screenX, e.screenY);
+                }
+            }
+            onMouseDragged: function(e:MouseEvent) {
+                doDrag(e.screenX, e.screenY);
+            }
+            onMouseReleased: function(e:MouseEvent) {
+                if (e.getButton() == 1) {
+                    finishDrag(e.screenX, e.screenY);
+                }
+            }
         }
         var slider = SwingSlider {
             minimum: 20
@@ -330,7 +328,7 @@ public class WidgetFrame extends Stage {
                         translateX: BORDER, translateY: BORDER + toolbarHeight
                         cache: true
                         content: Group { // Drop Shadow
-                            effect: bind if (resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                                effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                             content: Group { // Clip Group
                                 content: widget
                                 clip: Rectangle {width: bind widget.width, height: bind widget.height}
@@ -338,32 +336,36 @@ public class WidgetFrame extends Stage {
                         }
                         opacity: bind (instance.opacity as Number) / 100
                     },
-                    Group { // Transparency Slider
-                        content: [
-                            Rectangle { // Border
-                                width: bind width * 2 / 5 + 2
-                                height: 16
-                                arcWidth: 16
-                                arcHeight: 16
-                                stroke: Color.BLACK
-                            },
-                            Rectangle { // Background
-                                translateX: 1
-                                translateY: 1
-                                width: bind width * 2 / 5
-                                height: 14
-                                arcWidth: 14
-                                arcHeight: 14
-                                stroke: Color.WHITE
-                                fill: WidgetToolbar.BACKGROUND
-                                opacity: 0.7
-                            },
-                            Group { // Slider
-                                translateX: 1
-                                content: slider
-                            }
-                        ]
-                        opacity: bind rolloverOpacity
+                    if (sliderEnabled) {
+                        Group { // Transparency Slider
+                            content: [
+                                Rectangle { // Border
+                                    width: bind width * 2 / 5 + 2
+                                    height: 16
+                                    arcWidth: 16
+                                    arcHeight: 16
+                                    stroke: Color.BLACK
+                                },
+                                Rectangle { // Background
+                                    translateX: 1
+                                    translateY: 1
+                                    width: bind width * 2 / 5
+                                    height: 14
+                                    arcWidth: 14
+                                    arcHeight: 14
+                                    stroke: Color.WHITE
+                                    fill: WidgetToolbar.BACKGROUND
+                                    opacity: 0.7
+                                },
+                                Group { // Slider
+                                    translateX: 1
+                                    content: slider
+                                }
+                            ]
+                            opacity: bind rolloverOpacity
+                        }
+                    } else {
+                        []
                     },
                     toolbar = WidgetToolbar {
                         translateX: bind width - toolbar.boundsInLocal.width
@@ -373,37 +375,62 @@ public class WidgetFrame extends Stage {
                             // todo - this will remove widgets from the WidgetRunner, but should be fixed when we refactor the widget lists
                             WidgetManager.getInstance().removeWidget(instance);
                             close();
+        		    WidgetEventQueue.getInstance().removeInterceptor(window);
                         }
                     }
                 ]
             }
             fill: null;
         }
-        // todo - find a way to get the window
-//        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
-//            override function mouseEntered(e) {
-//                requestFocus(true);
-//            }
-//            override function mouseExited(e) {
-//                requestFocus(false);
-//            }
-//        });
-//        slider.getJSlider().addMouseListener(MouseAdapter {
-//            override function mouseEntered(e) {
-//                requestFocus(true);
-//            }
-//            override function mouseExited(e) {
-//                requestFocus(false);
-//            }
-//            override function mousePressed(e) {
-//                changingOpacity = true;
-//            }
-//            override function mouseReleased(e) {
-//                changingOpacity = false;
-//                instance.saveWithoutNotification();
-//            }
-//        });
-//        visible = true;
+        
+        WidgetEventQueue.getInstance().registerInterceptor(window, EventInterceptor {
+            public function shouldIntercept(event):Boolean {
+                if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
+                    requestFocus(true);
+                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
+                    requestFocus(false);
+                }
+                return false;
+            }
+        });
+        slider.getJSlider().addMouseListener(MouseAdapter {
+            public function mousePressed(e) {
+                changingOpacity = true;
+            }
+            public function mouseReleased(e) {
+                changingOpacity = false;
+                instance.saveWithoutNotification();
+            }
+        });
+        addFlash();
+        visible = true;
     }
 
+    protected function dragComplete(targetBounds:java.awt.Rectangle):Void {
+        if (targetBounds != null) {
+            dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
+        }
+    }
+    
+    var flashPanel:JPanel;
+    
+    public function addFlash() {
+        if (isFlash) {
+            var flash = widget as FlashWidget;
+            flashPanel = flash.createPlayer();
+            var layeredPane = (window as RootPaneContainer).getLayeredPane();
+            layeredPane.add(flashPanel, new java.lang.Integer(1000));
+            updateFlashBounds();
+            flash.dragContainer = this;
+        }
+    }
+    
+    function updateFlashBounds() {
+        if (flashPanel != null) {
+            var layeredPane = (window as RootPaneContainer).getLayeredPane();
+            if (flashPanel.getParent() == layeredPane) {
+                flashPanel.setBounds(BORDER, BORDER + toolbarHeight, widget.width, widget.height);
+            }
+        }
+    }
 }

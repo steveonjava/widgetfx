@@ -22,7 +22,6 @@ package org.widgetfx.ui;
 
 import org.widgetfx.*;
 import java.io.File;
-import javafx.scene.*;
 import javafx.ext.swing.*;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -31,40 +30,39 @@ import javax.swing.filechooser.FileFilter;
  * @author Stephen Chin
  */
 public class AddWidgetDialog {
-
+    
     public-init var addHandler:function(jnlpUrl:String):Void;
     
     public-init var cancelHandler:function():Void;
-
-// todo - this needs to be refactored when we figure out how to create dialogs
-//    
-//    var jnlpUrl:String;
-//    
-//    var dialog:Dialog;
+    
+    var jnlpUrl:String;
+    
+// todo - figure out a dialog hack
+//    private attribute dialog:Dialog;
 //    
 //    postinit {
 //        showDialog();
 //    }
 //    
-//    var selected:ListItem on replace {
+//    private attribute selected:ListItem on replace {
 //        jnlpUrl = selected.text;
 //    }
 //    
-//    function add() {
+//    private function add() {
 //        dialog.close();
 //        if (addHandler != null) {
 //            addHandler(jnlpUrl);
 //        }
 //    }
 //    
-//    function cancel() {
+//    private function cancel() {
 //        dialog.close();
 //        if (cancelHandler != null) {
 //            cancelHandler();
 //        }
 //    }
 //    
-//    function showDialog() {
+//    private function showDialog() {
 //        var widgetList = List {
 //            selectedItem: bind selected with inverse
 //            items: for (url in WidgetManager.getInstance().recentWidgets) ListItem {
@@ -79,11 +77,11 @@ public class AddWidgetDialog {
 //            action: function() {
 //                var chooser = new JFileChooser(jnlpUrl);
 //                chooser.setFileFilter(FileFilter {
-//                    override function accept(f:File):Boolean {
-//                        return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp");
+//                    public function accept(f:File):Boolean {
+//                        return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp") or f.getName().toLowerCase().endsWith(".swf") or f.getName().toLowerCase().endsWith(".swfi");
 //                    }
-//                    override function getDescription():String {
-//                        return "Java Network Launch Protocol (JNLP)"
+//                    public function getDescription():String {
+//                        return "WidgetFX Widget (JNLP or SWF)"
 //                    }
 //                });
 //                var returnVal = chooser.showOpenDialog(browsebutton.getJButton());

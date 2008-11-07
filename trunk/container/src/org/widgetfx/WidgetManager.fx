@@ -71,7 +71,14 @@ public class WidgetManager {
     
     public-read var recentWidgets:String[] = [];
     
+    var loginTokens:String[] = [];
+    
+    var loginUsernames:String[] = [];
+    
+    var loginPasswords:String[] = [];
+
     var configuration = WidgetFXConfiguration.getInstanceWithProperties([
+
         IntegerSequenceProperty {
             name: "widgets"
             value: bind widgetIds with inverse
@@ -79,8 +86,40 @@ public class WidgetManager {
         StringSequenceProperty {
             name: "recentWidgets"
             value: bind recentWidgets with inverse
+        },
+        StringSequenceProperty {
+            name: "loginTokens"
+            value: bind loginTokens with inverse
+        },
+        StringSequenceProperty {
+            name: "loginUsernames"
+            value: bind loginUsernames with inverse
+        },
+        StringSequenceProperty {
+            name: "loginPasswords"
+            value: bind loginPasswords with inverse
         }
     ]);
+
+    public function lookupCredentials(token:String):String[] {
+        var index = Sequences.indexOf(loginTokens, token);
+        if (index == -1) {
+            return null;
+        }
+        return [loginUsernames[index], loginPasswords[index]];
+    }
+    
+    public function storeCredentials(token:String, username:String, password:String) {
+        var index = Sequences.indexOf(loginTokens, token);
+        if (index == -1) {
+            insert token into loginTokens;
+            insert username into loginUsernames;
+            insert password into loginPasswords;
+        } else {
+            loginUsernames[index] = username;
+            loginPasswords[index] = password;
+        }
+    }
 
     var updating:Boolean;
 
@@ -107,7 +146,7 @@ public class WidgetManager {
     }
     
     public function loadParams(params:String[]) {
-        for (param in params where param.toLowerCase().endsWith(".jnlp")) {
+        for (param in params where param.toLowerCase().endsWith(".jnlp") or param.toLowerCase().endsWith(".swf") or param.toLowerCase().endsWith(".swfi")) {
             addWidget(param);
         }
         for (param in params where param.toLowerCase().endsWith(".theme")) {
@@ -125,7 +164,7 @@ public class WidgetManager {
                 }
             );
         }
-    };
+    }
 
     init {
         if (not widgetRunner and not portal) {
@@ -172,15 +211,16 @@ public class WidgetManager {
         delete instance from widgets;
     }
     
-    public function addWidget(jnlpUrl:String):WidgetInstance {
+    public function addWidget(url:String):WidgetInstance {
+        java.lang.System.out.println("adding widget: {url}");
         for (widget in widgets) {
-            if (widget.jnlpUrl.equals(jnlpUrl)) {
-                System.out.println("Widget already loaded: {jnlpUrl}");
+            if (widget.jnlpUrl.equals(url)) {
+                System.out.println("Widget already loaded: {url}");
                 return null;
             }
         }
         var maxId = if (widgetIds.isEmpty()) 0 else (Sequences.max(widgetIds) as Integer).intValue();
-        var instance = WidgetInstance{jnlpUrl: jnlpUrl, id: maxId + 1};
+        var instance = WidgetInstance{jnlpUrl: url, id: maxId + 1};
         insert instance into widgets;
         instance.load();
         addRecentWidget(instance);

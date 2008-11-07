@@ -36,6 +36,7 @@ import org.widgetfx.config.*;
 public var VERSION = "0.2";
 public var TRANSPARENT = true;
 public var IS_MAC = System.getProperty("os.name").contains("Mac OS");
+public var IS_VISTA = System.getProperty("os.name").contains("Vista");
 
 var instance = WidgetFXConfiguration {}
 

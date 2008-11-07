@@ -131,11 +131,17 @@ public class Dock extends Stage {
         BooleanProperty {
             name: "visible"
             value: bind visible with inverse;
+        },
+        StringProperty {
+            name: "theme"
+            value: bind theme with inverse;
         }
     ]);
     
     // todo - figure out a way to get the enclosing window
-    var mainMenu = createNativeMainMenu(null);
+    var window:java.awt.Window;
+    
+    var mainMenu = createNativeMainMenu(window);
     var logo:Node = bind if (logoUrl.isEmpty()) {
         createWidgetFXLogo()
     } else {
@@ -144,15 +150,18 @@ public class Dock extends Stage {
         }
     }
     var headerHeight:Integer = bind BORDER * 2 + logo.boundsInLocal.height.intValue();
-    var dockedWidgets = bind WidgetManager.getInstance().widgets[w|w.docked];
+    
     var container:WidgetContainer = WidgetContainer {
+        window: window
+        rolloverOpacity: bind rolloverOpacity
         resizing: bind resizing
         translateX: BORDER
         translateY: bind headerHeight
-        widgets: bind dockedWidgets;
+        widgets: bind WidgetManager.getInstance().widgets with inverse
         width: bind width - BORDER * 2
         height: bind height - headerHeight
         layout: GapVBox {}
+        visible: bind visible
     }
     
     var currentGraphics:java.awt.GraphicsConfiguration;
@@ -182,9 +191,8 @@ public class Dock extends Stage {
         updateDockLocation();
     }
 
-    // todo - find a way to get the window reference to call alwaysOnTop
     var alwaysOnTop:Boolean on replace {
-        //window.setAlwaysOnTop(alwaysOnTop);
+        window.setAlwaysOnTop(alwaysOnTop);
     }
     
     package var resizing:Boolean;
@@ -445,8 +453,7 @@ public class Dock extends Stage {
                 color = BUTTON_COLOR;
             }
             onMouseReleased: function(e:MouseEvent) {
-                // todo - figure out a way to get the window
-                mainMenu.show(null, e.sceneX, e.sceneY);
+                mainMenu.show(window, e.sceneX, e.sceneY);
             }
         }
         var hideButton = Group {
@@ -512,7 +519,7 @@ public class Dock extends Stage {
                         width = if (draggedWidth < MIN_WIDTH) MIN_WIDTH else if (draggedWidth > MAX_WIDTH) MAX_WIDTH else draggedWidth;
                     }
                     onMouseReleased: function(e) {
-                        for (instance in dockedWidgets) {
+                        for (instance in container.dockedWidgets) {
                             if (instance.widget.resizable) {
                                 if (instance.widget.onResize != null) {
                                     instance.widget.onResize(instance.widget.width, instance.widget.height);
@@ -526,20 +533,19 @@ public class Dock extends Stage {
             ],
             fill: bind transparentBG;
         };
-        // todo - figure out a way to get the window
-//        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
-//            override function mouseEntered(e) {
-//                rolloverTimeline.play();
-//            }
-//            override function mouseExited(e) {
-//                rolloverTimeline.play();
-//            }
-//        });
-//        (window as RootPaneContainer).getContentPane().addMouseMotionListener(MouseMotionAdapter {
-//            override function mouseDragged(e) {
-//                getGraphicsConfiguration(e.getLocationOnScreen());
-//            }
-//        });
+        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
+            override function mouseEntered(e) {
+                rolloverTimeline.play();
+            }
+            override function mouseExited(e) {
+                rolloverTimeline.play();
+            }
+        });
+        (window as RootPaneContainer).getContentPane().addMouseMotionListener(MouseMotionAdapter {
+            override function mouseDragged(e) {
+                getGraphicsConfiguration(e.getLocationOnScreen());
+            }
+        });
     }
     
     function getGraphicsConfiguration(location:Point) {
