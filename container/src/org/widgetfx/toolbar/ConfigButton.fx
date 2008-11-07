@@ -21,6 +21,7 @@
 package org.widgetfx.toolbar;
 
 import org.widgetfx.*;
+import org.widgetfx.ui.*;
 import javafx.scene.*;
 import javafx.scene.shape.*;
 import javafx.scene.paint.*;
@@ -33,6 +34,8 @@ import javafx.scene.transform.*;
 public class ConfigButton extends ToolbarButton {
     
     override var name = "Configuration";
+    
+    override var visible = bind toolbar.instance.widget.configuration != null or toolbar.instance.widget instanceof FlashWidget;
     
     override function performAction() {
         toolbar.instance.showConfigDialog();

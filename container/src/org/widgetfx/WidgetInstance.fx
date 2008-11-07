@@ -24,6 +24,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.NodeList;
 import org.widgetfx.config.*;
 import org.widgetfx.ui.ErrorWidget;
+import org.widgetfx.ui.FlashWidget;
 import com.sun.javafx.runtime.TypeInfo;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
@@ -113,6 +114,10 @@ public class WidgetInstance {
     public-init var jnlpUrl:String on replace {
         if (jnlpUrl.length() == 0) {
             mainClass = "";
+        } else if (jnlpUrl.toLowerCase().endsWith(".swf") or jnlpUrl.toLowerCase().endsWith(".swfi")) {
+            widget = FlashWidget {
+                url: jnlpUrl
+            }
         } else {
             try {
                 var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -239,7 +244,7 @@ public class WidgetInstance {
         }
     }
     
-    package function saveWithoutNotification() {
+    public function saveWithoutNotification() {
         persister.save();
     }
 
@@ -265,6 +270,9 @@ public class WidgetInstance {
         frame.close();
         frame = null;
         docked = true;
+        if (widget.onDock != null) {
+            widget.onDock();
+    }
     }
     
     public function dockIfOffscreen() {
@@ -310,30 +318,32 @@ public class WidgetInstance {
         //configDialog.close();
     }
     
+	// todo:merge - this needs to be commented out temporarily
     public function showConfigDialog():Void {
-        // todo - figure out how to show dialogs
-//        if (widget.configuration != null) {
-//            configDialog = SwingDialog {
-//                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
-//                title: "{title} Configuration"
-//                resizable: false
-//                closeAction: save
-//                content: BorderPanel {
-//                    center: widget.configuration.component
-//                    bottom: FlowPanel {
-//                        alignment: HorizontalAlignment.RIGHT
-//                        content: Button {
-//                            text: "Done"
-//                            action: function() {
-//                                save();
-//                                configDialog.close();
-//                            }
-//                        }
-//                    }
-//                }
-//                visible: true
-//            }
-//        }
+        if (widget instanceof FlashWidget) {
+            (widget as FlashWidget).configure();
+        } else if (widget.configuration != null) {
+            configDialog = SwingDialog {
+                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
+                title: "{title} Configuration"
+                resizable: false
+                closeAction: save
+                content: BorderPanel {
+                    center: widget.configuration.component
+                    bottom: FlowPanel {
+                        alignment: HorizontalAlignment.RIGHT
+                        content: Button {
+                            text: "Done"
+                            action: function() {
+                                save();
+                                configDialog.close();
+                            }
+                        }
+                    }
+                }
+                visible: true
+            }
+        }
     }
 
     package function deleteConfig() {

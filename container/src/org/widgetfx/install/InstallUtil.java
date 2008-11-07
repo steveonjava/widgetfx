@@ -53,11 +53,7 @@ public class InstallUtil {
             try {
                 source = InstallUtil.class.getResourceAsStream("WidgetFX.lnk");
                 destination = (new FileOutputStream(windowsShortcut));
-                byte[] buf = new byte[1024];
-                int i = 0;
-                while ((i = source.read(buf)) != -1) {
-                    destination.write(buf, 0, i);
-                }
+                copyStream(source, destination);
             } finally {
                 if (source != null) {
                     source.close();
@@ -76,5 +72,13 @@ public class InstallUtil {
             return;
         }
         windowsShortcut.delete();
+    }
+
+    public static void copyStream(InputStream source, OutputStream destination) throws IOException {
+        byte[] buf = new byte[1024];
+        int i = 0;
+        while ((i = source.read(buf)) != -1) {
+            destination.write(buf, 0, i);
+        }
     }
 }

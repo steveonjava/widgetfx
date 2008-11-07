@@ -20,10 +20,13 @@
  */
 package org.widgetfx.ui;
 
+import java.awt.Window;
+import java.lang.*;
 import javafx.animation.*;
 import javafx.geometry.*;
-import javafx.lang.*;
 import javafx.scene.*;
+import javafx.util.*;
+import javax.swing.JPanel;
 import javafx.scene.layout.*;
 import org.widgetfx.*;
 
@@ -36,6 +39,27 @@ public var containers:WidgetContainer[];
 public class WidgetContainer extends Container {
     
     public var widgets:WidgetInstance[];
+    
+    public-read var dockedWidgets = bind widgets[w|w.docked];
+    
+    public var rolloverOpacity:Number;
+    
+    public var window on replace {
+        WidgetEventQueue.getInstance().registerInterceptor(window, EventInterceptor {
+            public function shouldIntercept(event):Boolean {
+                if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
+                    for (view in widgetViews) {
+                        view.requestFocus(false);
+                    }
+                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_MOVED) {
+                    for (view in widgetViews) {
+                        view.requestFocus(layout.getScreenBounds(view).contains(event.getLocationOnScreen()));
+                    }
+                }
+                return false;
+            }
+        });
+    }
     
     // if this is set, copy widget when dropped on a new container, but place the original
     // widget back in the source container
@@ -60,7 +84,7 @@ public class WidgetContainer extends Container {
     
     public var dragging:Boolean;
     
-    var widgetViews:WidgetView[] = bind for (instance in widgets) createWidgetView(instance) on replace {
+    var widgetViews:WidgetView[] = bind for (instance in dockedWidgets) createWidgetView(instance) on replace {
         layout.content = widgetViews;
     }
     
@@ -74,27 +98,33 @@ public class WidgetContainer extends Container {
     var animateHover:Timeline;
     var animatingInstance:WidgetInstance;
     var animating = bind if (animateHover == null) false else animateHover.running on replace {
-        animatingInstance.frame.resizing = animating;
+        animatingInstance.frame.animating = animating;
     }
     var animateDocked:Boolean;
     var saveUndockedWidth:Number;
     var saveUndockedHeight:Number;
-    var xHoverOffset:Number;
-    var yHoverOffset:Number;
+    var xHoverOffset:Number on replace oldValue {
+        animatingInstance.frame.x += xHoverOffset - oldValue;
+    }
+    var yHoverOffset:Number on replace oldValue {
+        animatingInstance.frame.y += yHoverOffset - oldValue;
+    }
     
     init {
         insert this into containers;
     }
     
-    public function setupHoverAnimation(instance:WidgetInstance, localX:Integer, localY:Integer) {
-        if (animateHover == null) {
-            animatingInstance = instance;
-            xHoverOffset = 0;
-            yHoverOffset = 0;
-            saveUndockedWidth = instance.undockedWidth;
-            saveUndockedHeight = instance.undockedHeight;
-            var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
-            var newHeight = if (instance.docked) instance.undockedHeight else instance.dockedHeight;
+    public function setupHoverAnimation(instance:WidgetInstance, localX:Integer, localY:Integer):Void {
+        animatingInstance = instance;
+        xHoverOffset = 0;
+        yHoverOffset = 0;
+        saveUndockedWidth = instance.undockedWidth;
+        saveUndockedHeight = instance.undockedHeight;
+        var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
+        var newHeight = if (instance.docked) instance.undockedHeight else instance.dockedHeight;
+        var newXHoverOffset = localX - localX * newWidth / instance.widget.width;
+        var newYHoverOffset = localY - localY * newHeight / instance.widget.height;
+		// todo:merge - fix indentation
             var width = instance.widget.width on replace {
                 animatingInstance.setWidth(width);
             }
@@ -108,13 +138,13 @@ public class WidgetContainer extends Container {
                     values: [
                         if (newWidth > 0) {[
                             width => newWidth tween Interpolator.EASEBOTH,
-                            xHoverOffset => localX - localX * newWidth / instance.widget.width tween Interpolator.EASEBOTH
+                            xHoverOffset => newXHoverOffset tween Interpolator.EASEBOTH
                         ]} else {
                             []
                         },
                         if (newHeight > 0) {[
                             height => newHeight tween Interpolator.EASEBOTH,
-                            yHoverOffset => localY - localY * newHeight / instance.widget.height tween Interpolator.EASEBOTH
+                            yHoverOffset => newYHoverOffset tween Interpolator.EASEBOTH
                         ]} else {
                             []
                         }
@@ -123,12 +153,13 @@ public class WidgetContainer extends Container {
             }
             animateDocked = instance.docked;
         }
+    
+    public function prepareHover(instance:WidgetInstance, localX:Integer, localY:Integer):Void {
+        setupHoverAnimation(instance, localX, localY);
     }
     
-    public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, localX:Integer, localY:Integer, animate:Boolean) {
-        setupHoverAnimation(instance, localX, localY);
-        if (layout.containsScreenXY(screenX, screenY)) {
-            delete instance from widgets;
+    public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, animate:Boolean) {
+        if (visible and layout.containsScreenXY(screenX, screenY)) {
             var dockedHeight = if (instance.dockedHeight == 0) instance.widget.height else instance.dockedHeight;
             layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
             if (animateHover != null and not animateDocked) {
@@ -146,7 +177,7 @@ public class WidgetContainer extends Container {
     }
     
     public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):Rectangle2D {
-        if (layout.containsScreenXY(screenX, screenY)) {
+        if (visible and layout.containsScreenXY(screenX, screenY)) {
             animateHover.stop();
             animateHover = null;
             instance.undockedWidth = saveUndockedWidth;
@@ -163,8 +194,14 @@ public class WidgetContainer extends Container {
     }
     
     public function dockAfterHover(instance:WidgetInstance) {
-        instance.docked = true;
-        insert instance before widgets[layout.getGapIndex()];
+        delete instance from widgets;
+        instance.dock();
+        if (layout.getGapIndex() < 0 or layout.getGapIndex() >= dockedWidgets.size()) {
+            insert instance into widgets;
+        } else {
+            var index = Sequences.indexOf(widgets, dockedWidgets[layout.getGapIndex()]);
+            insert instance before widgets[index];
+        }
         layout.clearGap(false);
         layout.doLayout();
     }
