@@ -25,6 +25,7 @@ import org.widgetfx.ui.*;
 import java.awt.Point;
 import java.lang.*;
 import javafx.animation.*;
+import javafx.geometry.*;
 import javafx.lang.*;
 import javafx.scene.*;
 import javafx.scene.effect.*;
@@ -41,11 +42,10 @@ import javax.swing.RootPaneContainer;
 public var TOP_BORDER = 13;
 public var BOTTOM_BORDER = 7;
 
-public class WidgetView extends Group, Constrained {    
+public class WidgetView extends Group, Constrained, DragContainer {    
     public-init var container:WidgetContainer;
     
     var resizing = false;
-    public-read var docking = false;
     
     var dockedParent:Group;
     
@@ -64,7 +64,11 @@ public class WidgetView extends Group, Constrained {
     
     var toolbar:WidgetToolbar;
     
-    var hovering = bind hover or toolbar.hover on replace {
+    public var widgetHover = false;
+
+    var flashHover = bind if (widget instanceof FlashWidget) then (widget as FlashWidget).widgetHovering else false;
+    
+    var hovering = bind widgetHover or flashHover on replace {
         FX.deferAction(
             function():Void {
                 var newRate = if (hovering) 1 else -1;
@@ -74,11 +78,6 @@ public class WidgetView extends Group, Constrained {
                 }
             }
         )
-    }
-
-    // todo:merge - fix this, because updateFocus is gone
-    var flashHover = bind if (widget instanceof FlashWidget) then (widget as FlashWidget).hover else false on replace {
-        updateFocus();
     }
     
     var rolloverOpacity = 0.0;
@@ -243,32 +242,32 @@ public class WidgetView extends Group, Constrained {
     };
     
 	override var onMousePressed = function(e:MouseEvent):Void {
-        if (e.getButton() == 1) {
-            prepareDrag(e.getX(), e.getY(), e.getScreenX(), e.getScreenY());
+        if (e.button == MouseButton.PRIMARY) {
+            prepareDrag(e.x, e.y, e.screenX, e.screenY);
         }
 	}
 
     override var onMouseDragged = function(e:MouseEvent):Void {
         if (not docking) {
-        	doDrag(e.getScreenX(), e.getScreenY());
+        	doDrag(e.screenX, e.screenY);
 		}
     };
     
 	override var onMouseReleased = function(e:MouseEvent):Void {
-        if (e.getButton() == 1) {
-            finishDrag(e.getScreenX(), e.getScreenY());
+        if (e.button == MouseButton.PRIMARY) {
+            finishDrag(e.screenX, e.screenY);
         }
     }
     
-    public function doDrag(screenX:Integer, screenY:Integer) {
+    override function doDrag(screenX:Integer, screenY:Integer) {
         if (not docking and dragging) {
             container.dragging = true;
             if (instance.docked) {
                 flashPanel.setVisible(false);
                 var bounds = container.layout.getScreenBounds(this);
-                var xPos = (bounds.x + (bounds.width - widget.stage.width * scale) / 2 - WidgetFrame.BORDER).intValue();
+                var xPos = (bounds.minX + (bounds.width - widget.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                 var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
-                var yPos = bounds.y + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
+                var yPos = bounds.minY + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
                 instance.frame = WidgetFrame {
                     instance: instance
                     x: xPos, y: yPos
@@ -281,10 +280,9 @@ public class WidgetView extends Group, Constrained {
             }
             DragContainer.doDrag(screenX, screenY);
         }
-                instance.frame.y = e.getStageY().intValue() + initialScreenPosY + hoverOffset[1];
     }
     
-    protected function dragComplete(targetBounds:java.awt.Rectangle):Void {
+    override function dragComplete(targetBounds:Rectangle2D):Void {
         container.dragging = false;
         removeFlash();
         if (targetBounds != null) {
@@ -330,7 +328,7 @@ public class WidgetView extends Group, Constrained {
         if (flashPanel != null) {
             var location = new Point(0, 0);
             impl_getSGNode().localToGlobal(location, location);
-            flashPanel.setBounds(location.x, location.y + TOP_BORDER, widget.stage.width, widget.stage.height);
+            flashPanel.setBounds(location.x, location.y + TOP_BORDER, widget.width, widget.height);
         }
     }
 }

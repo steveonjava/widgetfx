@@ -30,6 +30,8 @@ public abstract class DragContainer {
     
     public-init var instance:WidgetInstance;
     
+    protected var widget = bind instance.widget;
+    
     public var dragging = false;
     
     public var docking = false;

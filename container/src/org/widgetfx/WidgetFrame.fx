@@ -25,6 +25,7 @@ import org.widgetfx.ui.*;
 import java.awt.event.*;
 import javafx.animation.*;
 import javafx.ext.swing.*;
+import javafx.geometry.*;
 import javafx.lang.*;
 import javafx.scene.*;
 import javafx.scene.effect.*;
@@ -50,8 +51,6 @@ public class WidgetFrame extends Stage, DragContainer {
     var toolbarHeight = bind if (instance.widget.configuration == null) NONRESIZABLE_TOOLBAR_HEIGHT else RESIZABLE_TOOLBAR_HEIGHT;
     
     public-init var hidden = false;
-    
-    var widget = bind instance.widget;
     
     var isFlash = bind widget instanceof FlashWidget;
     
@@ -87,9 +86,7 @@ public class WidgetFrame extends Stage, DragContainer {
 	// todo:merge - need to hook up the animating var
     public var animating:Boolean;
     public var resizing:Boolean;
-    var dragging:Boolean;
     var changingOpacity:Boolean;
-    var docking:Boolean;
     
     var initialWidth:Number;
     var initialHeight:Number;
@@ -175,7 +172,11 @@ public class WidgetFrame extends Stage, DragContainer {
     
     var sceneContents:Group;
     
-    var hovering = bind sceneContents.hover or dragging or resizing or changingOpacity on replace {
+    var widgetHover = false;
+	
+    var flashHover = bind if (isFlash) then (widget as FlashWidget).widgetHovering else false;
+    
+    var hovering = bind widgetHover or flashHover or dragging or resizing or changingOpacity on replace {
         FX.deferAction(
             function():Void {
                 var newRate = if (hovering) 1 else -1;
@@ -185,11 +186,6 @@ public class WidgetFrame extends Stage, DragContainer {
                 }
             }
         )
-    }
-	
-    // todo:merge - this needs to work with the new focus mechanism (updateFocus is gone)
-    var flashHover = bind if (isFlash) then (widget as FlashWidget).hover else false on replace {
-        //updateFocus();
     }
     
     init {
@@ -308,7 +304,7 @@ public class WidgetFrame extends Stage, DragContainer {
                 doDrag(e.screenX, e.screenY);
             }
             onMouseReleased: function(e:MouseEvent) {
-                if (e.getButton() == 1) {
+                if (e.button == MouseButton.PRIMARY) {
                     finishDrag(e.screenX, e.screenY);
                 }
             }
@@ -384,20 +380,20 @@ public class WidgetFrame extends Stage, DragContainer {
         }
         
         WidgetEventQueue.getInstance().registerInterceptor(window, EventInterceptor {
-            public function shouldIntercept(event):Boolean {
+            override function shouldIntercept(event):Boolean {
                 if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
-                    requestFocus(true);
+                    widgetHover = true;
                 } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
-                    requestFocus(false);
+                    widgetHover = false;
                 }
                 return false;
             }
         });
         slider.getJSlider().addMouseListener(MouseAdapter {
-            public function mousePressed(e) {
+            override function mousePressed(e) {
                 changingOpacity = true;
             }
-            public function mouseReleased(e) {
+            override function mouseReleased(e) {
                 changingOpacity = false;
                 instance.saveWithoutNotification();
             }
@@ -406,9 +402,9 @@ public class WidgetFrame extends Stage, DragContainer {
         visible = true;
     }
 
-    protected function dragComplete(targetBounds:java.awt.Rectangle):Void {
+    override function dragComplete(targetBounds:Rectangle2D):Void {
         if (targetBounds != null) {
-            dock(targetBounds.x + (targetBounds.width - widget.stage.width) / 2, targetBounds.y);
+            dock(targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
         }
     }
     

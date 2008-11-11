@@ -36,7 +36,7 @@ public class Login {
     
     public-init var onCancel:function():Void;
     
-    var dialog:Dialog;
+//    var dialog:Dialog;
     
     var username:String;
     
@@ -52,7 +52,7 @@ public class Login {
     }
     
     function login() {
-        dialog.close();
+//        dialog.close();
         WidgetManager.getInstance().storeCredentials(token, username, password);
         if (onLogin != null) {
             onLogin(username, password);
@@ -60,18 +60,18 @@ public class Login {
     }
     
     function cancel() {
-        dialog.close();
+//        dialog.close();
         if (onCancel != null) {
             onCancel();
         }
     }
     
     function showDialog() {
-        var usernameLabel = Label {text: "Username:", labelFor: usernameField}
-        var usernameField = TextField {text: bind username with inverse, hmin: 300, hmax: 300, action: login};
+//        var usernameLabel = Label {text: "Username:", labelFor: usernameField}
+//        var usernameField = TextField {text: bind username with inverse, hmin: 300, hmax: 300, action: login};
         // todo - switch this to use a password field
-        var passwordLabel = Label {text: "Password:", labelFor: usernameField}
-        var passwordField = TextField {text: bind password with inverse, hmin: 300, hmax: 300, action: login};
+//        var passwordLabel = Label {text: "Password:", labelFor: usernameField}
+//        var passwordField = TextField {text: bind password with inverse, hmin: 300, hmax: 300, action: login};
 
         // todo - need a dialog hack
 //        dialog = Dialog {

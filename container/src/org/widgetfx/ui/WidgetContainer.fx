@@ -44,16 +44,17 @@ public class WidgetContainer extends Container {
     
     public var rolloverOpacity:Number;
     
-    public var window on replace {
+    public var window:Window on replace {
         WidgetEventQueue.getInstance().registerInterceptor(window, EventInterceptor {
-            public function shouldIntercept(event):Boolean {
+            override function shouldIntercept(event):Boolean {
                 if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
                     for (view in widgetViews) {
-                        view.requestFocus(false);
+                        view.widgetHover = false;
                     }
                 } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_MOVED) {
                     for (view in widgetViews) {
-                        view.requestFocus(layout.getScreenBounds(view).contains(event.getLocationOnScreen()));
+                        var screenLoc = event.getLocationOnScreen();
+                        view.widgetHover = layout.getScreenBounds(view).contains(screenLoc.x, screenLoc.y);
                     }
                 }
                 return false;
