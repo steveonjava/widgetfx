@@ -323,26 +323,26 @@ public class WidgetInstance {
         if (widget instanceof FlashWidget) {
             (widget as FlashWidget).configure();
         } else if (widget.configuration != null) {
-            configDialog = SwingDialog {
-                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
-                title: "{title} Configuration"
-                resizable: false
-                closeAction: save
-                content: BorderPanel {
-                    center: widget.configuration.component
-                    bottom: FlowPanel {
-                        alignment: HorizontalAlignment.RIGHT
-                        content: Button {
-                            text: "Done"
-                            action: function() {
-                                save();
-                                configDialog.close();
-                            }
-                        }
-                    }
-                }
-                visible: true
-            }
+//            configDialog = SwingDialog {
+//                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
+//                title: "{title} Configuration"
+//                resizable: false
+//                closeAction: save
+//                content: BorderPanel {
+//                    center: widget.configuration.component
+//                    bottom: FlowPanel {
+//                        alignment: HorizontalAlignment.RIGHT
+//                        content: Button {
+//                            text: "Done"
+//                            action: function() {
+//                                save();
+//                                configDialog.close();
+//                            }
+//                        }
+//                    }
+//                }
+//                visible: true
+//            }
         }
     }
 

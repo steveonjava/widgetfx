@@ -32,6 +32,7 @@ import java.lang.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.paint.*;
+import javafx.scene.shape.*;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -47,13 +48,13 @@ public class FlashWidget extends Widget, BrComponentListener {
     
     public-init var url:String;
     
-    public-read var hover = false;
+    public-read var widgetHovering = false;
     
     public-read var dragging = false;
     
     var player:BrComponent;
     
-    public-init var dragContainer:DragContainer;
+    public var dragContainer:DragContainer;
     
     init {
         BrComponent.DESIGN_MODE = false;
@@ -72,7 +73,7 @@ public class FlashWidget extends Widget, BrComponentListener {
         var panel = new JPanel(new java.awt.GridLayout(1, 1));
         player = new BrComponent();
         player.addBrComponentListener(this);
-        player.setPreferredSize(new java.awt.Dimension(stage.width, stage.height));
+        player.setPreferredSize(new java.awt.Dimension(width, height));
         player.setURL(createHTML("flash.html"));
         panel.add(player);
         return panel;
@@ -110,13 +111,13 @@ public class FlashWidget extends Widget, BrComponentListener {
         } else if (type.equals("mouseover")) {
             FX.deferAction(
                 function():Void {
-                    hover = true;
+                    widgetHovering = true;
                 }
             );
         } else if (type.equals("mouseout")) {
             FX.deferAction(
                 function():Void {
-                    hover = false;
+                    widgetHovering = false;
                 }
             );
             var coords = getXY(args);
@@ -168,11 +169,11 @@ public class FlashWidget extends Widget, BrComponentListener {
                 );
             }
         } else {
-            System.err.println("Unknown javascript->java bridge command: " + st);
+            System.err.println("Unknown javascript->java bridge command: {st}");
         }
     }
     
-    public function sync(event:BrComponentEvent):String {
+    override function sync(event:BrComponentEvent):String {
         if (BrComponentEvent.DISPID_STATUSTEXTCHANGE == event.getID()) {
             var st = event.getValue();
             if (st.startsWith("javaevent,")) {
@@ -191,13 +192,9 @@ public class FlashWidget extends Widget, BrComponentListener {
         inConfigure = not inConfigure;
     }
     
-    var stageWidth = 300;
+    override var width = 300;
     
-    var stageHeight = 300;
+    override var height = 300;
     
-    override var stage = Stage {
-        width: bind stageWidth with inverse
-        height: bind stageHeight with inverse
-        content: javafx.scene.geometry.Rectangle {width: bind stageWidth, height: bind stageHeight, fill: Color.rgb(0xD9, 0xD9, 0xD9)}
-    }
+    override var content = Rectangle {width: bind width, height: bind height, fill: Color.rgb(0xD9, 0xD9, 0xD9)};
 }
