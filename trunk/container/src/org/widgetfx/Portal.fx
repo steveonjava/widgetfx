@@ -34,7 +34,8 @@ import javafx.stage.*;
 WidgetManager.createPortalInstance();
 WidgetFXConfiguration.getInstance().mergeProperties = true;
 WidgetFXConfiguration.getInstance().load();
-var grid:FrameStage = FrameStage {
+var container:WidgetContainer;
+var grid:Stage = Stage {
     onClose: function() {FX.exit()}
     x: 100
     y: 200
@@ -43,8 +44,7 @@ var grid:FrameStage = FrameStage {
     height: 500
     var scene:Scene = Scene {
         fill: Color.SLATEGRAY
-        content: WidgetContainer {
-            window: bind grid.window
+        content: container = WidgetContainer {
             width: bind scene.width
             height: bind scene.height
             widgets: WidgetManager.getInstance().widgets[w|w.docked];
@@ -53,8 +53,9 @@ var grid:FrameStage = FrameStage {
     }
     scene: scene
 }
+container.window = WindowHelper.extractWindow(grid);
 
-var list:FrameStage = FrameStage {
+var list:Stage = Stage {
     onClose: function() {FX.exit()}
     x: 700
     y: 200
@@ -64,8 +65,7 @@ var list:FrameStage = FrameStage {
     var scene:Scene = Scene {
         var widgetList:WidgetInstance[];
         fill: Color.SLATEGRAY
-        content: WidgetContainer {
-            window: bind list.window
+        content: container = WidgetContainer {
             width: bind scene.width
             height: bind scene.height
             widgets: widgetList
@@ -74,3 +74,4 @@ var list:FrameStage = FrameStage {
     }
     scene: scene
 }
+container.window = WindowHelper.extractWindow(list);
