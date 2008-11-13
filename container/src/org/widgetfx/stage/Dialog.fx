@@ -21,18 +21,29 @@
 package org.widgetfx.stage;
 
 import javafx.stage.*;
-import com.sun.javafx.stage.OpenFrameStageDelegate;
+import java.awt.Window;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class FrameStage extends Stage {
-    var frameStage = OpenFrameStageDelegate {stage: this};
+public class Dialog extends Stage {
+    public-init var owner:Stage;
     
-    public-read var window = bind frameStage.openWindow;
+    public-init var independentFocus = false;
+    
+    public function getWindow():Window {
+        return WindowHelper.extractWindow(this);
+    }
     
     init {
-        impl_stageDelegate = frameStage;
+        DialogStageDelegate.owner = owner;
+        DialogStageDelegate.independentFocus = independentFocus;
+        DialogStageDelegate.style = style;
+        impl_stageDelegate = DialogStageDelegate {
+            stage: this
+            dialogTitle: bind title
+            dialogResizable: bind resizable
+        }
     }
 }

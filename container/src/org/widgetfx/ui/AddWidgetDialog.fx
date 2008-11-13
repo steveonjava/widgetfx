@@ -21,8 +21,13 @@
 package org.widgetfx.ui;
 
 import org.widgetfx.*;
+import org.widgetfx.stage.*;
 import java.io.File;
 import javafx.ext.swing.*;
+import javafx.scene.*;
+import javafx.scene.shape.*;
+import javafx.scene.paint.*;
+import javafx.stage.*;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
@@ -35,34 +40,35 @@ public class AddWidgetDialog {
     
     public-init var cancelHandler:function():Void;
     
+    public-init var owner:Stage;
+    
     var jnlpUrl:String;
     
-// todo - figure out a dialog hack
-//    private attribute dialog:Dialog;
-//    
-//    postinit {
-//        showDialog();
-//    }
-//    
-//    private attribute selected:ListItem on replace {
+    var dialog:Dialog;
+    
+    postinit {
+        showDialog();
+    }
+    
+//    var selected:ListItem on replace {
 //        jnlpUrl = selected.text;
 //    }
-//    
-//    private function add() {
-//        dialog.close();
-//        if (addHandler != null) {
-//            addHandler(jnlpUrl);
-//        }
-//    }
-//    
-//    private function cancel() {
-//        dialog.close();
-//        if (cancelHandler != null) {
-//            cancelHandler();
-//        }
-//    }
-//    
-//    private function showDialog() {
+    
+    function add() {
+        dialog.close();
+        if (addHandler != null) {
+            addHandler(jnlpUrl);
+        }
+    }
+    
+    function cancel() {
+        dialog.close();
+        if (cancelHandler != null) {
+            cancelHandler();
+        }
+    }
+    
+    function showDialog() {
 //        var widgetList = List {
 //            selectedItem: bind selected with inverse
 //            items: for (url in WidgetManager.getInstance().recentWidgets) ListItem {
@@ -90,14 +96,15 @@ public class AddWidgetDialog {
 //                }
 //            }
 //        }
-//
-//        dialog = Dialog {
-//            title: "Add Widget"
-//            visible: true
-//            resizable: false
-//            icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
-//            closeAction: cancel
-//            stage: Stage {
+
+        dialog = Dialog {
+            title: "Add Widget"
+            resizable: false
+            icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
+            onClose: cancel
+            owner: owner
+            scene: Scene {
+                content: Circle {radius: 100, fill: Color.BLUE}
 //                content: ComponentView {
 //                    component: BorderPanel {
 //                        center: ClusterPanel {
@@ -155,7 +162,7 @@ public class AddWidgetDialog {
 //                        }
 //                    }
 //                }
-//            }
-//        };
-//    }
+            }
+        };
+    }
 }

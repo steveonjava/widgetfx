@@ -284,6 +284,7 @@ public class Dock extends Stage {
     
     public function addWidget():Void {
         AddWidgetDialog {
+            owner: this
             addHandler: function(jnlpUrl:String):Void {
                 WidgetManager.getInstance().addWidget(jnlpUrl);
             }
