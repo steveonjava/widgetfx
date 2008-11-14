@@ -24,6 +24,7 @@ import com.sun.javafx.stage.WindowStageDelegate;
 import org.widgetfx.ui.*;
 import org.widgetfx.config.*;
 import org.widgetfx.install.InstallUtil;
+import org.widgetfx.stage.*;
 import javafx.lang.*;
 import javafx.scene.*;
 import javafx.scene.shape.*;
@@ -74,8 +75,7 @@ public function getInstance() {
     return instance;
 }
 
-// todo - create a StageDelegate for Dialogs
-public class Dock extends Stage {
+public class Dock extends Dialog {
     var logoUrl:String;
     var backgroundStartColor = [0.0, 0.0, 0.0];
     var backgroundEndColor = [0.0, 0.0, 0.0];
@@ -138,10 +138,7 @@ public class Dock extends Stage {
         }
     ]);
     
-    // todo - figure out a way to get the enclosing window
-    var window:java.awt.Window;
-    
-    var mainMenu = createNativeMainMenu(window);
+    var mainMenu = createNativeMainMenu(dialog);
     var logo:Node = bind if (logoUrl.isEmpty()) {
         createWidgetFXLogo()
     } else {
@@ -152,7 +149,7 @@ public class Dock extends Stage {
     var headerHeight:Integer = bind BORDER * 2 + logo.boundsInLocal.height.intValue();
     
     var container:WidgetContainer = WidgetContainer {
-        window: window
+        window: bind dialog
         rolloverOpacity: bind rolloverOpacity
         resizing: bind resizing
         translateX: BORDER
@@ -192,7 +189,7 @@ public class Dock extends Stage {
     }
 
     var alwaysOnTop:Boolean on replace {
-        window.setAlwaysOnTop(alwaysOnTop);
+        dialog.setAlwaysOnTop(alwaysOnTop);
     }
     
     package var resizing:Boolean;
@@ -203,9 +200,6 @@ public class Dock extends Stage {
         y = screenBounds.y + menuHeight;
     }
     
-    //var backgroundImage : Image = Image {url:getClass().getResource("Inovis_SidebarBackground1.jpg").toString(), height: 1200};
-    
-    var transparentBG = bind if (dockLeft) leftBG else rightBG;
     var bgOpacity = BG_OPACITY;
     var startColor = bind Color.color(backgroundStartColor[0], backgroundStartColor[1], backgroundStartColor[2], 0);
     var endColor = bind Color.color(backgroundEndColor[0], backgroundEndColor[1], backgroundEndColor[2], bgOpacity);
@@ -223,6 +217,7 @@ public class Dock extends Stage {
             Stop {offset: 1.0, color: endColor}
         ]
     }
+    var transparentBG = bind if (dockLeft) leftBG else rightBG;
     
     var launchOnStartup:Boolean = true on replace {
         if (launchOnStartup) {
@@ -454,7 +449,7 @@ public class Dock extends Stage {
                 color = BUTTON_COLOR;
             }
             onMouseReleased: function(e:MouseEvent) {
-                mainMenu.show(window, e.sceneX, e.sceneY);
+                mainMenu.show(dialog, e.sceneX, e.sceneY);
             }
         }
         var hideButton = Group {
@@ -484,9 +479,9 @@ public class Dock extends Stage {
                 hideDock();
             }
         }
-        var menus = HBox { // Menu Buttons
-            translateX: bind width, translateY: 4
-            // todo - fix horizontal alignment
+        var menus:HBox = HBox { // Menu Buttons
+            translateX: bind width - menus.boundsInLocal.width
+            translateY: 4
             spacing: 4
             content: [
                 addWidgetButton,
@@ -534,7 +529,7 @@ public class Dock extends Stage {
             ],
             fill: bind transparentBG;
         };
-        (window as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
+        (dialog as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
             override function mouseEntered(e) {
                 rolloverTimeline.play();
             }
@@ -542,7 +537,7 @@ public class Dock extends Stage {
                 rolloverTimeline.play();
             }
         });
-        (window as RootPaneContainer).getContentPane().addMouseMotionListener(MouseMotionAdapter {
+        (dialog as RootPaneContainer).getContentPane().addMouseMotionListener(MouseMotionAdapter {
             override function mouseDragged(e) {
                 getGraphicsConfiguration(e.getLocationOnScreen());
             }
