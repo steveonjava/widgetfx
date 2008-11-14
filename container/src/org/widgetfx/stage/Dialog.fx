@@ -32,6 +32,10 @@ public class Dialog extends Stage {
     
     public-init var independentFocus = false;
     
+    var delegate:DialogStageDelegate;
+    
+    public var dialog = bind delegate.dialog;
+    
     public function getWindow():Window {
         return WindowHelper.extractWindow(this);
     }
@@ -40,7 +44,7 @@ public class Dialog extends Stage {
         DialogStageDelegate.owner = owner;
         DialogStageDelegate.independentFocus = independentFocus;
         DialogStageDelegate.style = style;
-        impl_stageDelegate = DialogStageDelegate {
+        impl_stageDelegate = delegate = DialogStageDelegate {
             stage: this
             dialogTitle: bind title
             dialogResizable: bind resizable

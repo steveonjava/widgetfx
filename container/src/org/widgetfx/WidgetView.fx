@@ -33,6 +33,7 @@ import javafx.scene.input.*;
 import javafx.scene.shape.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
+import javafx.stage.*;
 import javax.swing.JPanel;
 import javax.swing.RootPaneContainer;
 
@@ -161,8 +162,6 @@ public class WidgetView extends Group, Constrained, DragContainer {
     
     override var cache = true;
     
-    var embeddedWidget = widget;
-    
     init {
         content = [
             Rectangle { // Invisible Spacer
@@ -177,7 +176,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
                 content: Group { // Drop Shadow
                     effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
                     content: Group { // Clip Group
-                        content: bind embeddedWidget
+                        content: widget
                         clip: Rectangle {width: bind widget.width, height: bind widget.height}
                         scaleX: bind scale, scaleY: bind scale
                     }
@@ -241,11 +240,11 @@ public class WidgetView extends Group, Constrained, DragContainer {
         addFlash();
     };
     
-	override var onMousePressed = function(e:MouseEvent):Void {
+    override var onMousePressed = function(e:MouseEvent):Void {
         if (e.button == MouseButton.PRIMARY) {
             prepareDrag(e.x, e.y, e.screenX, e.screenY);
         }
-	}
+    }
 
     override var onMouseDragged = function(e:MouseEvent):Void {
         if (not docking) {
@@ -253,7 +252,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
 		}
     };
     
-	override var onMouseReleased = function(e:MouseEvent):Void {
+    override var onMouseReleased = function(e:MouseEvent):Void {
         if (e.button == MouseButton.PRIMARY) {
             finishDrag(e.screenX, e.screenY);
         }
@@ -271,6 +270,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
                 instance.frame = WidgetFrame {
                     instance: instance
                     x: xPos, y: yPos
+                    style: if (WidgetFXConfiguration.TRANSPARENT and not (widget instanceof FlashWidget)) StageStyle.TRANSPARENT else StageStyle.UNDECORATED
                 }
                 if (widget instanceof FlashWidget) {
                     var flash = widget as FlashWidget;

@@ -40,7 +40,7 @@ public var independentFocus:Boolean;
 public var style:StageStyle;
 
 public class DialogStageDelegate extends WindowStageDelegate {
-    var dialog:JDialog;
+    public var dialog:JDialog;
     
     // can't use the superclass title attribute, because it has package only access
     public var dialogTitle:String on replace {
@@ -52,10 +52,15 @@ public class DialogStageDelegate extends WindowStageDelegate {
         dialog.setResizable(dialogResizable);
     }
     
+    override function close() {
+        stage.visible = false;
+        dialog.dispose();
+    }
+    
     override function createWindow(): java.awt.Window {
         var ownerWindow = if (independentFocus) new Frame()
             else if (owner == null) null
-            else WindowHelper.extractWindow(owner) as Frame;
+            else WindowHelper.extractWindow(owner);
         dialog = WindowHelper.createJDialog(ownerWindow);
         if (independentFocus) {
             var listener:WindowAdapter = WindowAdapter {
@@ -73,6 +78,9 @@ public class DialogStageDelegate extends WindowStageDelegate {
         } else if (style == StageStyle.UNDECORATED) {
             dialog.setUndecorated(true);
         }
+        owner = null;
+        independentFocus = false;
+        style = null;
         return dialog;
     }
 }

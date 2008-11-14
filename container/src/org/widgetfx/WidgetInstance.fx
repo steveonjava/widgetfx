@@ -37,6 +37,7 @@ import java.util.Arrays;
 import javafx.ext.swing.*;
 import javafx.reflect.*;
 import javafx.scene.*;
+import javafx.stage.*;
 import javax.jnlp.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.*;
@@ -262,6 +263,7 @@ public class WidgetInstance {
             frame = WidgetFrame {
                 instance: this
                 x: undockedX, y: undockedY
+                style: if (WidgetFXConfiguration.TRANSPARENT and not (widget instanceof FlashWidget)) StageStyle.TRANSPARENT else StageStyle.UNDECORATED
             }
         }
     }
@@ -272,7 +274,7 @@ public class WidgetInstance {
         docked = true;
         if (widget.onDock != null) {
             widget.onDock();
-    }
+        }
     }
     
     public function dockIfOffscreen() {

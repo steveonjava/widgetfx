@@ -22,6 +22,7 @@ package org.widgetfx;
 
 import org.widgetfx.toolbar.*;
 import org.widgetfx.ui.*;
+import org.widgetfx.stage.*;
 import java.awt.event.*;
 import javafx.animation.*;
 import javafx.ext.swing.*;
@@ -46,22 +47,16 @@ public var RESIZABLE_TOOLBAR_HEIGHT = 18;
 public var NONRESIZABLE_TOOLBAR_HEIGHT = RESIZABLE_TOOLBAR_HEIGHT - BORDER;
 public var DS_RADIUS = 5;
 
-// todo - figure out a way to create a dialog out of a stage
-public class WidgetFrame extends Stage, DragContainer {
+public class WidgetFrame extends Dialog, DragContainer {
     var toolbarHeight = bind if (instance.widget.configuration == null) NONRESIZABLE_TOOLBAR_HEIGHT else RESIZABLE_TOOLBAR_HEIGHT;
     
     public-init var hidden = false;
     
     var isFlash = bind widget instanceof FlashWidget;
     
-    var supportsTransparency = bind WidgetFXConfiguration.TRANSPARENT and not isFlash;
-    
     var useOpacity = bind WidgetFXConfiguration.TRANSPARENT and isFlash and WidgetFXConfiguration.IS_VISTA;
     
-    var sliderEnabled = bind supportsTransparency or useOpacity;
-    
-    // todo - figure out a way to get this
-    var window:java.awt.Window;
+    var sliderEnabled = bind style == StageStyle.TRANSPARENT or useOpacity;
     
     var xSync = bind x on replace {
         instance.undockedX = x;
@@ -82,7 +77,9 @@ public class WidgetFrame extends Stage, DragContainer {
         height = widgetHeight;
         updateFlashBounds();
     }
-
+    
+    override var independentFocus = true;
+    
 	// todo:merge - need to hook up the animating var
     public var animating:Boolean;
     public var resizing:Boolean;
@@ -121,7 +118,6 @@ public class WidgetFrame extends Stage, DragContainer {
         resizing = false;
     }
     
-    override var style = if (supportsTransparency) StageStyle.TRANSPARENT else StageStyle.UNDECORATED;
     override var title = instance.title;
     
     public function dock(dockX:Integer, dockY:Integer):Void {
@@ -371,7 +367,7 @@ public class WidgetFrame extends Stage, DragContainer {
                             // todo - this will remove widgets from the WidgetRunner, but should be fixed when we refactor the widget lists
                             WidgetManager.getInstance().removeWidget(instance);
                             close();
-        		    WidgetEventQueue.getInstance().removeInterceptor(window);
+        		    WidgetEventQueue.getInstance().removeInterceptor(dialog);
                         }
                     }
                 ]
@@ -379,7 +375,7 @@ public class WidgetFrame extends Stage, DragContainer {
             fill: null;
         }
         
-        WidgetEventQueue.getInstance().registerInterceptor(window, EventInterceptor {
+        WidgetEventQueue.getInstance().registerInterceptor(dialog, EventInterceptor {
             override function shouldIntercept(event):Boolean {
                 if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
                     widgetHover = true;
@@ -414,7 +410,7 @@ public class WidgetFrame extends Stage, DragContainer {
         if (isFlash) {
             var flash = widget as FlashWidget;
             flashPanel = flash.createPlayer();
-            var layeredPane = (window as RootPaneContainer).getLayeredPane();
+            var layeredPane = (dialog as RootPaneContainer).getLayeredPane();
             layeredPane.add(flashPanel, new java.lang.Integer(1000));
             updateFlashBounds();
             flash.dragContainer = this;
@@ -423,7 +419,7 @@ public class WidgetFrame extends Stage, DragContainer {
     
     function updateFlashBounds() {
         if (flashPanel != null) {
-            var layeredPane = (window as RootPaneContainer).getLayeredPane();
+            var layeredPane = (dialog as RootPaneContainer).getLayeredPane();
             if (flashPanel.getParent() == layeredPane) {
                 flashPanel.setBounds(BORDER, BORDER + toolbarHeight, widget.width, widget.height);
             }

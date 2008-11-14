@@ -60,28 +60,46 @@ public class WindowHelper {
         return extractWindow((WindowStageDelegate$Intf) stage.get$impl_stageDelegate().get());
     }
     
-    public static JDialog createJDialog(Frame owner) {
+    public static JDialog createJDialog(Window owner) {
         JDialog dialog;
         if (isMac()) {
-            dialog = new JDialog(owner) {
-                @Override
-                protected JRootPane createRootPane() {
-                    JRootPane rp = new JRootPane() {
-                        @Override
-                        public void paint(Graphics g) {
-                            g.clearRect(0, 0, getWidth(), getHeight());
-                            super.paint(g);
-                        }
-                    };
-                    rp.setOpaque(true);
-                    return rp;
-                }
-            };
+            if (owner == null || owner instanceof Frame) {
+                // explicitly cast to a Frame so we get the benefit of parent-less dialogs
+                dialog = new MacJDialog((Frame) owner);
+            } else {
+                dialog = new MacJDialog(owner);
+            }
         }
         else {
-            dialog = new JDialog(owner);
+            if (owner == null || owner instanceof Frame) {
+                // explicitly cast to a Frame so we get the benefit of parent-less dialogs
+                dialog = new JDialog((Frame) owner);
+            } else {
+                dialog = new JDialog(owner);
+            }
         }
         dialog.setBackground(Color.WHITE);
         return dialog;
+    }
+
+    private static class MacJDialog extends JDialog {
+
+        public MacJDialog(Window owner) {
+            super(owner);
+        }
+
+        @Override
+        protected JRootPane createRootPane() {
+            JRootPane rp = new JRootPane() {
+
+                @Override
+                public void paint(Graphics g) {
+                    g.clearRect(0, 0, getWidth(), getHeight());
+                    super.paint(g);
+                }
+            };
+            rp.setOpaque(true);
+            return rp;
+        }
     }
 }
