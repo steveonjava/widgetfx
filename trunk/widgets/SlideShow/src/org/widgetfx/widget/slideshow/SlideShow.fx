@@ -57,6 +57,7 @@ var shuffle = true;
 var duration:Integer = 10;
 var keywords : String;
 var imageIndex:Integer;
+var imageWidth:Number;
 var imageHeight:Number;
 var currentFile:String;
 var currentImage:Image;
@@ -97,7 +98,7 @@ function updateImage():Void {
     worker = JavaFXWorker {
         inBackground: function() {
             
-            var image = Image {url: currentFile, height: imageHeight};
+            var image = Image {url: currentFile, width: imageWidth, height: imageHeight, preserveRatio: true};
             if (image.error) {
                 throw new RuntimeException("Error loading image: {currentFile}");
             }
@@ -105,7 +106,7 @@ function updateImage():Void {
         }
         onDone: function(result) {
             currentImage = result as Image;
-            status = null;
+            status = "";
             System.runFinalization();
             System.gc();
         }
@@ -353,13 +354,21 @@ var slideShow:Widget = Widget {
 //        }
 
         onLoad: function() {
+            imageWidth = slideShow.width;
             imageHeight = slideShow.height;
-            loadDirectory;
+            loadDirectory();
         }
         onSave: loadDirectory;
     }
+    var view:ImageView;
     content: [
-        ImageView {
+        view = ImageView {
+            x: bind (slideShow.width - view.boundsInLocal.width) / 2
+            y: bind (slideShow.height - view.boundsInLocal.height) / 2
+            fitWidth: bind slideShow.width
+            fitHeight: bind slideShow.height
+            preserveRatio: true
+            smooth: true
             image: bind currentImage
         },
         Group {
@@ -378,13 +387,14 @@ var slideShow:Widget = Widget {
                     fill: Color.WHITE
                 }
             ]
-            opacity: bind if (status == null) 0 else 1;
+            opacity: bind if (status.isEmpty()) 0 else 1;
         }
     ]
     onResize: function(width:Number, height:Number) {
-        if (imageHeight != height) {
+        if (imageWidth != width or imageHeight != height) {
+            imageWidth = width;
             imageHeight = height;
-            if (status == null) {
+            if (status.isEmpty()) {
                 updateImage();
             }
         }

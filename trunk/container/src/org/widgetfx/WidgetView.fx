@@ -184,7 +184,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
             },
             toolbar = WidgetToolbar {
                 blocksMouse: true
-                translateX: bind (maxWidth + widget.width * scale) / 2 - toolbar.boundsInLocal.width
+                translateX: bind (maxWidth + widget.width * scale) / 2 - toolbar.boundsInLocal.maxX
                 opacity: bind rolloverOpacity
                 instance: instance
                 onClose: function() {

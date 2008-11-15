@@ -105,19 +105,18 @@ public class WidgetToolbar extends Group {
                 ]
             },
             Rectangle {
-                visible: bind selectedName != null
-                translateX: bind - (BUTTON_BORDER + text.boundsInLocal.width)
+                visible: bind not selectedName.isEmpty()
+                translateX: bind - (BUTTON_BORDER * 2 + BUTTON_SPACING + text.boundsInLocal.width)
                 width: bind text.boundsInLocal.width + BUTTON_BORDER * 2
                 height: TOOLBAR_HEIGHT
                 arcWidth: TOOLBAR_HEIGHT
                 arcHeight: TOOLBAR_HEIGHT
-                // todo - wants to be aligned right
                 fill: Color.WHITESMOKE
                 opacity: .7
             },
             text = Text {
                 visible: bind not selectedName.isEmpty()
-                translateX: bind - (BUTTON_BORDER * 2 + text.boundsInLocal.width)
+                translateX: bind - (BUTTON_BORDER + BUTTON_SPACING + text.boundsInLocal.width - 1)
                 translateY: BUTTON_BORDER
                 content: bind selectedName
                 textOrigin: TextOrigin.TOP

@@ -138,7 +138,7 @@ public class Dock extends Dialog {
         }
     ]);
     
-    var mainMenu = createNativeMainMenu(dialog);
+    var mainMenu:NativePopupMenu;
     var logo:Node = bind if (logoUrl.isEmpty()) {
         createWidgetFXLogo()
     } else {
@@ -233,6 +233,7 @@ public class Dock extends Dialog {
     override var width = DEFAULT_WIDTH + BORDER * 2;
 
     postinit {
+        mainMenu = createNativeMainMenu(dialog);
         configuration.load();
         loadContent();
         createTrayIcon();
