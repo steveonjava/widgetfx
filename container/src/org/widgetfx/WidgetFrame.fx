@@ -351,6 +351,7 @@ public class WidgetFrame extends Dialog, DragContainer {
                                 },
                                 Group { // Slider
                                     translateX: 1
+                                    translateY: -2
                                     content: slider
                                 }
                             ]
@@ -360,7 +361,7 @@ public class WidgetFrame extends Dialog, DragContainer {
                         []
                     },
                     toolbar = WidgetToolbar {
-                        translateX: bind width - toolbar.boundsInLocal.width
+                        translateX: bind width - toolbar.boundsInLocal.maxX
                         opacity: bind rolloverOpacity
                         instance: instance
                         onClose: function() {

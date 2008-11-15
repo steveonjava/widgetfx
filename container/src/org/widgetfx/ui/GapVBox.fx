@@ -77,8 +77,8 @@ public class GapVBox extends GapBox {
         var point = screenToLocal(screenX, screenY);
         var index = content.size();
         for (node in content) {
-            var viewY = node.boundsInLocal.minY;
-            var viewHeight = node.boundsInLocal.height;
+            var viewY = node.boundsInParent.minY;
+            var viewHeight = node.boundsInParent.height;
             if (point.y < viewY + viewHeight / 2) {
                 index = indexof node;
                 break;
@@ -146,9 +146,11 @@ public class GapVBox extends GapBox {
                         y += gapHeight;
                     }
                     if (node.visible) {
+                        var newX = x;
+                        var newY = y;
                         var values = [
-                            node.impl_layoutX => x tween Interpolator.EASEIN,
-                            node.impl_layoutY => y tween Interpolator.EASEIN
+                            node.impl_layoutX => newX tween Interpolator.EASEIN,
+                            node.impl_layoutY => newY tween Interpolator.EASEIN
                         ];
                         y += node.boundsInLocal.height + spacing;
                         values;

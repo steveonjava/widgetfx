@@ -21,12 +21,14 @@
 package org.widgetfx.ui;
 
 import org.widgetfx.*;
+import org.widgetfx.layout.*;
 import org.widgetfx.stage.*;
 import java.io.File;
 import javafx.ext.swing.*;
 import javafx.scene.*;
-import javafx.scene.shape.*;
+import javafx.scene.layout.*;
 import javafx.scene.paint.*;
+import javafx.scene.shape.*;
 import javafx.stage.*;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -50,9 +52,9 @@ public class AddWidgetDialog {
         showDialog();
     }
     
-//    var selected:ListItem on replace {
-//        jnlpUrl = selected.text;
-//    }
+    var selected:SwingListItem on replace {
+        jnlpUrl = selected.text;
+    }
     
     function add() {
         dialog.close();
@@ -69,99 +71,72 @@ public class AddWidgetDialog {
     }
     
     function showDialog() {
-//        var widgetList = List {
-//            selectedItem: bind selected with inverse
-//            items: for (url in WidgetManager.getInstance().recentWidgets) ListItem {
-//                text: url
-//            }
-//        }
-//        var listLabel = Label {text: "Recent Widgets:", labelFor: widgetList}
-//        var jarField = TextField {text: bind jnlpUrl with inverse, hmin: 300, hmax: 300, action: add};
-//        var jarLabel = Label {text: "Widget URL:", labelFor: jarField};
-//        var browsebutton:Button = Button {
-//            text: "Browse...";
-//            action: function() {
-//                var chooser = new JFileChooser(jnlpUrl);
-//                chooser.setFileFilter(FileFilter {
-//                    public function accept(f:File):Boolean {
-//                        return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp") or f.getName().toLowerCase().endsWith(".swf") or f.getName().toLowerCase().endsWith(".swfi");
-//                    }
-//                    public function getDescription():String {
-//                        return "WidgetFX Widget (JNLP or SWF)"
-//                    }
-//                });
-//                var returnVal = chooser.showOpenDialog(browsebutton.getJButton());
-//                if (returnVal == JFileChooser.APPROVE_OPTION) {
-//                    jnlpUrl = chooser.getSelectedFile().toURL().toString();
-//                }
-//            }
-//        }
+        var widgetList = SwingList {
+            selectedItem: bind selected with inverse
+            items: for (url in WidgetManager.getInstance().recentWidgets) SwingListItem {
+                text: url
+            }
+        }
+        var listLabel = SwingLabel {text: "Recent Widgets:", labelFor: widgetList}
+        var jarField = SwingTextField {text: bind jnlpUrl with inverse, columns: 50, action: add};
+        var jarLabel = SwingLabel {text: "Widget URL:", labelFor: jarField};
+        var browseButton:SwingButton = SwingButton {
+            text: "Browse...";
+            action: function() {
+                var chooser = new JFileChooser(jnlpUrl);
+                chooser.setFileFilter(FileFilter {
+                    override function accept(f:File):Boolean {
+                        return f.isDirectory() or f.getName().toLowerCase().endsWith(".jnlp") or f.getName().toLowerCase().endsWith(".swf") or f.getName().toLowerCase().endsWith(".swfi");
+                    }
+                    override function getDescription():String {
+                        return "WidgetFX Widget (JNLP or SWF)"
+                    }
+                });
+                var returnVal = chooser.showOpenDialog(browseButton.getJButton());
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    jnlpUrl = chooser.getSelectedFile().toURL().toString();
+                }
+            }
+        }
 
         dialog = Dialog {
             title: "Add Widget"
-            resizable: false
+            //resizable: false
             icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
             onClose: cancel
             owner: owner
             scene: Scene {
-                content: Circle {radius: 100, fill: Color.BLUE}
-//                content: ComponentView {
-//                    component: BorderPanel {
-//                        center: ClusterPanel {
-//                            vcluster: SequentialCluster {
-//                                content: [
-//                                    ParallelCluster {
-//                                        content: [
-//                                            listLabel,
-//                                            widgetList
-//                                        ]
-//                                    },
-//                                    ParallelCluster {
-//                                        content: [
-//                                            jarLabel,
-//                                            jarField,
-//                                            browsebutton
-//                                        ]
-//                                    }
-//                                ]
-//                            },
-//                            hcluster: SequentialCluster {
-//                                content: [
-//                                    ParallelCluster {
-//                                        content: [
-//                                            listLabel,
-//                                            jarLabel
-//                                        ]
-//                                    },
-//                                    ParallelCluster {
-//                                        content: [
-//                                            widgetList,
-//                                            SequentialCluster {
-//                                                content: [
-//                                                    jarField,
-//                                                    browsebutton
-//                                                ]
-//                                            }
-//                                        ]
-//                                    }
-//                                ]
-//                            }
-//                        }
-//                        bottom: FlowPanel {
-//                            alignment: HorizontalAlignment.RIGHT
-//                            content: [
-//                                Button {
-//                                    text: "Add"
-//                                    action: add
-//                                },
-//                                Button {
-//                                    text: "Cancel"
-//                                    action: cancel
-//                                }
-//                            ]
-//                        }
-//                    }
-//                }
+                var grid:GridLayout;
+                content: grid = GridLayout {
+                    growRows: [0]
+                    rows: [
+                        Row {
+                            cells: GridLayout {
+                                growRows: [0]
+                                rows: [
+                                    Row {cells: [listLabel, Cell {content: widgetList, rowSpan: 2}]},
+                                    Row {cells: [jarLabel, jarField, browseButton]}
+                                ]
+                            }
+                        },
+                        Row {
+                            var box:HBox;
+                            cells: box = HBox {
+                                translateX: grid.boundsInLocal.width - box.boundsInLocal.width
+                                content: [
+                                    SwingButton {
+                                        text: "Add"
+                                        action: add
+                                    },
+                                    SwingButton {
+                                        text: "Cancel"
+                                        action: cancel
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
             }
         };
     }
