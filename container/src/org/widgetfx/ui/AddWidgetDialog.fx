@@ -106,12 +106,12 @@ public class AddWidgetDialog {
             onClose: cancel
             owner: owner
             scene: Scene {
-                var grid:GridLayout;
-                content: grid = GridLayout {
+                var grid:Grid;
+                content: grid = Grid {
                     growRows: [0]
                     rows: [
                         Row {
-                            cells: GridLayout {
+                            cells: Grid {
                                 growRows: [0]
                                 rows: [
                                     Row {cells: [listLabel, Cell {content: widgetList, rowSpan: 2}]},

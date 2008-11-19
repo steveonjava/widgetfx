@@ -20,6 +20,7 @@
  */
 package org.widgetfx.layout;
 
+import java.lang.Math;
 import javafx.scene.*;
 import javafx.scene.layout.*;
 
@@ -27,12 +28,28 @@ import javafx.scene.layout.*;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class GridLayout extends Container {
+public class Grid extends Container {
     public var growRows:Integer[];
     
     public var growColumns:Integer[];
     
-    public var rows:Row[];
+    var columnPreferred:Number[] = [0, 0, 0, 0, 0, 0, 0, 0];
+    
+    var rowPreferred:Number[] = [0, 0, 0, 0, 0, 0, 0, 0];
+    
+    public var rows:Row[] on replace {
+        for (row in rows) {
+            for (cell in row.cells) {
+                var node:Node = if (cell instanceof Cell) {
+                    (cell as Cell).content
+                } else {
+                    cell as Node
+                }
+                columnPreferred[indexof cell] = Math.max(columnPreferred[indexof cell], node.boundsInLocal.width);
+                rowPreferred[indexof row] = Math.max(rowPreferred[indexof row], node.boundsInLocal.width);
+            }
+        }
+    }
     
     override var content = bind getContent(rows);
     
@@ -55,10 +72,19 @@ public class GridLayout extends Container {
     function doGridLayout(g:Group):Void {
         var x:Number = 0;
         var y:Number = 0;
-        for (node in content) {
-            node.impl_layoutX = x;
-            node.impl_layoutY = y;
-            y += node.boundsInLocal.height;
+        for (row in rows) {
+            for (cell in row.cells) {
+                var node:Node = if (cell instanceof Cell) {
+                    (cell as Cell).content
+                } else {
+                    cell as Node
+                }                
+                node.impl_layoutX = x;
+                node.impl_layoutY = y;
+                x += columnPreferred[indexof cell];
+            }
+            x = 0;
+            y += rowPreferred[indexof row];
         }
     }
 }
