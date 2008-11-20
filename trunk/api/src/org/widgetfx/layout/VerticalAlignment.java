@@ -27,5 +27,6 @@ package org.widgetfx.layout;
 public enum VerticalAlignment {
     TOP,
     CENTER,
-    BOTTOM
+    BOTTOM,
+    FILL
 }

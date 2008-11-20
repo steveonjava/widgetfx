@@ -31,5 +31,13 @@ public class Cell {
     public-init var columnSpan:Integer;
     public-init var verticalAlignment:VerticalAlignment = VerticalAlignment.CENTER;
     public-init var horizontalAlignment:HorizontalAlignment = HorizontalAlignment.LEFT;
+    public-init var verticalGrow:Integer;
+    public-init var horizontalGrow:Integer;
+    public-init var maximumHeight:Number = -1;
+    public-init var maximumWidth:Number = -1;
+    public-init var minimumHeight:Number = -1;
+    public-init var minimumWidth:Number = -1;
+    public-init var preferredHeight:Number = -1;
+    public-init var preferredWidth:Number = -1;
     public-init var content:Node;
 }

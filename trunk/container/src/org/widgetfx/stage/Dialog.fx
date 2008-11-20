@@ -21,7 +21,9 @@
 package org.widgetfx.stage;
 
 import javafx.stage.*;
+import javafx.scene.layout.*;
 import java.awt.Window;
+import java.lang.Math;
 
 /**
  * @author Stephen Chin
@@ -32,6 +34,8 @@ public class Dialog extends Stage {
     
     public-init var independentFocus = false;
     
+    public-init var packed = false;
+    
     var delegate:DialogStageDelegate;
     
     public var dialog = bind delegate.dialog;
@@ -40,7 +44,28 @@ public class Dialog extends Stage {
         return WindowHelper.extractWindow(this);
     }
     
+    public function pack():Void {
+        var preferredWidth:Number = 0;
+        var preferredHeight:Number = 0;
+        for (node in scene.content) {
+            if (node instanceof Resizable) {
+                var resizable = node as Resizable;
+                preferredWidth = Math.max(preferredWidth, resizable.preferredWidth);
+                preferredHeight = Math.max(preferredHeight, resizable.preferredHeight);
+            } else {
+                preferredWidth = Math.max(preferredWidth, node.boundsInLocal.width);
+                preferredHeight = Math.max(preferredHeight, node.boundsInLocal.height);
+            }
+        }
+        width = preferredWidth + width - scene.width;
+        height = preferredHeight + height - scene.height;
+        dialog.setLocationRelativeTo(null);
+    }
+    
     init {
+        if (packed) {
+            visible = false;
+        }
         DialogStageDelegate.owner = owner;
         DialogStageDelegate.independentFocus = independentFocus;
         DialogStageDelegate.style = style;
@@ -48,6 +73,17 @@ public class Dialog extends Stage {
             stage: this
             dialogTitle: bind title
             dialogResizable: bind resizable
+        }
+    }
+    
+    postinit {
+        if (packed) {
+            FX.deferAction(
+                function():Void {
+                    pack();
+                    visible = true;
+                }
+            );
         }
     }
 }

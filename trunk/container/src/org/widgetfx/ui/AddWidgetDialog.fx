@@ -78,7 +78,7 @@ public class AddWidgetDialog {
             }
         }
         var listLabel = SwingLabel {text: "Recent Widgets:", labelFor: widgetList}
-        var jarField = SwingTextField {text: bind jnlpUrl with inverse, columns: 50, action: add};
+        var jarField = SwingTextField {text: bind jnlpUrl with inverse, columns: 30, action: add};
         var jarLabel = SwingLabel {text: "Widget URL:", labelFor: jarField};
         var browseButton:SwingButton = SwingButton {
             text: "Browse...";
@@ -98,10 +98,11 @@ public class AddWidgetDialog {
                 }
             }
         }
-
+        
         dialog = Dialog {
             title: "Add Widget"
-            //resizable: false
+            resizable: false
+            packed: true
             icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
             onClose: cancel
             owner: owner
@@ -114,7 +115,7 @@ public class AddWidgetDialog {
                             cells: Grid {
                                 growRows: [0]
                                 rows: [
-                                    Row {cells: [listLabel, Cell {content: widgetList, rowSpan: 2}]},
+                                    Row {cells: [listLabel, Cell {content: widgetList, rowSpan: 2, preferredHeight: 200}]},
                                     Row {cells: [jarLabel, jarField, browseButton]}
                                 ]
                             }
@@ -122,7 +123,7 @@ public class AddWidgetDialog {
                         Row {
                             var box:HBox;
                             cells: box = HBox {
-                                translateX: grid.boundsInLocal.width - box.boundsInLocal.width
+                                translateX: bind grid.preferredWidth - box.boundsInLocal.width
                                 content: [
                                     SwingButton {
                                         text: "Add"

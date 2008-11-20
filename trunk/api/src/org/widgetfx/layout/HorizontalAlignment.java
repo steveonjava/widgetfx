@@ -27,5 +27,6 @@ package org.widgetfx.layout;
 public enum HorizontalAlignment {
     LEFT,
     CENTER,
-    RIGHT
+    RIGHT,
+    FILL
 }
