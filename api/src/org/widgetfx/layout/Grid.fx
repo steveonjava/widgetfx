@@ -21,35 +21,57 @@
 package org.widgetfx.layout;
 
 import java.lang.Math;
+import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.layout.*;
+import javafx.util.*;
 
 /**
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class Grid extends Container {
+public class Grid extends Container, Resizable {
     public var growRows:Integer[];
     
     public var growColumns:Integer[];
     
-    var columnPreferred:Number[] = [0, 0, 0, 0, 0, 0, 0, 0];
+    var rowMaximum:Number[];
     
-    var rowPreferred:Number[] = [0, 0, 0, 0, 0, 0, 0, 0];
+    var columnMaximum:Number[];
     
-    public var rows:Row[] on replace {
-        for (row in rows) {
-            for (cell in row.cells) {
-                var node:Node = if (cell instanceof Cell) {
-                    (cell as Cell).content
-                } else {
-                    cell as Node
-                }
-                columnPreferred[indexof cell] = Math.max(columnPreferred[indexof cell], node.boundsInLocal.width);
-                rowPreferred[indexof row] = Math.max(rowPreferred[indexof row], node.boundsInLocal.width);
-            }
+    var rowMinimum:Number[];
+    
+    var columnMinimum:Number[];
+    
+    var rowPreferred:Number[];
+    
+    var columnPreferred:Number[];
+    
+    override var maximumHeight = bind sum(rowMaximum);
+    
+    override var maximumWidth = bind sum(columnMaximum);
+    
+    override var minimumHeight = bind sum(rowMinimum);
+    
+    override var minimumWidth = bind sum(columnMinimum);
+    
+    override var preferredHeight = bind sum(rowPreferred);
+    
+    override var preferredWidth = bind sum(columnPreferred);
+    
+    function sum(numbers:Number[]):Number {
+        var total:Number = 0;
+        for (number in numbers) {
+            total += number;
         }
+        return total;
     }
+    
+    function createNumberSequence(length:Integer, value:Number):Number[] {
+        return for (i in [1..length]) value;
+    }
+    
+    public var rows:Row[];
     
     override var content = bind getContent(rows);
     
@@ -68,8 +90,88 @@ public class Grid extends Container {
     init {
         impl_layout = doGridLayout;
     }
+    
+    public function requestLayout():Void {
+        impl_requestLayout();
+    }
 
+    function recalculateSizes() {
+        var numRows = sizeof rows;
+        var rowSizes = for (row in rows) sizeof row.cells;
+        var numColumns = Sequences.max(rowSizes);
+        rowMaximum = createNumberSequence(numRows, 0);
+        columnMaximum = createNumberSequence(numColumns as Integer, 0);
+        rowMinimum = createNumberSequence(numRows, 0);
+        columnMinimum = createNumberSequence(numColumns as Integer, 0);
+        rowPreferred = createNumberSequence(numRows, 0);
+        columnPreferred = createNumberSequence(numColumns as Integer, 0);
+        for (row in rows) {
+            for (obj in row.cells) {
+                var maximumHeight:Number = -1;
+                var maximumWidth:Number = -1;
+                var minimumHeight:Number = -1;
+                var minimumWidth:Number = -1;
+                var preferredHeight:Number = -1;
+                var preferredWidth:Number = -1;
+                var node:Node = if (obj instanceof Cell) {
+                    (obj as Cell).content;
+                } else {
+                    obj as Node;
+                }
+                if (node instanceof SwingComponent) {
+                    // workaround for a defect in SwingComponent where min/max/pref don't get initialized
+                    var component = (node as SwingComponent).getJComponent();
+                    maximumHeight = component.getMaximumSize().height;
+                    maximumWidth = component.getMaximumSize().width;
+                    minimumHeight = component.getMinimumSize().height;
+                    minimumWidth = component.getMinimumSize().width;
+                    preferredHeight = component.getPreferredSize().height;
+                    preferredWidth = component.getPreferredSize().width;
+                } else if (node instanceof Resizable) {
+                    var resizable = node as Resizable;
+                    maximumHeight = resizable.maximumHeight;
+                    maximumWidth = resizable.maximumWidth;
+                    minimumHeight = resizable.minimumHeight;
+                    minimumWidth = resizable.minimumWidth;
+                    preferredHeight = resizable.preferredHeight;
+                    preferredWidth = resizable.preferredWidth;
+                } else {
+                    maximumHeight = minimumHeight = preferredHeight = node.boundsInLocal.height;
+                    maximumWidth = minimumWidth = preferredWidth = node.boundsInLocal.width;
+                }
+                if (obj instanceof Cell) {
+                    var cell = obj as Cell;
+                    if (cell.maximumHeight != -1) {
+                        maximumHeight = cell.maximumHeight;
+                    }
+                    if (cell.maximumWidth != -1) {
+                        maximumWidth = cell.maximumWidth;
+                    }
+                    if (cell.minimumHeight != -1) {
+                        minimumHeight = cell.minimumHeight;
+                    }
+                    if (cell.minimumWidth != -1) {
+                        minimumWidth = cell.minimumWidth;
+                    }
+                    if (cell.preferredHeight != -1) {
+                        preferredHeight = cell.preferredHeight;
+                    }
+                    if (cell.preferredWidth != -1) {
+                        preferredWidth = cell.preferredWidth;
+                    }
+                }
+                rowMaximum[indexof row] = Math.max(rowMaximum[indexof row], maximumHeight);
+                columnMaximum[indexof obj] = Math.max(columnMaximum[indexof obj], maximumWidth);
+                rowMinimum[indexof row] = Math.max(rowMinimum[indexof row], minimumHeight);
+                columnMinimum[indexof obj] = Math.max(columnMinimum[indexof obj], minimumWidth);
+                rowPreferred[indexof row] = Math.max(rowPreferred[indexof row], preferredHeight);
+                columnPreferred[indexof obj] = Math.max(columnPreferred[indexof obj], preferredWidth);
+            }
+        }
+    }
+    
     function doGridLayout(g:Group):Void {
+        recalculateSizes();
         var x:Number = 0;
         var y:Number = 0;
         for (row in rows) {
@@ -78,7 +180,13 @@ public class Grid extends Container {
                     (cell as Cell).content
                 } else {
                     cell as Node
-                }                
+                }
+                if (node instanceof Resizable) {
+                    var resizable = node as Resizable;
+                    // todo - look at the alignment property for FILL
+                    resizable.width = columnPreferred[indexof cell];
+                    resizable.height = rowPreferred[indexof row];
+                }
                 node.impl_layoutX = x;
                 node.impl_layoutY = y;
                 x += columnPreferred[indexof cell];
