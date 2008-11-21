@@ -103,6 +103,7 @@ public class AddWidgetDialog {
             title: "Add Widget"
             resizable: false
             packed: true
+            modal: true
             icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
             onClose: cancel
             owner: owner

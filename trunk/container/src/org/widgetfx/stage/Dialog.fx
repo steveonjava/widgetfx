@@ -36,6 +36,12 @@ public class Dialog extends Stage {
     
     public-init var packed = false;
     
+    public-init var modal = false;
+    
+    public var alwaysOnTop = false on replace {
+        dialog.setAlwaysOnTop(alwaysOnTop);
+    }
+    
     var delegate:DialogStageDelegate;
     
     public var dialog = bind delegate.dialog;
@@ -74,6 +80,8 @@ public class Dialog extends Stage {
             dialogTitle: bind title
             dialogResizable: bind resizable
         }
+        dialog.setAlwaysOnTop(alwaysOnTop);
+        dialog.setModal(modal);
     }
     
     postinit {
