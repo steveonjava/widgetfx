@@ -187,10 +187,6 @@ public class Dock extends Dialog {
     var widthTrigger = bind width on replace {
         updateDockLocation();
     }
-
-    var alwaysOnTop:Boolean on replace {
-        dialog.setAlwaysOnTop(alwaysOnTop);
-    }
     
     package var resizing:Boolean;
     

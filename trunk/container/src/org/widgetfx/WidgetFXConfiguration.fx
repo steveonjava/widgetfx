@@ -44,7 +44,7 @@ public function getInstanceWithProperties(properties:Property[]) {
     insert properties into instance.properties;
     return instance;
 }
-    
+
 public function getInstance() {
     return instance;
 }
@@ -61,7 +61,7 @@ public class WidgetFXConfiguration {
     
     public-read var codebase = (ServiceManager.lookup("javax.jnlp.BasicService") as BasicService).getCodeBase();
     
-    public-read var devMode = codebase.getProtocol().equalsIgnoreCase("file") on replace {
+    public-read var devMode = codebase.getProtocol().equalsIgnoreCase("file") or codebase.getHost().equalsIgnoreCase("localhost") on replace {
         if (devMode) {
             System.out.println("Starting Development Mode");
         }

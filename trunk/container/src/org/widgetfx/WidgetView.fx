@@ -326,8 +326,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
     
     function updateFlashBounds() {
         if (flashPanel != null) {
-            var location = new Point(0, 0);
-            impl_getSGNode().localToGlobal(location, location);
+            var location = localToScene(0, 0);
             flashPanel.setBounds(location.x, location.y + TOP_BORDER, widget.width, widget.height);
         }
     }

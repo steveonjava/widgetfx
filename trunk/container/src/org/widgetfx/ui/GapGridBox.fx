@@ -20,8 +20,6 @@
  */
 package org.widgetfx.ui;
 
-import com.sun.scenario.scenegraph.SGNode;
-import com.sun.scenario.scenegraph.SGGroup;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Interpolator;

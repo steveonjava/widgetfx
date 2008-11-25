@@ -81,6 +81,6 @@ public class DialogStageDelegate extends WindowStageDelegate {
         owner = null;
         independentFocus = false;
         style = null;
-        return dialog;
+        return new DialogToFrame(dialog);
     }
 }
