@@ -25,6 +25,7 @@ import org.w3c.dom.NodeList;
 import org.widgetfx.config.*;
 import org.widgetfx.ui.ErrorWidget;
 import org.widgetfx.ui.FlashWidget;
+import org.jfxtras.stage.*;
 import com.sun.javafx.runtime.TypeInfo;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
@@ -49,7 +50,7 @@ import javax.xml.xpath.*;
 public var MIN_WIDTH = 100;
 public var MIN_HEIGHT = 50;
 
-var JARS_TO_SKIP = ["widgetfx-api.jar", "widgetfx.jar",
+var JARS_TO_SKIP = ["widgetfx-api.jar", "widgetfx.jar", "jfxtras.jar",
         "Scenario.jar", "gluegen-rt.jar", "javafx-swing.jar", "javafxc.jar",
         "javafxdoc.jar", "javafxgui.jar", "javafxrt.jar", "jmc.jar", "jogl.jar"];
     
@@ -106,7 +107,7 @@ public class WidgetInstance {
         }
     ];
     
-    var persister = ConfigPersister {properties: bind [properties, widget.configuration.properties], file: getPropertyFile()}
+    var persister = bind ConfigPersister {properties: bind [properties, widget.configuration.properties], file: getPropertyFile()}
     
     function resolve(url:String):String {
         return (new URL(WidgetManager.getInstance().codebase, url)).toString();
@@ -138,12 +139,12 @@ public class WidgetInstance {
                         if (javafx.util.Sequences.indexOf(loadedResources, url) == -1) {
                             ds.loadResource(url, null, DownloadServiceListener {
                                 override function downloadFailed(url, version) {
-                                    System.out.println("download failed");
+                                    println("download failed");
                                 }
                                 override function progress(url, version, readSoFar, total, overallPercent) {
                                 }
                                 override function upgradingArchive(url, version, patchPercent, overallPercent) {
-                                    System.out.println("upgradingArchive");
+                                    println("upgradingArchive");
                                 }
                                 override function validating(url, version, entry, total, overallPercent) {
                                 }
@@ -306,7 +307,7 @@ public class WidgetInstance {
         }
     }
     
-//    var configDialog:SwingDialog;
+    var configDialog:Dialog;
     
     public function save() {
         persister.save();
@@ -317,7 +318,7 @@ public class WidgetInstance {
                 e.printStackTrace();
             }
         }
-        //configDialog.close();
+        configDialog.close();
     }
     
 	// todo:merge - this needs to be commented out temporarily
@@ -325,26 +326,13 @@ public class WidgetInstance {
         if (widget instanceof FlashWidget) {
             (widget as FlashWidget).configure();
         } else if (widget.configuration != null) {
-//            configDialog = SwingDialog {
-//                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
-//                title: "{title} Configuration"
-//                resizable: false
-//                closeAction: save
-//                content: BorderPanel {
-//                    center: widget.configuration.component
-//                    bottom: FlowPanel {
-//                        alignment: HorizontalAlignment.RIGHT
-//                        content: Button {
-//                            text: "Done"
-//                            action: function() {
-//                                save();
-//                                configDialog.close();
-//                            }
-//                        }
-//                    }
-//                }
-//                visible: true
-//            }
+            configDialog = Dialog {
+                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
+                title: "{title} Configuration"
+                resizable: false
+                onClose: save
+                scene: widget.configuration.scene
+            }
         }
     }
 

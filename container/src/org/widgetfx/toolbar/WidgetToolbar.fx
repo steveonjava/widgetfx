@@ -121,6 +121,7 @@ public class WidgetToolbar extends Group {
                 content: bind selectedName
                 textOrigin: TextOrigin.TOP
                 fill: Color.BLACK
+                smooth: false
                 font: Font {size: 10}
             }
         ];

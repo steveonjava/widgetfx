@@ -129,6 +129,7 @@ is divided into following sections:
     -->
     <target depends="init" name="deps-jar" unless="no.deps">
         <ant antfile="${project.Clock}/build.xml" inheritall="false" target="jar"/>
+        <ant antfile="${project.JFXtras}/build.xml" inheritall="false" target="jar"/>
         <ant antfile="${project.SlideShow}/build.xml" inheritall="false" target="jar"/>
         <ant antfile="${project.WebFeed}/build.xml" inheritall="false" target="jar"/>
         <ant antfile="${project.WidgetFX-API}/build.xml" inheritall="false" target="jar"/>
@@ -164,6 +165,14 @@ is divided into following sections:
             <arg value="${sign.arg}"/>
             <arg value="-cp"/>
             <arg path="${javac.classpath}"/>
+            <arg value="-keystore"/>
+            <arg path="${jnlp.signjar.keystore}"/>
+            <arg value="-keystorePassword"/>
+            <arg value="${jnlp.signjar.storepass}"/>
+            <arg value="-keyalias"/>
+            <arg value="${jnlp.signjar.alias}"/>
+            <arg value="-keyaliasPassword"/>
+            <arg value="${jnlp.signjar.keypass}"/>
         </exec>
     </target>
     <target name="-post-compile">
@@ -199,7 +208,10 @@ is divided into following sections:
         <nbbrowse url="${applet.url}"/>
     </target>
     <target depends="jar" description="Start javaws execution" if="jnlp.execution.trigger" name="jws-run">
-        <exec executable="${java.home}/bin/javaws" failonerror="true">
+        <condition else="${java.home}" property="javaws.home" value="/usr">
+            <os family="mac"/>
+        </condition>
+        <exec executable="${javaws.home}/bin/javaws" failonerror="true">
             <env key="JAVAWS_VM_ARGS" value="${run.jvmargs}"/>
             <arg file="${dist.dir}/${application.title}.jnlp"/>
         </exec>
@@ -249,7 +261,10 @@ is divided into following sections:
         </exec>
     </target>
     <target if="jnlp.execution.trigger" name="-debug-javaws-debuggee">
-        <exec executable="${java.home}/bin/javaws">
+        <condition else="${java.home}" property="javaws.home" value="/usr">
+            <os family="mac"/>
+        </condition>
+        <exec executable="${javaws.home}/bin/javaws">
             <env key="JAVAWS_VM_ARGS" value="-Xdebug -Xnoagent -Djava.compiler=none -Xrunjdwp:transport=dt_socket,address=${javafx.address} ${run.jvmargs}"/>
             <arg file="${dist.dir}/${application.title}.jnlp"/>
         </exec>

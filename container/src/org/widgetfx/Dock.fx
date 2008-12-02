@@ -24,7 +24,7 @@ import com.sun.javafx.stage.WindowStageDelegate;
 import org.widgetfx.ui.*;
 import org.widgetfx.config.*;
 import org.widgetfx.install.InstallUtil;
-import org.widgetfx.stage.*;
+import org.jfxtras.stage.*;
 import javafx.lang.*;
 import javafx.scene.*;
 import javafx.scene.shape.*;
@@ -347,8 +347,7 @@ public class Dock extends Dialog {
     
     package var rolloverOpacity = 0.01;
     package var rolloverTimeline = Timeline {
-        autoReverse: true
-        keyFrames: KeyFrame {time: 1s, values: [rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY * 1.2 tween Interpolator.EASEBOTH]}
+        keyFrames: at (1s) {[rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY * 1.2 tween Interpolator.EASEBOTH]}
     }
     
     function createWidgetFXLogo():Group {
@@ -487,6 +486,7 @@ public class Dock extends Dialog {
             ]
 
         }
+        var dragBar:Group;
         scene = Scene {
             content: [
                 Group {
@@ -494,16 +494,14 @@ public class Dock extends Dialog {
                 },
                 menus,
                 container,
-                Group { // Drag Bar
+                dragBar = Group { // Drag Bar
                     blocksMouse: true
                     content: [
                         Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity / 4},
                         Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity, translateX: 1},
                         Line {endY: bind height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity / 3, translateX: 2}
                     ]
-                    // todo - fix alignment
-                    //horizontalAlignment: bind if (dockLeft) HorizontalAlignment.TRAILING else HorizontalAlignment.LEADING
-                    translateX: bind if (dockLeft) width else 0
+                    translateX: bind if (dockLeft) width - dragBar.boundsInLocal.width else 0
                     cursor: Cursor.H_RESIZE
                     onMouseDragged: function(e:MouseEvent) {
                         resizing = true;
@@ -528,9 +526,11 @@ public class Dock extends Dialog {
         };
         (dialog as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
             override function mouseEntered(e) {
+                rolloverTimeline.rate = 1;
                 rolloverTimeline.play();
             }
             override function mouseExited(e) {
+                rolloverTimeline.rate = -1;
                 rolloverTimeline.play();
             }
         });

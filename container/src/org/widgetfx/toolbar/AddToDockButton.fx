@@ -32,18 +32,16 @@ import javax.jnlp.*;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public var PUBLIC_CODEBASE = "http://widgetfx.org/dock/";
-
 public class AddToDockButton extends ToolbarButton {    
     override var name = "Add to Dock";
     
     var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
     
     override function performAction() {
-        basicService.showDocument(new URL("{PUBLIC_CODEBASE}launch.jnlp?arg={toolbar.instance.jnlpUrl}"));
+        basicService.showDocument(new URL("{WidgetFXConfiguration.PUBLIC_CODEBASE}launch.jnlp?arg={toolbar.instance.jnlpUrl}"));
     }
     
-    override var visible = bind WidgetManager.getInstance().widgetRunner or not basicService.getCodeBase().toString().equals(PUBLIC_CODEBASE);
+    override var visible = bind WidgetManager.getInstance().widgetRunner or not basicService.getCodeBase().toString().equals(WidgetFXConfiguration.PUBLIC_CODEBASE);
     
     override function getShape() {
         [Line { // Border

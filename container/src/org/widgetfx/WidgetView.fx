@@ -33,6 +33,7 @@ import javafx.scene.input.*;
 import javafx.scene.shape.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
+import javafx.scene.transform.*;
 import javafx.stage.*;
 import javax.swing.JPanel;
 import javax.swing.RootPaneContainer;
@@ -86,8 +87,10 @@ public class WidgetView extends Group, Constrained, DragContainer {
         keyFrames: at (500ms) {rolloverOpacity => 1.0 tween Interpolator.EASEIN}
     }
     
-    function resize() {
+    function resize(oldMaxWidth:Number, oldMaxHeight:Number) {
         if (instance.widget.resizable) {
+            var widthMaximized = oldMaxWidth == instance.widget.width;
+            var heightMaximized = oldMaxHeight == instance.widget.height;
             if (maxWidth != Constrained.UNBOUNDED) {
                 instance.setWidth(maxWidth);
             }
@@ -96,10 +99,19 @@ public class WidgetView extends Group, Constrained, DragContainer {
             }
             if (instance.widget.aspectRatio != 0) {
                 var currentRatio = (instance.widget.width as Number) / instance.widget.height;
-                if (currentRatio > instance.widget.aspectRatio) {
-                    instance.setWidth(instance.widget.aspectRatio * instance.widget.height);                
-                } else {
+                if (widthMaximized and maxHeight == Constrained.UNBOUNDED) {
+                    // unbounded height, keep the width maximized
                     instance.setHeight(instance.widget.width / instance.widget.aspectRatio);
+                } else if (heightMaximized and maxWidth == Constrained.UNBOUNDED) {
+                    // unbounded width, keep the height maximized
+                    instance.setWidth(instance.widget.aspectRatio * instance.widget.height);
+                } else {
+                    // bounded, fit proportionally
+                    if (currentRatio > instance.widget.aspectRatio) {
+                        instance.setWidth(instance.widget.aspectRatio * instance.widget.height);
+                    } else {
+                        instance.setHeight(instance.widget.width / instance.widget.aspectRatio);
+                    }
                 }
             }
         }
@@ -121,18 +133,17 @@ public class WidgetView extends Group, Constrained, DragContainer {
         updateFlashBounds();
     }
     
-    override var maxWidth on replace {
-        resize();
+    override var maxWidth on replace oldMaxWidth {
+        resize(oldMaxWidth as Number, maxHeight);
         updateFlashBounds();
     }
     
-    override var maxHeight on replace {
-        resize();
+    override var maxHeight on replace oldMaxHeight {
+        resize(maxWidth, oldMaxHeight as Number);
         updateFlashBounds();
     }
     
     function wrapContent(content:Node[]):Node[] {
-        java.lang.System.out.println("wrapping content: {content[0]}, XXXXXXXXXXXXXXXXX {content[1..]}");
         return [
             Rectangle { // Invisible Spacer
                 height: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER
@@ -147,7 +158,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
                     content: Group { // Clip Group
                         content: content[0]
                         clip: Rectangle {width: bind widget.width, height: bind widget.height}
-                        scaleX: bind scale, scaleY: bind scale
+                        transforms: bind Transform.scale(scale, scale)
                     }
                 }
             },
@@ -155,7 +166,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
                 cache: true
                 content: content[1..]
                 clip: Rectangle {width: bind widget.width, height: bind widget.height}
-                scaleX: bind scale, scaleY: bind scale
+                transforms: bind Transform.scale(scale, scale)
             },
         ]
     }
@@ -173,12 +184,15 @@ public class WidgetView extends Group, Constrained, DragContainer {
                 translateY: TOP_BORDER
                 translateX: bind (maxWidth - widget.width * scale) / 2
                 cache: true
-                content: Group { // Drop Shadow
-                    effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
-                    content: Group { // Clip Group
-                        content: widget
-                        clip: Rectangle {width: bind widget.width, height: bind widget.height}
-                        scaleX: bind scale, scaleY: bind scale
+                content: Group { // Alert
+                    effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
+                    content: Group { // Drop Shadow
+                        effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
+                        content: Group { // Clip Group
+                            content: widget
+                            clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                            transforms: bind Transform.scale(scale, scale)
+                        }
                     }
                 }
             },
@@ -224,6 +238,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
                             }
                         }
                         updateFlashBounds();
+                        container.layout.doLayout();
                     }
                 }
                 onMouseReleased: function(e) {
@@ -275,23 +290,23 @@ public class WidgetView extends Group, Constrained, DragContainer {
                 if (widget instanceof FlashWidget) {
                     var flash = widget as FlashWidget;
                     flash.dragContainer = this;
-            }
+                }
                 instance.docked = false;
             }
             DragContainer.doDrag(screenX, screenY);
         }
     }
     
-    override function dragComplete(targetBounds:Rectangle2D):Void {
+    override function dragComplete(container:WidgetContainer, targetBounds:Rectangle2D):Void {
         container.dragging = false;
         removeFlash();
         if (targetBounds != null) {
             docking = true;
-                    instance.frame.dock(targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
+            instance.frame.dock(container, targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
         } else {
             // todo - don't call this block multiple times
             if (instance.widget.onResize != null) {
-                        instance.widget.onResize(instance.widget.width, instance.widget.height);
+                instance.widget.onResize(instance.widget.width, instance.widget.height);
             }
             if (widget instanceof FlashWidget) {
                 var flash = widget as FlashWidget;

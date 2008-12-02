@@ -41,7 +41,7 @@ public class ConfigPersister {
         }
     }
     
-    public-init var file:File;
+    public var file:File;
     
     public-init var autoSave = false;
     

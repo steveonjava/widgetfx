@@ -85,11 +85,11 @@ public abstract class DragContainer {
             moved = false;
             for (container in WidgetContainer.containers) {
                 var targetBounds = container.finishHover(instance, screenX, screenY);
-                dragComplete(targetBounds);
+                dragComplete(container, targetBounds);
             }
             instance.saveWithoutNotification();
         }
     }
     
-    protected abstract function dragComplete(targetBounds:Rectangle2D):Void;
+    protected abstract function dragComplete(container:WidgetContainer, targetBounds:Rectangle2D):Void;
 }

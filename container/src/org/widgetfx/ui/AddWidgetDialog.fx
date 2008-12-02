@@ -21,8 +21,8 @@
 package org.widgetfx.ui;
 
 import org.widgetfx.*;
-import org.widgetfx.layout.*;
-import org.widgetfx.stage.*;
+import org.jfxtras.layout.*;
+import org.jfxtras.stage.*;
 import java.io.File;
 import javafx.ext.swing.*;
 import javafx.scene.*;
