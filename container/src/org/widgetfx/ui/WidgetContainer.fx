@@ -83,7 +83,7 @@ public class WidgetContainer extends Container {
         layout.maxHeight = height;
     }
     
-    public var resizing:Boolean;
+    public var drawShadows:Boolean;
     
     public var dragging:Boolean;
     
@@ -167,7 +167,8 @@ public class WidgetContainer extends Container {
     }
     
     public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, animate:Boolean) {
-        if (visible and layout.containsScreenXY(screenX, screenY)) {
+        def showing = visible and scene != null;
+        if (showing and layout.containsScreenXY(screenX, screenY)) {
             var dockedHeight = if (instance.dockedHeight == 0) instance.widget.height else instance.dockedHeight;
             layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
             if (animateHover != null and not animateDocked) {
@@ -187,11 +188,12 @@ public class WidgetContainer extends Container {
     }
     
     public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):Rectangle2D {
-        def droppedInBounds = visible and layout.containsScreenXY(screenX, screenY);
-        if (copyOnContainerDrop and not droppedInBounds) {
+        def showing = visible and scene != null;
+        def droppedInBounds = showing and layout.containsScreenXY(screenX, screenY);
+        if (showing and copyOnContainerDrop and not droppedInBounds) {
             launchWidget(instance);
         }
-        if (copyOnContainerDrop or droppedInBounds) {
+        if (showing and copyOnContainerDrop or droppedInBounds) {
             animateHover.stop();
             animateHover = null;
             instance.undockedWidth = saveUndockedWidth;

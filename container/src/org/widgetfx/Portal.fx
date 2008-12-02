@@ -67,6 +67,7 @@ var list:Stage = Stage {
         var widgetList:WidgetInstance[];
         fill: Color.SLATEGRAY
         content: container = WidgetContainer {
+            copyOnContainerDrop: true
             width: bind scene.width
             height: bind scene.height
             widgets: widgetList
