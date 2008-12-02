@@ -53,6 +53,7 @@ var timeline = Timeline {
 timeline.play();
 
 var clock:Widget = Widget {
+    launchHref: "Clock.jnlp"
     width: 105;
     height: 105;
     resizable: false

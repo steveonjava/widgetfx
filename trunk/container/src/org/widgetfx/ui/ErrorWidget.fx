@@ -74,11 +74,12 @@ public class ErrorWidget extends Widget {
                     translateX: bind width / 2
                     translateY: bind height / 2 - LINE_HEIGHT * (errorLines.size().doubleValue() / 2 - 0.5)
                     content: bind for (error in errorLines) {
-                        Text {
+                        var text:Text;
+                        text = Text {
+                            translateX: - text.boundsInLocal.width / 2
                             translateY: indexof error * LINE_HEIGHT
                             content: error
                             fill: Color.WHITE
-                            textAlignment: TextAlignment.CENTER
                         }
                     }
                 }

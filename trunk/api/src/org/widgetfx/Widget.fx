@@ -21,9 +21,7 @@
 package org.widgetfx;
 
 import org.widgetfx.config.Configuration;
-import java.awt.EventQueue;
-import java.lang.Runnable;
-import java.lang.System;
+import java.lang.NoClassDefFoundError;
 import java.lang.Throwable;
 import java.net.URL;
 import javafx.lang.FX;
@@ -88,6 +86,11 @@ import javax.jnlp.ServiceManager;
  * @author Keith Combs
  */
 public class Widget extends Group, Resizable {
+
+    /**
+     * The external url to the widget runner process that will be launched.
+     */
+    def WIDGET_RUNNER_URL = "http://widgetfx.org/dock/runner.jnlp";
     
     /**
      * Used to give widgets a fixed aspectRatio.  The default value of 0 allows
@@ -137,36 +140,54 @@ public class Widget extends Group, Resizable {
      * display.
      */
     public-init var onUndock:function():Void;
+
+    /**
+     * Allows multiple instances of this widget to be added to the same dock with
+     * unique configuration options.  When launched from a url, a new instance will
+     * only be added if it has configuration options and those configuration options
+     * are different than all currently added widgets of the same type.
+     * <p>
+     * The default value is false, in which case only one instance of this widget
+     * can be added to the dock.
+     */
+    public-init var multiInstance = false;
+
+    /**
+     * Highlights the border of the widget, indicating it needs attention.
+     * <p>
+     * This is a runtime property and can be enabled or disabled at any time.
+     */
+    public var alert = false;
     
     /**
      * Enables or disabled auto launch facility for testing widgets.  The default value
      * is true to facilitate simple testing of widgets and debugging of deployed widgets.
-     *
+     * <p>
      * When autoLaunch is set to true, a Widget Runner will be invoked to run this widget
      * in a different process.  The codebase and launchHref will be used to pass as
      * parameters to the Widget Runner.  Once the Widget Runner has been started, this
      * process will exit.
      */
-    protected var autoLaunch = true;
+    public var autoLaunch = true;
     
     /**
      * The href used to launch the Widget Runner process.  The default value is "launch.jnlp",
      * and must be updated if you use a different jnlp filename.
      */
-    protected var launchHref = "launch.jnlp";
+    public-init var launchHref = "launch.jnlp";
     
     postinit {
-        // todo - replace with deferAction when it is safe to call it from the sandbox
-        EventQueue.invokeLater(Runnable {
-            override function run() {
-                if (autoLaunch) {
-                    try {
-                        var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
-                        basicService.showDocument(new URL("http://widgetfx.org/dock/runner.jnlp?arg={basicService.getCodeBase()}{launchHref}"));
-                        FX.exit();
-                    } catch (e:Throwable) {
-                        // not running in Web Start, continue running the applet
-                    }
+        FX.deferAction(function():Void {
+            if (autoLaunch) {
+                try {
+                    var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+                    basicService.showDocument(new URL("{WIDGET_RUNNER_URL}?arg={basicService.getCodeBase()}{launchHref}"));
+                    FX.exit();
+                } catch (e1:NoClassDefFoundError) {
+                    // not running in Web Start, continue running the applet
+                } catch (e2:Throwable) {
+                    println("Unable to launch Widget Runner");
+                    e2.printStackTrace();
                 }
             }
         });

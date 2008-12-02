@@ -21,7 +21,7 @@
 package org.widgetfx;
 
 import org.widgetfx.ui.*;
-import org.widgetfx.stage.*;
+import org.jfxtras.stage.*;
 import javafx.lang.FX;
 import javafx.scene.*;
 import javafx.scene.shape.*;
@@ -45,6 +45,7 @@ var grid:Stage = Stage {
     var scene:Scene = Scene {
         fill: Color.SLATEGRAY
         content: container = WidgetContainer {
+            copyOnContainerDrop: true
             width: bind scene.width
             height: bind scene.height
             widgets: WidgetManager.getInstance().widgets[w|w.docked];

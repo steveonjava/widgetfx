@@ -60,9 +60,9 @@ public class WidgetManager {
     public-read var codebase = WidgetFXConfiguration.getInstance().codebase;
     
     var initialWidgets = if (WidgetFXConfiguration.getInstance().devMode) [
-        "../../widgets/Clock/dist/launch.jnlp",
-        "../../widgets/SlideShow/dist/launch.jnlp",
-        "../../widgets/WebFeed/dist/launch.jnlp"
+        "../../widgets/Clock/dist/Clock.jnlp",
+        "../../widgets/SlideShow/dist/SlideShow.jnlp",
+        "../../widgets/WebFeed/dist/WebFeed.jnlp"
     ] else [
         "{codebase}widgets/Clock/launch.jnlp",
         "{codebase}widgets/SlideShow/launch.jnlp",
@@ -212,10 +212,10 @@ public class WidgetManager {
     }
     
     public function addWidget(url:String):WidgetInstance {
-        java.lang.System.out.println("adding widget: {url}");
+        println("adding widget: {url}");
         for (widget in widgets) {
             if (widget.jnlpUrl.equals(url)) {
-                System.out.println("Widget already loaded: {url}");
+                println("Widget already loaded: {url}");
                 return null;
             }
         }

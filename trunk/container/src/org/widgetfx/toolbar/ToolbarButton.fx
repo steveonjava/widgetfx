@@ -47,7 +47,6 @@ public abstract class ToolbarButton extends Group {
     
     var dsColor = Color.BLACK;
     var dsTimeline = Timeline {
-        autoReverse: true
         keyFrames: KeyFrame {
             time: 300ms
             values: [
@@ -56,16 +55,8 @@ public abstract class ToolbarButton extends Group {
         }
     }
     
-    override var content = [
-        Rectangle { // Bounding Rect (for rollover)
-            x: -WidgetToolbar.BUTTON_SIZE / 2, y: -WidgetToolbar.BUTTON_SIZE / 2
-            width: WidgetToolbar.BUTTON_SIZE, height: WidgetToolbar.BUTTON_SIZE
-            fill: Color.rgb(0, 0, 0, 0.0)
-        },
-        getShape()
-    ];
-    
     override var hover on replace {
+        dsTimeline.rate = if (hover) 1 else -1;
         dsTimeline.play();
         toolbar.setName(if (hover) then name else "");
     }
@@ -78,5 +69,13 @@ public abstract class ToolbarButton extends Group {
     
     init {
         effect = DropShadow {color: bind dsColor};
+        content = [
+            Rectangle { // Bounding Rect (for rollover)
+                x: -WidgetToolbar.BUTTON_SIZE / 2, y: -WidgetToolbar.BUTTON_SIZE / 2
+                width: WidgetToolbar.BUTTON_SIZE, height: WidgetToolbar.BUTTON_SIZE
+                fill: Color.rgb(0, 0, 0, 0.0)
+            },
+            getShape()
+        ];
     }
 }

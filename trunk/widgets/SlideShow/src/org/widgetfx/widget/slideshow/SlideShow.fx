@@ -134,10 +134,10 @@ function loadDirectory() {
         fileCount = 0;
         imageFiles = getImageFiles(directory);
         if (fileCount > maxFiles) {
-            System.out.println("Slide Show exceeded limit of {maxFiles} image files.");
+            println("Slide Show exceeded limit of {maxFiles} image files.");
         }
         if (folderCount > maxFolders) {
-            System.out.println("Slide Show exceeded limit of {maxFolders} folders to scan.");
+            println("Slide Show exceeded limit of {maxFolders} folders to scan.");
         }
         if (imageFiles.size() > 0) {
             if (shuffle) {
@@ -318,8 +318,9 @@ var browseButton:SwingButton = SwingButton {
 //}
 
 var slideShow:Widget = Widget {
-    width: 300;
-    height: 200;
+    launchHref: "SlideShow.jnlp";
+    width: 300
+    height: 200
     aspectRatio: 4.0/3.0
     configuration: Configuration {
         properties: [

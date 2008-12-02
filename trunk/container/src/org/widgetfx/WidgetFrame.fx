@@ -22,7 +22,7 @@ package org.widgetfx;
 
 import org.widgetfx.toolbar.*;
 import org.widgetfx.ui.*;
-import org.widgetfx.stage.*;
+import org.jfxtras.stage.*;
 import java.awt.event.*;
 import javafx.animation.*;
 import javafx.ext.swing.*;
@@ -120,7 +120,7 @@ public class WidgetFrame extends Dialog, DragContainer {
     
     override var title = instance.title;
     
-    public function dock(dockX:Integer, dockY:Integer):Void {
+    public function dock(container:WidgetContainer, dockX:Integer, dockY:Integer):Void {
         docking = true;
         Timeline {
             keyFrames: KeyFrame {time: 300ms,
@@ -129,9 +129,7 @@ public class WidgetFrame extends Dialog, DragContainer {
                     y => dockY - BORDER - toolbarHeight tween Interpolator.EASEIN
                 ],
                 action: function() {
-                    for (container in WidgetContainer.containers) {
-                        container.dockAfterHover(instance);
-                    }
+                    container.dockAfterHover(instance);
                     if (instance.widget.onResize != null) {
                         instance.widget.onResize(widget.width, widget.height);
                     }
@@ -307,7 +305,7 @@ public class WidgetFrame extends Dialog, DragContainer {
         }
         var slider = SwingSlider {
             minimum: 20
-            maximum: 99 // todo - hack to prevent swing component defect -- needs further investigation
+            maximum: 100
             value: bind instance.opacity with inverse
             width: bind width * 2 / 5
         }
@@ -319,11 +317,14 @@ public class WidgetFrame extends Dialog, DragContainer {
                     Group { // Widget
                         translateX: BORDER, translateY: BORDER + toolbarHeight
                         cache: true
-                        content: Group { // Drop Shadow
+                        content: Group { // Alert
+                            effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
+                            content: Group { // Drop Shadow
                                 effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
-                            content: Group { // Clip Group
-                                content: widget
-                                clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                                content: Group { // Clip Group
+                                    content: widget
+                                    clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                                }
                             }
                         }
                         opacity: bind (instance.opacity as Number) / 100
@@ -365,7 +366,6 @@ public class WidgetFrame extends Dialog, DragContainer {
                         opacity: bind rolloverOpacity
                         instance: instance
                         onClose: function() {
-                            // todo - this will remove widgets from the WidgetRunner, but should be fixed when we refactor the widget lists
                             WidgetManager.getInstance().removeWidget(instance);
                             close();
         		    WidgetEventQueue.getInstance().removeInterceptor(dialog);
@@ -399,9 +399,9 @@ public class WidgetFrame extends Dialog, DragContainer {
         visible = true;
     }
 
-    override function dragComplete(targetBounds:Rectangle2D):Void {
+    override function dragComplete(container:WidgetContainer, targetBounds:Rectangle2D):Void {
         if (targetBounds != null) {
-            dock(targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
+            dock(container, targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
         }
     }
     

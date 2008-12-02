@@ -33,10 +33,11 @@ import org.widgetfx.config.*;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public var VERSION = "0.2";
+public def PUBLIC_CODEBASE = "http://widgetfx.org/beta/";
+public def VERSION = "1.0b1";
+public def IS_MAC = System.getProperty("os.name").contains("Mac OS");
+public def IS_VISTA = System.getProperty("os.name").contains("Vista");
 public var TRANSPARENT = true;
-public var IS_MAC = System.getProperty("os.name").contains("Mac OS");
-public var IS_VISTA = System.getProperty("os.name").contains("Vista");
 
 var instance = WidgetFXConfiguration {}
 
@@ -63,13 +64,13 @@ public class WidgetFXConfiguration {
     
     public-read var devMode = codebase.getProtocol().equalsIgnoreCase("file") or codebase.getHost().equalsIgnoreCase("localhost") on replace {
         if (devMode) {
-            System.out.println("Starting Development Mode");
+            println("Starting Development Mode");
         }
     }
 
     public-read var configFolder = new File(System.getProperty("user.home"),
         if (devMode) ".WidgetFXDev" else ".WidgetFX") on replace {
-        System.out.println("Configuration directory location is: \"{configFolder}\"");
+        println("Configuration directory location is: \"{configFolder}\"");
     }
     
     function getPropertyFile():File {

@@ -107,7 +107,6 @@ public class FlashWidget extends Widget, BrComponentListener {
             );
         } else if (type.equals("inconfiguration")) {
             inConfigure = Boolean.valueOf(args[2]);
-            java.lang.System.out.println("inConfigure: {inConfigure}");
         } else if (type.equals("mouseover")) {
             FX.deferAction(
                 function():Void {
