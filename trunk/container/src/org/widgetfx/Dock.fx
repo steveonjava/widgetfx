@@ -151,7 +151,7 @@ public class Dock extends Dialog {
     var container:WidgetContainer = WidgetContainer {
         window: bind dialog
         rolloverOpacity: bind rolloverOpacity
-        resizing: bind resizing
+        drawShadows: bind not resizing
         translateX: BORDER
         translateY: bind headerHeight
         widgets: bind WidgetManager.getInstance().widgets with inverse

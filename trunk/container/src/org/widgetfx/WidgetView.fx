@@ -154,7 +154,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
             Group { // Rear Slice
                 cache: true
                 content: Group { // Drop Shadow
-                    effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
+                    effect: bind if (resizing or not container.drawShadows) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
                     content: Group { // Clip Group
                         content: content[0]
                         clip: Rectangle {width: bind widget.width, height: bind widget.height}
@@ -187,7 +187,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
                 content: Group { // Alert
                     effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
                     content: Group { // Drop Shadow
-                        effect: bind if (resizing or container.resizing) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
+                        effect: bind if (resizing or not container.drawShadows) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
                         content: Group { // Clip Group
                             content: widget
                             clip: Rectangle {width: bind widget.width, height: bind widget.height}
