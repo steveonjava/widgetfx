@@ -62,7 +62,7 @@ public class WidgetFXConfiguration {
     
     public-read var codebase = (ServiceManager.lookup("javax.jnlp.BasicService") as BasicService).getCodeBase();
     
-    public-read var devMode = codebase.getProtocol().equalsIgnoreCase("file") or codebase.getHost().equalsIgnoreCase("localhost") on replace {
+    public-read var devMode = codebase.getProtocol().equalsIgnoreCase("file") or (codebase.getHost().equalsIgnoreCase("localhost") and codebase.getPort() == 8082) on replace {
         if (devMode) {
             println("Starting Development Mode");
         }
