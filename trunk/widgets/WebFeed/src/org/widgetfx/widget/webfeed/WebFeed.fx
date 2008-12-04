@@ -70,7 +70,7 @@ function updateFeed():Void {
         entrySequence = for (entry in entries) entry as SyndEntryImpl;
         error = "";
     } catch (e) {
-        entrySequence = null;
+        entrySequence = [];
         error = "Unable to Load Feed";
     }
 }
@@ -211,28 +211,31 @@ var webFeed:Widget = Widget {
         VBox {
             visible: bind not error.isEmpty()
             translateY: bind webFeed.height / 2
+            var errorText:Text;
+            var feedText:Text;
             content: [
-                Text {
-                    translateX: bind webFeed.width / 2
-                    textAlignment: TextAlignment.CENTER
+                errorText = Text {
+                    translateX: bind Math.max(0, (webFeed.width - errorText.boundsInLocal.width) / 2)
                     content: bind error
                     fill: Color.WHITE
+                    wrappingWidth: bind webFeed.width
                 },
-                Text {
-                    translateX: bind webFeed.width / 2
-                    textAlignment: TextAlignment.CENTER
+                feedText = Text {
+                    translateX: bind Math.max(0, (webFeed.width - feedText.boundsInLocal.width) / 2)
                     content: bind feedUrl
                     font: Font {size: 11}
                     fill: Color.LIGHTSTEELBLUE
+                    wrappingWidth: bind webFeed.width
                 }
             ]
-
         },
-        VBox {
-            translateX: border, translateY: border
-            clip: Rectangle {width: bind entryWidth, height: bind webFeed.height - border * 2}
-            content: bind for (entry in entrySequence) {
-                createEntryDisplay(entry);
+        if (entrySequence.size() == 0) then [] else {
+            VBox {
+                translateX: border, translateY: border
+                clip: Rectangle {width: bind entryWidth, height: bind webFeed.height - border * 2}
+                content: bind for (entry in entrySequence) {
+                    createEntryDisplay(entry);
+                }
             }
         }
     ]
