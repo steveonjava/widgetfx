@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,17 +39,40 @@ public class CommunicationSender {
     private BufferedReader in;
 
     public CommunicationSender(Socket socket) throws IOException {
-        System.out.println("CommunicationSender hooked up to socket = " + socket);
+        Logger.getLogger(CommunicationSender.class.getName()).log(Level.INFO, "CommunicationSender hooked up to socket = " + socket);
         this.socket = socket;
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
     public void sendPort(int port) {
-        out.println(String.valueOf(port));
-        if (out.checkError()) {
+        send("port", new String[] {String.valueOf(port)});
+    }
+
+    public String send(String command, String args[]) {
+        try {
+            StringBuffer commandString = new StringBuffer();
+            commandString.append(command);
+            if (args != null) {
+                for (String arg : args) {
+                    commandString.append('|');
+                    commandString.append(arg);
+                }
+            }
+            out.println(commandString.toString());
+            if (out.checkError()) {
+                Logger.getLogger(CommunicationSender.class.getName()).log(Level.INFO, "Got an error, disconnecting from: " + socket);
+                close();
+                return null;
+            }
+            return in.readLine();
+        } catch (SocketException ex) {
+            Logger.getLogger(CommunicationSender.class.getName()).log(Level.INFO, "Got an exception, disconnecting from: " + socket);
             close();
+        } catch (IOException ex) {
+            Logger.getLogger(CommunicationSender.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return null;
     }
 
     private void close() {

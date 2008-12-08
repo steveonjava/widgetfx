@@ -41,14 +41,28 @@ public enum CommunicationManager implements Runnable {
 
     public static final int SEARCH_DEPTH = 20;
 
-    public int serverPort;
+    private int serverPort;
 
-    public ServerSocket serverSocket;
+    private ServerSocket serverSocket;
 
-    public List<CommunicationSender> senders = new ArrayList<CommunicationSender>();
+    private List<CommunicationSender> senders = new ArrayList<CommunicationSender>();
+
+    private CommandProcessor processor;
 
     public void startServer() {
         new Thread(new ServerStartThread(), "Communication Server Search Thread").start();
+    }
+
+    public void setCommandProcessor(CommandProcessor processor) {
+        this.processor = processor;
+    }
+
+    public String[] broadcast(String command, String[] args) {
+        List<String> result = new ArrayList<String>();
+        for (CommunicationSender sender : senders) {
+            result.add(sender.send(command, args));
+        }
+        return result.toArray(new String[result.size()]);
     }
 
     @Override
@@ -56,7 +70,7 @@ public enum CommunicationManager implements Runnable {
         while (true) {
             try {
                 Socket client = serverSocket.accept();
-                Thread serverThread = new Thread(new CommunicationReceiver(client), "Communication Receiver");
+                Thread serverThread = new Thread(new CommunicationReceiver(client, processor), "Communication Receiver");
                 serverThread.setDaemon(true);
                 serverThread.start();
             } catch (IOException ex) {
@@ -90,7 +104,6 @@ public enum CommunicationManager implements Runnable {
                 int misses = 0;
                 List<CommunicationSender> newSenders = new ArrayList<CommunicationSender>();
                 while (misses < SEARCH_DEPTH) {
-                    System.out.println("port = " + port);
                     try {
                         Socket socket = new Socket((String) null, port);
                         newSenders.add(new CommunicationSender(socket));

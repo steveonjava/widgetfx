@@ -28,6 +28,7 @@ import javafx.util.*;
 import javax.jnlp.*;
 import org.widgetfx.config.IntegerSequenceProperty;
 import org.widgetfx.config.StringSequenceProperty;
+import org.widgetfx.communication.*;
 import org.widgetfx.ui.ErrorWidget;
 
 /**
@@ -167,6 +168,8 @@ public class WidgetManager {
     }
 
     init {
+        CommunicationManager.INSTANCE.startServer();
+        CommunicationManager.INSTANCE.setCommandProcessor(WidgetCommandProcessor {});
         if (not widgetRunner and not portal) {
             sis.addSingleInstanceListener(sil);
         }
@@ -210,21 +213,33 @@ public class WidgetManager {
         instance.deleteConfig();
         delete instance from widgets;
     }
-    
-    public function addWidget(url:String):WidgetInstance {
-        println("adding widget: {url}");
+
+    public function hasWidget(url:String):Boolean {
         for (widget in widgets) {
             if (widget.jnlpUrl.equals(url)) {
                 println("Widget already loaded: {url}");
-                return null;
+                return true;
             }
+        }
+        return false;
+    }
+    
+    public function getWidget(url:String):WidgetInstance {
+        println("adding widget: {url}");
+        if (hasWidget(url)) {
+            return null;
         }
         var maxId = if (widgetIds.isEmpty()) 0 else (Sequences.max(widgetIds) as Integer).intValue();
         var instance = WidgetInstance{jnlpUrl: url, id: maxId + 1};
-        insert instance into widgets;
         instance.load();
         addRecentWidget(instance);
-        return instance
+        return instance;
+    }
+
+    public function addWidget(url:String):WidgetInstance {
+        var instance = getWidget(url);
+        insert instance into widgets;
+        return instance;
     }
     
     public function addRecentWidget(instance:WidgetInstance):Void {
