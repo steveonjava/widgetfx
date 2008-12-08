@@ -35,10 +35,12 @@ import java.util.logging.Logger;
  */
 public class CommunicationReceiver implements Runnable {
     private Socket sender;
+    private CommandProcessor processor;
 
-    CommunicationReceiver(Socket sender) {
-        System.out.println("CommunicationReceiver connect to sender = " + sender);
+    CommunicationReceiver(Socket sender, CommandProcessor processor) {
+        Logger.getLogger(CommunicationSender.class.getName()).log(Level.INFO, "CommunicationReceiver connect to sender = " + sender);
         this.sender = sender;
+        this.processor = processor;
     }
 
     @Override
@@ -49,15 +51,13 @@ public class CommunicationReceiver implements Runnable {
             String inputLine;
             String outputLine;
             // initiate conversation with client
-            CommunicationProtocol cp = new CommunicationProtocol();
-            String port = in.readLine();
-            CommunicationManager.INSTANCE.connectTo(Integer.parseInt(port));
+            CommunicationProtocol cp = new CommunicationProtocol(processor);
             while ((inputLine = in.readLine()) != null) {
                 outputLine = cp.processInput(inputLine);
                 out.println(outputLine);
             }
         } catch (SocketException ex) {
-            // socket closed, shutting down thread gracefully
+            Logger.getLogger(CommunicationReceiver.class.getName()).log(Level.INFO, "Socket closed, disconnecting from: " + sender);
         } catch (IOException ex) {
             Logger.getLogger(CommunicationReceiver.class.getName()).log(Level.SEVERE, null, ex);
         } finally {

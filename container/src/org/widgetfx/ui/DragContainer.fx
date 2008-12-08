@@ -21,6 +21,7 @@
 package org.widgetfx.ui;
 
 import org.widgetfx.*;
+import org.widgetfx.communication.*;
 import javafx.geometry.*;
 
 /**
@@ -86,6 +87,10 @@ public abstract class DragContainer {
             for (container in WidgetContainer.containers) {
                 var targetBounds = container.finishHover(instance, screenX, screenY);
                 dragComplete(container, targetBounds);
+            }
+            var responses = CommunicationManager.INSTANCE.broadcast("addWidget", [instance.jnlpUrl, "{screenX}", "{screenY}"]);
+            if (responses != null) {
+                println("got back: {for (response in responses) "{response},"}");
             }
             instance.saveWithoutNotification();
         }

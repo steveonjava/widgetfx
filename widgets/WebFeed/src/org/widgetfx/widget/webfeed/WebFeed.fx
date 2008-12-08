@@ -197,7 +197,7 @@ var webFeed:Widget = Widget {
             updateFeed();
         }
     }
-    content: [
+    content: bind [
         Group {
             cache: true
             content: Rectangle {

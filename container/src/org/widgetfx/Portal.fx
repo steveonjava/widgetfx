@@ -45,7 +45,6 @@ var grid:Stage = Stage {
     var scene:Scene = Scene {
         fill: Color.SLATEGRAY
         content: container = WidgetContainer {
-            copyOnContainerDrop: true
             width: bind scene.width
             height: bind scene.height
             widgets: WidgetManager.getInstance().widgets[w|w.docked];
@@ -67,7 +66,6 @@ var list:Stage = Stage {
         var widgetList:WidgetInstance[];
         fill: Color.SLATEGRAY
         content: container = WidgetContainer {
-            copyOnContainerDrop: true
             width: bind scene.width
             height: bind scene.height
             widgets: widgetList

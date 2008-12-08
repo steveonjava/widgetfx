@@ -168,7 +168,8 @@ public class Widget extends Group, Resizable {
      * parameters to the Widget Runner.  Once the Widget Runner has been started, this
      * process will exit.
      */
-    public var autoLaunch = true;
+    // todo - set this back to true when interprocess dragging is worked out
+    public var autoLaunch = false;
     
     /**
      * The href used to launch the Widget Runner process.  The default value is "launch.jnlp",

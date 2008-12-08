@@ -368,7 +368,7 @@ public class WidgetFrame extends Dialog, DragContainer {
                         onClose: function() {
                             WidgetManager.getInstance().removeWidget(instance);
                             close();
-        		    WidgetEventQueue.getInstance().removeInterceptor(dialog);
+        		            WidgetEventQueue.getInstance().removeInterceptor(dialog);
                         }
                     }
                 ]

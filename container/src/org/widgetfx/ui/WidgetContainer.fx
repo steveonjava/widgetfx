@@ -31,6 +31,7 @@ import javafx.util.*;
 import javax.jnlp.*;
 import javax.swing.JPanel;
 import org.widgetfx.*;
+import org.widgetfx.communication.*;
 
 /**
  * @author Stephen Chin
@@ -190,9 +191,6 @@ public class WidgetContainer extends Container {
     public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):Rectangle2D {
         def showing = visible and scene != null;
         def droppedInBounds = showing and layout.containsScreenXY(screenX, screenY);
-        if (showing and copyOnContainerDrop and not droppedInBounds) {
-            launchWidget(instance);
-        }
         if (showing and copyOnContainerDrop or droppedInBounds) {
             animateHover.stop();
             animateHover = null;
@@ -214,9 +212,16 @@ public class WidgetContainer extends Container {
         }
     }
 
-    function launchWidget(instance:WidgetInstance) {
-        var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
-        basicService.showDocument(new URL("{WidgetFXConfiguration.PUBLIC_CODEBASE}launch.jnlp?arg={instance.jnlpUrl}"));
+    public function addWidget(jnlpUrl:String, screenX:Number, screenY:Number):Boolean {
+        def showing = visible and scene != null;
+        if (showing and layout.containsScreenXY(screenX, screenY) and not WidgetManager.getInstance().hasWidget(jnlpUrl)) {
+            FX.deferAction(function():Void {
+                var instance = WidgetManager.getInstance().getWidget(jnlpUrl);
+                insert instance into widgets;
+            });
+            return true;
+        }
+        return false;
     }
     
     public function dockAfterHover(instance:WidgetInstance) {

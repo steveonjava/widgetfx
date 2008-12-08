@@ -35,7 +35,6 @@ import org.widgetfx.communication.CommunicationManager;
 WidgetManager.createPortalInstance();
 WidgetFXConfiguration.getInstance().mergeProperties = true;
 WidgetFXConfiguration.getInstance().load();
-CommunicationManager.INSTANCE.startServer();
 var container:WidgetContainer;
 var grid:Stage = Stage {
     onClose: function() {FX.exit()}
