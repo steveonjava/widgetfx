@@ -22,7 +22,7 @@ package org.widgetfx.widget.slideshow;
 
 import org.widgetfx.*;
 import org.widgetfx.config.*;
-import org.widgetfx.util.*;
+import org.jfxtras.async.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.shape.*;
