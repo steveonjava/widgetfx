@@ -90,7 +90,7 @@ public class Widget extends Group, Resizable {
     /**
      * The external url to the widget runner process that will be launched.
      */
-    def WIDGET_RUNNER_URL = "http://widgetfx.org/dock/runner.jnlp";
+    def WIDGET_RUNNER_URL = "http://widgetfx.org/beta/runner.jnlp";
     
     /**
      * Used to give widgets a fixed aspectRatio.  The default value of 0 allows
@@ -168,8 +168,7 @@ public class Widget extends Group, Resizable {
      * parameters to the Widget Runner.  Once the Widget Runner has been started, this
      * process will exit.
      */
-    // todo - set this back to true when interprocess dragging is worked out
-    public var autoLaunch = false;
+    public var autoLaunch = true;
     
     /**
      * The href used to launch the Widget Runner process.  The default value is "launch.jnlp",
