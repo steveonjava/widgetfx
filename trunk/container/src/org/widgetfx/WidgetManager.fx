@@ -210,7 +210,9 @@ public class WidgetManager {
     }
     
     public function removeWidget(instance:WidgetInstance):Void {
-        instance.deleteConfig();
+        if (not widgetRunner) {
+            instance.deleteConfig();
+        }
         delete instance from widgets;
     }
 

@@ -57,17 +57,17 @@ public class AddWidgetDialog {
     }
     
     function add() {
-        dialog.close();
         if (addHandler != null) {
             addHandler(jnlpUrl);
         }
+        dialog.close();
     }
     
     function cancel() {
-        dialog.close();
         if (cancelHandler != null) {
             cancelHandler();
         }
+        dialog.close();
     }
     
     function showDialog() {
@@ -105,7 +105,6 @@ public class AddWidgetDialog {
             packed: true
             modal: true
             icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
-            onClose: cancel
             owner: owner
             scene: Scene {
                 var grid:Grid;

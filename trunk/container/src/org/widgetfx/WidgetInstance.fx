@@ -327,6 +327,7 @@ public class WidgetInstance {
             (widget as FlashWidget).configure();
         } else if (widget.configuration != null) {
             configDialog = Dialog {
+                packed: true
                 icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
                 title: "{title} Configuration"
                 resizable: false
