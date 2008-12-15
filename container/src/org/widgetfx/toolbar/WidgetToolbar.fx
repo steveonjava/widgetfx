@@ -75,6 +75,7 @@ public class WidgetToolbar extends Group {
         content = [
             Group { // Buttons
                 clip: Rectangle { // Clip
+                    smooth: false
                     width: bind toolbarWidth + 1
                     height: TOOLBAR_HEIGHT + 1
                 }

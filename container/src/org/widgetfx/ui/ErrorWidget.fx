@@ -47,6 +47,7 @@ public class ErrorWidget extends Widget {
     override var content = [
         Group {
             clip: Rectangle {
+                smooth: false
                 width: bind width
                 height: bind height
                 arcWidth: 16

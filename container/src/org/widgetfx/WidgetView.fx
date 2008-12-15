@@ -157,7 +157,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
                     effect: bind if (resizing or not container.drawShadows) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
                     content: Group { // Clip Group
                         content: content[0]
-                        clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                        clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
                         transforms: bind Transform.scale(scale, scale)
                     }
                 }
@@ -165,7 +165,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
             Group { // Front Slices
                 cache: true
                 content: content[1..]
-                clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
                 transforms: bind Transform.scale(scale, scale)
             },
         ]
@@ -190,7 +190,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
                         effect: bind if (resizing or not container.drawShadows) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
                         content: Group { // Clip Group
                             content: widget
-                            clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                            clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
                             transforms: bind Transform.scale(scale, scale)
                         }
                     }
