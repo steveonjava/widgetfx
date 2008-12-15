@@ -232,7 +232,7 @@ var webFeed:Widget = Widget {
         if (entrySequence.size() == 0) then [] else {
             VBox {
                 translateX: border, translateY: border
-                clip: Rectangle {width: bind entryWidth, height: bind webFeed.height - border * 2}
+                clip: Rectangle {width: bind entryWidth, height: bind webFeed.height - border * 2, smooth: false}
                 content: bind for (entry in entrySequence) {
                     createEntryDisplay(entry);
                 }

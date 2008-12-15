@@ -323,7 +323,7 @@ public class WidgetFrame extends Dialog, DragContainer {
                                 effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                                 content: Group { // Clip Group
                                     content: widget
-                                    clip: Rectangle {width: bind widget.width, height: bind widget.height}
+                                    clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
                                 }
                             }
                         }
