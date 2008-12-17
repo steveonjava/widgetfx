@@ -82,7 +82,6 @@ public abstract class DragContainer {
     
     public function finishDrag(screenX:Integer, screenY:Integer) {
         if (moved and not docking) {
-            dragging = false;
             moved = false;
             for (container in WidgetContainer.containers) {
                 var targetBounds = container.finishHover(instance, screenX, screenY);
@@ -94,6 +93,8 @@ public abstract class DragContainer {
             }
             instance.saveWithoutNotification();
         }
+        dragging = false;
+
     }
     
     protected abstract function dragComplete(container:WidgetContainer, targetBounds:Rectangle2D):Void;

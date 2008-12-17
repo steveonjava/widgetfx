@@ -22,9 +22,11 @@ package org.widgetfx.widget.slideshow;
 
 import org.widgetfx.*;
 import org.widgetfx.config.*;
+import org.jfxtras.layout.*;
 import org.jfxtras.async.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
+import javafx.scene.control.*;
 import javafx.scene.shape.*;
 import javafx.scene.paint.*;
 import javafx.scene.image.*;
@@ -49,7 +51,7 @@ var defaultDirectories:File[] = [
     new File(home, "My Documents\\My Pictures"),
     new File(home)
 ][d|d.exists()];
-var directoryName = (defaultDirectories[0]).getAbsolutePath();
+var directoryName:String;
 var directory:File;
 var status = "Loading Images...";
 var imageFiles:String[];
@@ -120,15 +122,15 @@ function updateImage():Void {
 function loadDirectory() {
     var directory = new File(directoryName);
     currentImage = null;
+    timeline.stop();
+    if (worker != null) {
+        worker.cancel();
+    }
     if (not directory.exists()) {
         status = "Directory Doesn't Exist";
     } else if (not directory.isDirectory()) {
         status = "Selected File is Not a Directory";
     } else {
-        timeline.stop();
-        if (worker != null) {
-            worker.cancel();
-        }
         status = "Loading Images...";
         folderCount = 0;
         fileCount = 0;
@@ -204,118 +206,47 @@ var browseButton:SwingButton = SwingButton {
     }
 }
 
-// todo - reimplement this without a group layout
-//function getTabbedPane():JTabbedPane {
-//    var keywordLabel = SwingLabel {text: "Filter:"};
-//    var keywordEdit = SwingTextField {text: bind keywords with inverse, columns: 40};
-//    var directoryLabel = SwingLabel {text: "Directory:"};
-//    var directoryEdit = SwingTextField {text: bind directoryName with inverse, columns: 40};
-//
-//    var shuffleCheckBox = SwingCheckBox {text: "Shuffle", selected: bind shuffle with inverse};
-//    var durationLabel = SwingLabel {text: "Duration"};
-//
-//    // todo - replace with javafx spinner when one exists
-//    var durationSpinner = new JSpinner(new SpinnerNumberModel(duration, 2, 60, 1));
-//    durationSpinner.addChangeListener(ChangeListener {
-//        override function stateChanged(e):Void {
-//            duration = durationSpinner.getValue() as Integer;
-//        }
-//    });
-//    var durationSpinnerComponent = SwingComponent.wrap(durationSpinner);
-//    durationSpinnerComponent.hmax = 52;
-//
-//    var displayTab = ClusterPanel {
-//        hcluster: ParallelCluster {
-//            content: [
-//                shuffleCheckBox,
-//                SequentialCluster {
-//                    content: [
-//                        durationLabel,
-//                        durationSpinnerComponent
-//                    ]
-//                }
-//            ]
-//        }
-//        vcluster: SequentialCluster {
-//            content: [
-//                shuffleCheckBox,
-//                ParallelCluster {
-//                    content: [
-//                        durationLabel,
-//                        durationSpinnerComponent
-//                    ]
-//                }
-//            ]
-//        }
-//    }
-//
-//    var contentTab = ClusterPanel {
-//        vcluster: ParallelCluster {
-//            content: [
-//                directoryLabel,
-//                directoryEdit,
-//                browseButton,
-//            ]
-//        },
-//        hcluster: SequentialCluster {
-//            content: [
-//                ParallelCluster {
-//                    content:[
-//                        directoryLabel,
-//                        keywordLabel,
-//                    ]
-//                },
-//                ParallelCluster {
-//                    content:[
-//                        SequentialCluster {
-//                            content:[
-//                                directoryEdit,
-//                                browseButton
-//                            ]
-//                        },
-//                        keywordEdit
-//                    ]
-//                }
-//            ]
-//        }
-//        vcluster : SequentialCluster {
-//            content:[
-//                ParallelCluster{
-//                    content: [
-//                        directoryLabel,
-//                        directoryEdit,
-//                        browseButton
-//                    ]
-//                },
-//                ParallelCluster {
-//                    content : [
-//                        keywordLabel,
-//                        keywordEdit
-//                    ]
-//                }
-//            ]
-//        }
-//    }
-//
-//    // todo - replace with a javafx component when one is available
-//    tabbedPane = new JTabbedPane();
-//
-//    // workaround for a bug in javafx.ext.swing.Component where it gets stuck in
-//    // an infinite hide/show loop when added to a JTabbedPane
-//    var displayListeners = displayTab.getJComponent().getComponentListeners();
-//    for (listener in displayListeners) {
-//        displayTab.getJComponent().removeComponentListener(listener);
-//    }
-//    var contentListeners = contentTab.getJComponent().getComponentListeners();
-//    for (listener in contentListeners) {
-//        contentTab.getJComponent().removeComponentListener(listener);
-//    }
-//
-//    tabbedPane.add("display", displayTab.getJPanel());
-//    tabbedPane.add("content", contentTab.getJPanel());
-//    
-//    return tabbedPane;
-//}
+function setDefaultDirectory() {
+    directoryName = (defaultDirectories[0]).getAbsolutePath();
+}
+
+function getConfigUI():Grid {
+    var directoryLabel = Text {content: "Directory:"};
+    var directoryEdit = TextBox {text: bind directoryName with inverse, columns: 40};
+    var keywordLabel = Text {content: "Filter:"};
+    var keywordEdit = TextBox {text: bind keywords with inverse, columns: 40};
+    var durationLabel = Text {content: "Duration"};
+    var shuffleCheckBox = SwingCheckBox {text: "Shuffle", selected: bind shuffle with inverse};
+
+    // do this after TextBox is created to work around a JavaFX initialization bug
+    setDefaultDirectory();
+
+    // todo - replace with javafx spinner when one exists
+    var durationSpinner = new JSpinner(new SpinnerNumberModel(duration, 2, 60, 1));
+    durationSpinner.addChangeListener(ChangeListener {
+        override function stateChanged(e):Void {
+            duration = durationSpinner.getValue() as Integer;
+        }
+    });
+    var durationSpinnerComponent = SwingComponent.wrap(durationSpinner);
+
+    return Grid {
+        rows: [
+            Row {
+                cells: [directoryLabel, directoryEdit, browseButton]
+            },
+            Row {
+                cells: [keywordLabel, keywordEdit]
+            },
+            Row {
+                cells: [durationLabel, Cell {content: durationSpinnerComponent, preferredWidth: 52}]
+            }
+            Row {
+                cells: shuffleCheckBox
+            }
+        ]
+    }
+}
 
 var slideShow:Widget = Widget {
     launchHref: "SlideShow.jnlp";
@@ -349,10 +280,9 @@ var slideShow:Widget = Widget {
                 value: bind maxFolders with inverse
             }
         ]
-
-//        scene: Scene {
-//            content: SwingComponent.wrap(getTabbedPane());
-//        }
+        scene: Scene {
+            content: getConfigUI()
+        }
 
         onLoad: function() {
             imageWidth = slideShow.width;
