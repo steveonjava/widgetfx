@@ -24,6 +24,7 @@ import com.sun.javafx.stage.WindowStageDelegate;
 import org.widgetfx.ui.*;
 import org.widgetfx.config.*;
 import org.widgetfx.install.InstallUtil;
+import org.jfxtras.menu.*;
 import org.jfxtras.stage.*;
 import javafx.lang.*;
 import javafx.scene.*;
