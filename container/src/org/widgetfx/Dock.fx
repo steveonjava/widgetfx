@@ -48,6 +48,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.*;
 import java.awt.GraphicsEnvironment;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.io.*;
 import java.lang.*;
 import java.net.*;
@@ -196,11 +198,11 @@ public class Dock extends Dialog {
         layout: GapVBox {}
         visible: bind visible
     }
-    
-    var currentGraphics:java.awt.GraphicsConfiguration;
-    var screenBounds = bind currentGraphics.getBounds() on replace {
-        updateDockLocation();
+
+    var currentGraphics:java.awt.GraphicsConfiguration on replace {
+        updateDockLocation(true);
     }
+    var screenBounds;
     var displayId:String on replace {
         var newGraphics = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
         for (gd in Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())) {
@@ -213,20 +215,23 @@ public class Dock extends Dialog {
     }
     var dockLeft:Boolean on replace {
         dockRight = not dockLeft;
-        updateDockLocation();
+        updateDockLocation(true);
     };
     var dockRight:Boolean on replace {
         dockLeft = not dockRight;
-        updateDockLocation();
+        updateDockLocation(true);
     };
 
     var widthTrigger = bind width on replace {
-        updateDockLocation();
+        updateDockLocation(false);
     }
     
     package var resizing:Boolean;
     
-    function updateDockLocation():Void {
+    function updateDockLocation(recalculate:Boolean):Void {
+        if (recalculate) {
+            screenBounds = currentGraphics.getBounds();
+        }
         height = screenBounds.height - menuHeight;
         x = screenBounds.x + (if (dockLeft) 0 else screenBounds.width - width);
         y = screenBounds.y + menuHeight;
@@ -269,6 +274,19 @@ public class Dock extends Dialog {
         loadContent();
         createTrayIcon();
         WidgetManager.getInstance().dockOffscreenWidgets();
+        watchDisplayResolution();
+    }
+
+    function watchDisplayResolution() {
+        (new Timer("displayMonitor")).schedule(TimerTask {
+            override function run() {
+                if (not screenBounds.equals(currentGraphics.getBounds())) {
+                    FX.deferAction(function():Void {
+                        updateDockLocation(true);
+                    });
+                }
+            }
+        }, 0, 3000);
     }
     
     function hideDock() {
@@ -277,7 +295,7 @@ public class Dock extends Dialog {
     
     public function showDock() {
         visible = true;
-        FX.deferAction(function() {updateDockLocation();});
+        FX.deferAction(function() {updateDockLocation(true)});
         toFront();
         WidgetManager.getInstance().dockOffscreenWidgets();
     }

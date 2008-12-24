@@ -20,8 +20,6 @@
  */
 package org.widgetfx.config;
 
-import java.math.BigInteger;
-
 /**
  * Property subclass to persist Integer primitives.
  *
@@ -46,6 +44,6 @@ public class IntegerProperty extends Property {
     
     /** {@inheritDoc} */
     override function setStringValue(value:String):Void {
-        this.value = (new BigInteger(value)).intValue();
+        this.value = java.lang.Integer.parseInt(value);
     }
 }

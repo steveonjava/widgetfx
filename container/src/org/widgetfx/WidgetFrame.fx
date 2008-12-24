@@ -22,6 +22,7 @@ package org.widgetfx;
 
 import org.widgetfx.toolbar.*;
 import org.widgetfx.ui.*;
+import org.jfxtras.scene.*;
 import org.jfxtras.stage.*;
 import java.awt.event.*;
 import javafx.animation.*;
@@ -179,8 +180,6 @@ public class WidgetFrame extends Dialog, DragContainer {
             }
         )
     }
-
-    var shouldCache = true;
     
     init {
         var dragRect:Group = Group {
@@ -299,10 +298,6 @@ public class WidgetFrame extends Dialog, DragContainer {
             }
             onMouseReleased: function(e:MouseEvent) {
                 if (e.button == MouseButton.PRIMARY) {
-                    shouldCache = false;
-                        shouldCache = true;
-                    FX.deferAction(function():Void {
-                    });
                     finishDrag(e.screenX, e.screenY);
                 }
             }
@@ -318,9 +313,9 @@ public class WidgetFrame extends Dialog, DragContainer {
                 var toolbar:WidgetToolbar;
                 content: [
                     dragRect,
-                    Group { // Widget
+                    CacheSafeGroup { // Widget
                         translateX: BORDER, translateY: BORDER + toolbarHeight
-                        cache: shouldCache
+                        cache: true
                         content: Group { // Alert
                             effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
                             content: Group { // Drop Shadow

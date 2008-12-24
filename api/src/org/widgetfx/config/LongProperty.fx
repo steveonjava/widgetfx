@@ -20,40 +20,33 @@
  */
 package org.widgetfx.config;
 
-import java.lang.StringBuilder;
-import java.util.Arrays;
+import java.math.BigInteger;
+import java.lang.Long;
 
 /**
- * Property subclass to persist Integer sequences.
+ * Property subclass to persist Integer primitives.
  *
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class IntegerSequenceProperty extends Property {
+public class LongProperty extends Property {
     /**
-     * Integer sequence to be persisted.  To allow bijection of this property
+     * Long value to be persisted.  To allow bijection of this property
      * bind it as follows:<blockquote><pre>
      * value: bind someVar with inverse
      * </blockquote></pre>
      */
-    public var value:Integer[] on replace {
+    public var value:Long on replace {
         fireOnChange();
     }
-    
+
     /** {@inheritDoc} */
     override function getStringValue():String {
-        var sb = new StringBuilder();
-        for (s in value) {
-            if (indexof s > 0) {
-                sb.append(',');
-            }
-            sb.append(s);
-        }
-        return sb.toString();
+        return value.toString();
     }
-    
+
     /** {@inheritDoc} */
     override function setStringValue(value:String):Void {
-        this.value = if (value.length() == 0) [] else for (s in Arrays.asList(value.split(","))) java.lang.Integer.parseInt(s);
+        this.value = Long.parseLong(value);
     }
 }
