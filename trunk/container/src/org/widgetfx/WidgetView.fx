@@ -20,6 +20,7 @@
  */
 package org.widgetfx;
 
+import org.jfxtras.scene.*;
 import org.widgetfx.toolbar.WidgetToolbar;
 import org.widgetfx.ui.*;
 import java.awt.Point;
@@ -44,7 +45,7 @@ import javax.swing.RootPaneContainer;
 public var TOP_BORDER = 13;
 public var BOTTOM_BORDER = 7;
 
-public class WidgetView extends Group, Constrained, DragContainer {    
+public class WidgetView extends CacheSafeGroup, Constrained, DragContainer {
     public-init var container:WidgetContainer;
     
     var resizing = false;
@@ -142,10 +143,8 @@ public class WidgetView extends Group, Constrained, DragContainer {
         resize(maxWidth, oldMaxHeight as Number);
         updateFlashBounds();
     }
-
-    var shouldCache = true;
     
-    override var cache = bind shouldCache;
+    override var cache = true;
     
     init {
         content = [
@@ -154,10 +153,10 @@ public class WidgetView extends Group, Constrained, DragContainer {
                 width: bind maxWidth
                 fill: Color.rgb(0, 0, 0, 0.0)
             },
-            Group { // Widget with DropShadow
+            CacheSafeGroup { // Widget with DropShadow
                 translateY: TOP_BORDER
                 translateX: bind (maxWidth - widget.width * scale) / 2
-                cache: bind shouldCache
+                cache: true
                 content: Group { // Alert
                     effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
                     content: Group { // Drop Shadow

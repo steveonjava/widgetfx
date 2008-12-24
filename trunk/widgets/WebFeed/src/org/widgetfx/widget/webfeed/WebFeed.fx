@@ -22,6 +22,7 @@ package org.widgetfx.widget.webfeed;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.jfxtras.layout.*;
+import org.jfxtras.scene.*;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
 import javafx.ext.swing.*;
@@ -199,7 +200,7 @@ var webFeed:Widget = Widget {
         }
     }
     content: bind [
-        Group {
+        CacheSafeGroup {
             cache: true
             content: Rectangle {
                 // todo - this is too slow, figure out something else

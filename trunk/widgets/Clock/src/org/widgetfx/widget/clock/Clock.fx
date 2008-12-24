@@ -20,6 +20,7 @@
  */
 package org.widgetfx.widget.clock;
 
+import org.jfxtras.scene.*;
 import org.widgetfx.*;
 import javafx.ext.swing.*;
 import javafx.async.*;
@@ -58,7 +59,7 @@ var clock:Widget = Widget {
     height: 105;
     resizable: false
     content: [
-        Group { // Static Content
+        CacheSafeGroup { // Static Content
             cache: true
             content: [
                 Circle { // Clock Rim
@@ -109,7 +110,7 @@ var clock:Widget = Widget {
             translateX: bind clock.width / 2, translateY: bind clock.height / 2
 
             content: [
-                Group { // Hour Hand
+                CacheSafeGroup { // Hour Hand
                     cache: true
                     effect: DropShadow {offsetY: 1, offsetX: 0, radius: 2}
                     content: Line {startX: 0, startY: bind clock.width / 2 * .2, endX: 0, endY: bind -clock.width / 2 * .46
@@ -117,7 +118,7 @@ var clock:Widget = Widget {
                         transforms: bind Transform.rotate(hours * 30 + minutes / 2, 0, 0)
                     }
                 },
-                Group { // Minute Hand
+                CacheSafeGroup { // Minute Hand
                     cache: true
                     effect: DropShadow {offsetY: 2, offsetX: 0, radius: 2}
                     content: Line {startX: 0, startY: bind clock.width / 2 * .2, endX: 0, endY: bind -clock.width / 2 * .7
@@ -141,19 +142,21 @@ var clock:Widget = Widget {
                 }
             ]
         },
-        Circle { // Center Pin
+        CacheSafeGroup { // Center Pin
             cache: true
-            centerX: bind clock.width / 2, centerY: bind clock.height / 2, radius: 3.2
-            stroke: Color.DARKSLATEGRAY
-            effect: DropShadow {offsetY: 1, radius: 2}
-            fill: RadialGradient {
-                centerX: .5
-                centerY: .5
-                stops: [
-                    Stop {offset: 0.1, color: Color.DARKSLATEGRAY},
-                    Stop {offset: 0.3, color: Color.GRAY},
-                    Stop {offset: 0.6, color: Color.LIGHTGRAY}
-                ]
+            content: Circle {
+                centerX: bind clock.width / 2, centerY: bind clock.height / 2, radius: 3.2
+                stroke: Color.DARKSLATEGRAY
+                effect: DropShadow {offsetY: 1, radius: 2}
+                fill: RadialGradient {
+                    centerX: .5
+                    centerY: .5
+                    stops: [
+                        Stop {offset: 0.1, color: Color.DARKSLATEGRAY},
+                        Stop {offset: 0.3, color: Color.GRAY},
+                        Stop {offset: 0.6, color: Color.LIGHTGRAY}
+                    ]
+                }
             }
         }
     ]

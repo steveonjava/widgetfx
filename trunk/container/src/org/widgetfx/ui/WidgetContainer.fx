@@ -118,10 +118,9 @@ public class WidgetContainer extends Container, WidgetDragListener {
     override function finishHover(instance:WidgetInstance, screenX:Number, screenY:Number):Rectangle2D {
         widgetDragging = false;
         def showing = visible and scene != null;
-        if (showing and copyOnContainerDrop) {
-            // todo - don't animate the widget going back
-            return layout.getGapScreenBounds();
-        } else if (showing and layout.containsScreenXY(screenX, screenY)) {
+        // todo - don't animate the widget going back
+        if ((showing and copyOnContainerDrop)
+            or (showing and layout.containsScreenXY(screenX, screenY))) {
             return layout.getGapScreenBounds();
         } else {
             // todo - delete widget from container (and maybe add it to a list of undocked widgets)
