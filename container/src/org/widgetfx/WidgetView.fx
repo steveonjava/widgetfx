@@ -63,7 +63,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
             1.0;
         }
     }
-    
+
     var toolbar:WidgetToolbar;
     
     public var widgetHover = false;
@@ -142,36 +142,10 @@ public class WidgetView extends Group, Constrained, DragContainer {
         resize(maxWidth, oldMaxHeight as Number);
         updateFlashBounds();
     }
+
+    var shouldCache = true;
     
-    function wrapContent(content:Node[]):Node[] {
-        return [
-            Rectangle { // Invisible Spacer
-                height: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER
-                width: bind widget.width * scale
-                fill: Color.BLUE
-                //fill: Color.rgb(0, 0, 0, 0.0)
-            },
-            Group { // Rear Slice
-                cache: true
-                content: Group { // Drop Shadow
-                    effect: bind if (resizing or not container.drawShadows) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
-                    content: Group { // Clip Group
-                        content: content[0]
-                        clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
-                        transforms: bind Transform.scale(scale, scale)
-                    }
-                }
-            },
-            Group { // Front Slices
-                cache: true
-                content: content[1..]
-                clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
-                transforms: bind Transform.scale(scale, scale)
-            },
-        ]
-    }
-    
-    override var cache = true;
+    override var cache = bind shouldCache;
     
     init {
         content = [
@@ -183,7 +157,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
             Group { // Widget with DropShadow
                 translateY: TOP_BORDER
                 translateX: bind (maxWidth - widget.width * scale) / 2
-                cache: true
+                cache: bind shouldCache
                 content: Group { // Alert
                     effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
                     content: Group { // Drop Shadow
@@ -208,11 +182,12 @@ public class WidgetView extends Group, Constrained, DragContainer {
             },
             Group { // Drag Bar
                 blocksMouse: true
+                translateX: -2
                 translateY: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER - 3
                 content: [
-                    Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind container.rolloverOpacity / 4},
-                    Line {endX: bind maxWidth, stroke: Color.BLACK, strokeWidth: 1, opacity: bind container.rolloverOpacity, translateY: 1},
-                    Line {endX: bind maxWidth, stroke: Color.WHITE, strokeWidth: 1, opacity: bind container.rolloverOpacity / 3, translateY: 2}
+                    Line {endX: bind maxWidth + 4, stroke: Color.BLACK, strokeWidth: 1, opacity: bind container.rolloverOpacity * .175 / 4},
+                    Line {endX: bind maxWidth + 4, stroke: Color.BLACK, strokeWidth: 1, opacity: bind container.rolloverOpacity * .7, translateY: 1},
+                    Line {endX: bind maxWidth + 4, stroke: Color.WHITE, strokeWidth: 1, opacity: bind container.rolloverOpacity * .23, translateY: 2}
                 ]
                 cursor: Cursor.V_RESIZE
                 var initialHeight;
@@ -272,8 +247,14 @@ public class WidgetView extends Group, Constrained, DragContainer {
             finishDrag(e.screenX, e.screenY);
         }
     }
+
+    override var hoverContainer on replace {
+        if (instance.frame != null) {
+            instance.frame.hoverContainer = hoverContainer;
+        }
+    }
     
-    override function doDrag(screenX:Integer, screenY:Integer) {
+    override function doDrag(screenX:Number, screenY:Number) {
         if (not docking and dragging) {
             container.dragging = true;
             if (instance.docked) {
@@ -297,12 +278,12 @@ public class WidgetView extends Group, Constrained, DragContainer {
         }
     }
     
-    override function dragComplete(container:WidgetContainer, targetBounds:Rectangle2D):Void {
+    override function dragComplete(dragListener:WidgetDragListener, targetBounds:Rectangle2D):Void {
         container.dragging = false;
         removeFlash();
         if (targetBounds != null) {
             docking = true;
-            instance.frame.dock(container, targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
+            instance.frame.dock(dragListener as WidgetContainer, targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
         } else {
             // todo - don't call this block multiple times
             if (instance.widget.onResize != null) {

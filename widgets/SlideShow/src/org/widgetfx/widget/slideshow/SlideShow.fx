@@ -236,7 +236,7 @@ function getConfigUI():Grid {
                 cells: [directoryLabel, directoryEdit, browseButton]
             },
             Row {
-                cells: [keywordLabel, keywordEdit]
+                cells: [keywordLabel, Cell {content: keywordEdit, columnSpan: 2}]
             },
             Row {
                 cells: [durationLabel, Cell {content: durationSpinnerComponent, preferredWidth: 52}]
