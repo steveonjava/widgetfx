@@ -109,13 +109,14 @@ public class AddWidgetDialog {
             scene: Scene {
                 var grid:Grid;
                 content: grid = Grid {
-                    growRows: [0]
+                    growRows: [1]
                     rows: [
                         Row {
                             cells: Grid {
-                                growRows: [0]
+                                border: 0
+                                growRows: [1]
                                 rows: [
-                                    Row {cells: [listLabel, Cell {content: widgetList, rowSpan: 2, preferredHeight: 200}]},
+                                    Row {cells: [listLabel, Cell {content: widgetList, columnSpan: 2, preferredHeight: 200}]},
                                     Row {cells: [jarLabel, jarField, browseButton]}
                                 ]
                             }
@@ -123,7 +124,7 @@ public class AddWidgetDialog {
                         Row {
                             var box:HBox;
                             cells: box = HBox {
-                                translateX: bind grid.preferredWidth - box.boundsInLocal.width
+                                translateX: bind grid.preferredWidth - grid.border * 2 - box.boundsInLocal.width
                                 content: [
                                     SwingButton {
                                         text: "Add"

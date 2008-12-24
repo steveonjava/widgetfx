@@ -42,8 +42,6 @@ import javax.swing.SwingUtilities;
 
 public class FlashWidget extends Widget, BrComponentListener {
     
-    override var autoLaunch = false;
-    
     override var resizable = true;
     
     public-init var url:String;

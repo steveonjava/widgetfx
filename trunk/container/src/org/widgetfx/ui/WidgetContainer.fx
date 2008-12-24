@@ -37,15 +37,15 @@ import org.widgetfx.communication.*;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public var containers:WidgetContainer[];
-
-public class WidgetContainer extends Container {
+public class WidgetContainer extends Container, WidgetDragListener {
     
     public var widgets:WidgetInstance[];
     
     public-read var dockedWidgets = bind widgets[w|w.docked];
     
     public var rolloverOpacity:Number;
+
+    public-read var widgetDragging = false;
     
     public var window:Window on replace {
         WidgetEventQueue.getInstance().registerInterceptor(window, EventInterceptor {
@@ -99,129 +99,53 @@ public class WidgetContainer extends Container {
         }
     }
     
-    var animateHover:Timeline;
-    var animatingInstance:WidgetInstance;
-    var animating = bind if (animateHover == null) false else animateHover.running on replace {
-        animatingInstance.frame.animating = animating;
-    }
-    var animateDocked:Boolean;
-    var saveDocked:Boolean;
-    var saveUndockedWidth:Number;
-    var saveUndockedHeight:Number;
-    var xHoverOffset:Number on replace oldValue {
-        if (animatingInstance != null) {
-            animatingInstance.frame.x += xHoverOffset - oldValue;
-        }
-    }
-    var yHoverOffset:Number on replace oldValue {
-        if (animatingInstance != null) {
-            animatingInstance.frame.y += yHoverOffset - oldValue;
-        }
-    }
-    
     init {
-        insert this into containers;
+        insert this into WidgetDragListener.dragListeners;
     }
-    
-    public function setupHoverAnimation(instance:WidgetInstance, localX:Integer, localY:Integer):Void {
-        animatingInstance = null; // prevent trigger from firing
-        xHoverOffset = 0;
-        yHoverOffset = 0;
-        animatingInstance = instance;
-        saveDocked = instance.docked;
-        saveUndockedWidth = instance.undockedWidth;
-        saveUndockedHeight = instance.undockedHeight;
-        var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
-        var newHeight = if (instance.docked) instance.undockedHeight else instance.dockedHeight;
-        var newXHoverOffset = localX - localX * newWidth / instance.widget.width;
-        var newYHoverOffset = localY - localY * newHeight / instance.widget.height;
-        var width = instance.widget.width on replace {
-            animatingInstance.setWidth(width);
-        }
-        var height = instance.widget.height on replace {
-            animatingInstance.setHeight(height);
-        }
-        animateHover = Timeline {
-            keyFrames: KeyFrame {
-                time: 300ms
-                values: [
-                    if (newWidth > 0) {[
-                        width => newWidth tween Interpolator.EASEBOTH,
-                        xHoverOffset => newXHoverOffset tween Interpolator.EASEBOTH
-                    ]} else {
-                        []
-                    },
-                    if (newHeight > 0) {[
-                        height => newHeight tween Interpolator.EASEBOTH,
-                        yHoverOffset => newYHoverOffset tween Interpolator.EASEBOTH
-                    ]} else {
-                        []
-                    }
-                ]
-            }
-        }
-        animateDocked = instance.docked;
-    }
-    
-    public function prepareHover(instance:WidgetInstance, localX:Integer, localY:Integer):Void {
-        setupHoverAnimation(instance, localX, localY);
-    }
-    
-    public function hover(instance:WidgetInstance, screenX:Integer, screenY:Integer, animate:Boolean) {
+
+    override function hover(dockedHeight:Number, screenX:Number, screenY:Number):Rectangle2D {
+        widgetDragging = true;
         def showing = visible and scene != null;
         if (showing and layout.containsScreenXY(screenX, screenY)) {
-            var dockedHeight = if (instance.dockedHeight == 0) instance.widget.height else instance.dockedHeight;
-            layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, animate);
-            if (animateHover != null and not animateDocked) {
-                animateDocked = true;
-                animateHover.rate = if (saveDocked) -1 else 1;
-                animateHover.play();
-            }
+            layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, true);
+            return layout.getGapScreenBounds();
         } else {
-            layout.clearGap(animate);
-            if (animateHover != null and animateDocked) {
-                animateDocked = false;
-                animateHover.rate = if (saveDocked) 1 else -1;
-                animateHover.play();
-            }
+            layout.clearGap(true);
+            return null;
         }
-        return [xHoverOffset, yHoverOffset];
     }
-    
-    public function finishHover(instance:WidgetInstance, screenX:Integer, screenY:Integer):Rectangle2D {
+
+    override function finishHover(instance:WidgetInstance, screenX:Number, screenY:Number):Rectangle2D {
+        widgetDragging = false;
         def showing = visible and scene != null;
-        def droppedInBounds = showing and layout.containsScreenXY(screenX, screenY);
-        if (showing and copyOnContainerDrop or droppedInBounds) {
-            animateHover.stop();
-            animateHover = null;
-            instance.undockedWidth = saveUndockedWidth;
-            instance.undockedHeight = saveUndockedHeight;
+        if (showing and copyOnContainerDrop) {
+            // todo - don't animate the widget going back
+            return layout.getGapScreenBounds();
+        } else if (showing and layout.containsScreenXY(screenX, screenY)) {
             return layout.getGapScreenBounds();
         } else {
             // todo - delete widget from container (and maybe add it to a list of undocked widgets)
             // delete instance from widgets;
             layout.clearGap(false);
             layout.doLayout();
-            if (animateHover != null and animateDocked) {
-                animateDocked = false;
-                animateHover.rate = if (saveDocked) -1 else 1;
-                animateHover.play();
-            }
-            animateHover = null;
             return null;
         }
     }
 
-    public function addWidget(jnlpUrl:String, screenX:Number, screenY:Number):Boolean {
+    override function finishHover(jnlpUrl:String, screenX:Number, screenY:Number):Rectangle2D {
+        widgetDragging = false;
         def showing = visible and scene != null;
         if (showing and layout.containsScreenXY(screenX, screenY) and not WidgetManager.getInstance().hasWidget(jnlpUrl)) {
             FX.deferAction(function():Void {
                 var instance = WidgetManager.getInstance().getWidget(jnlpUrl);
                 insert instance into widgets;
             });
-            return true;
+            return layout.getGapScreenBounds();
+        } else {
+            layout.clearGap(false);
+            layout.doLayout();
+            return null;
         }
-        return false;
     }
     
     public function dockAfterHover(instance:WidgetInstance) {

@@ -168,6 +168,7 @@ public class WidgetManager {
     }
 
     init {
+        Widget.autoLaunch = false;
         CommunicationManager.INSTANCE.startServer();
         CommunicationManager.INSTANCE.setCommandProcessor(WidgetCommandProcessor {});
         if (not widgetRunner and not portal) {

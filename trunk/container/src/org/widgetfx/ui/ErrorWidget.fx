@@ -38,8 +38,6 @@ public class ErrorWidget extends Widget {
     
     public-init var errorLines:String[] = "uninitialized error";
     
-    override var autoLaunch = false;
-    
     override var width = 300;
     
     override var height = 150;

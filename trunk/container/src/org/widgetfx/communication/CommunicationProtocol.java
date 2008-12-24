@@ -40,10 +40,10 @@ public class CommunicationProtocol {
         if (command.equals("port")) {
             CommunicationManager.INSTANCE.connectTo(Integer.parseInt(args[1]));
             return "connected";
-        } else if (command.equals("hello")) {
-            return processor.hello();
-        } else if (command.equals("addWidget")) {
-            return String.valueOf(processor.addWidget(args[1], Double.parseDouble(args[2]), Double.parseDouble(args[3])));
+        } else if (command.equals("hover")) {
+            return String.valueOf(processor.hover(Double.parseDouble(args[1]), Double.parseDouble(args[2]), Double.parseDouble(args[3])));
+        } else if (command.equals("finishHover")) {
+            return String.valueOf(processor.finishHover(args[1], Double.parseDouble(args[2]), Double.parseDouble(args[3])));
         } else {
             Logger.getLogger(CommunicationReceiver.class.getName()).log(Level.WARNING, "Unknown Command: " + inputLine);
         }

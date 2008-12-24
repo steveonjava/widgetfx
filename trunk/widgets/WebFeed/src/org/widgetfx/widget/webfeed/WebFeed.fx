@@ -21,6 +21,7 @@
 package org.widgetfx.widget.webfeed;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.jfxtras.layout.*;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
 import javafx.ext.swing.*;
@@ -185,11 +186,11 @@ var webFeed:Widget = Widget {
             var label = SwingLabel {text: "RSS Feed:"};
             var textField = SwingTextField {text: bind feedUrl with inverse, columns: 40};
             content: [
-                HBox {
-                    content: [
+                Grid {
+                    rows: Row {cells: [
                         label,
                         textField
-                    ]
+                    ]}
                 }
             ]
         }

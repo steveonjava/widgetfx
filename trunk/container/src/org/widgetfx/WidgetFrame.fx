@@ -80,8 +80,6 @@ public class WidgetFrame extends Dialog, DragContainer {
     
     override var independentFocus = true;
     
-	// todo:merge - need to hook up the animating var
-    public var animating:Boolean;
     public var resizing:Boolean;
     var changingOpacity:Boolean;
     
@@ -157,7 +155,7 @@ public class WidgetFrame extends Dialog, DragContainer {
         instance.setHeight(newHeight);
     }
     
-    override var opacity = bind if (useOpacity) instance.opacity / 100.0 else 1.0;
+    override var opacity = bind (if (hoverContainer) 0.4 else 1) * (if (useOpacity) instance.opacity / 100.0 else 1.0);
 
     var rolloverOpacity = 0.0;
     var rolloverTimeline = Timeline {
@@ -181,6 +179,8 @@ public class WidgetFrame extends Dialog, DragContainer {
             }
         )
     }
+
+    var shouldCache = true;
     
     init {
         var dragRect:Group = Group {
@@ -299,6 +299,10 @@ public class WidgetFrame extends Dialog, DragContainer {
             }
             onMouseReleased: function(e:MouseEvent) {
                 if (e.button == MouseButton.PRIMARY) {
+                    shouldCache = false;
+                        shouldCache = true;
+                    FX.deferAction(function():Void {
+                    });
                     finishDrag(e.screenX, e.screenY);
                 }
             }
@@ -316,7 +320,7 @@ public class WidgetFrame extends Dialog, DragContainer {
                     dragRect,
                     Group { // Widget
                         translateX: BORDER, translateY: BORDER + toolbarHeight
-                        cache: true
+                        cache: shouldCache
                         content: Group { // Alert
                             effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
                             content: Group { // Drop Shadow
@@ -399,9 +403,9 @@ public class WidgetFrame extends Dialog, DragContainer {
         visible = true;
     }
 
-    override function dragComplete(container:WidgetContainer, targetBounds:Rectangle2D):Void {
+    override function dragComplete(dragListener:WidgetDragListener, targetBounds:Rectangle2D):Void {
         if (targetBounds != null) {
-            dock(container, targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
+            dock(dragListener as WidgetContainer, targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
         }
     }
     

@@ -18,15 +18,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx.communication;
+package org.widgetfx.ui;
 
-import java.awt.geom.*;
+import org.widgetfx.*;
+import javafx.geometry.*;
 
 /**
  * @author Stephen Chin
+ * @author Keith Combs
  */
-public interface CommandProcessor {
-    Rectangle2D hover(double dockedHeight, double x, double y);
+public var dragListeners:WidgetDragListener[];
 
-    Rectangle2D finishHover(String jnlpUrl, double x, double y);
+public abstract class WidgetDragListener {
+
+    public abstract function hover(dockedHeight:Number, screenX:Number, screenY:Number):Rectangle2D;
+
+    public abstract function finishHover(instance:WidgetInstance, screenX:Number, screenY:Number):Rectangle2D;
+
+    public abstract function finishHover(jnlpUrl:String, screenX:Number, screenY:Number):Rectangle2D;
 }

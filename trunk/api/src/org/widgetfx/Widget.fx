@@ -31,6 +31,17 @@ import javax.jnlp.BasicService;
 import javax.jnlp.ServiceManager;
 
 /**
+ * Enables or disabled auto launch facility for testing widgets.  The default value
+ * is true to facilitate simple testing of widgets and debugging of deployed widgets.
+ * <p>
+ * When autoLaunch is set to true, a Widget Runner will be invoked to run this widget
+ * in a different process.  The codebase and launchHref will be used to pass as
+ * parameters to the Widget Runner.  Once the Widget Runner has been started, this
+ * process will exit.
+ */
+public var autoLaunch = true;
+
+/**
  * Instance class for Widgets that can be deployed in the WidgetFX container.
  * This class extends Stage so that any valid Widget can also be easily
  * tested or deployed as an Applet.
@@ -85,7 +96,7 @@ import javax.jnlp.ServiceManager;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class Widget extends Group, Resizable {
+ public class Widget extends Group, Resizable {
 
     /**
      * The external url to the widget runner process that will be launched.
@@ -160,36 +171,23 @@ public class Widget extends Group, Resizable {
     public var alert = false;
     
     /**
-     * Enables or disabled auto launch facility for testing widgets.  The default value
-     * is true to facilitate simple testing of widgets and debugging of deployed widgets.
-     * <p>
-     * When autoLaunch is set to true, a Widget Runner will be invoked to run this widget
-     * in a different process.  The codebase and launchHref will be used to pass as
-     * parameters to the Widget Runner.  Once the Widget Runner has been started, this
-     * process will exit.
-     */
-    public var autoLaunch = true;
-    
-    /**
      * The href used to launch the Widget Runner process.  The default value is "launch.jnlp",
      * and must be updated if you use a different jnlp filename.
      */
     public-init var launchHref = "launch.jnlp";
     
-    postinit {
-        FX.deferAction(function():Void {
-            if (autoLaunch) {
-                try {
-                    var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
-                    basicService.showDocument(new URL("{WIDGET_RUNNER_URL}?arg={basicService.getCodeBase()}{launchHref}"));
-                    FX.exit();
-                } catch (e1:NoClassDefFoundError) {
-                    // not running in Web Start, continue running the applet
-                } catch (e2:Throwable) {
-                    println("Unable to launch Widget Runner");
-                    e2.printStackTrace();
-                }
+    init {
+        if (autoLaunch) {
+            try {
+                var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+                basicService.showDocument(new URL("{WIDGET_RUNNER_URL}?arg={basicService.getCodeBase()}{launchHref}"));
+                FX.exit();
+            } catch (e1:NoClassDefFoundError) {
+                // not running in Web Start, continue running the applet
+            } catch (e2:Throwable) {
+                println("Unable to launch Widget Runner");
+                e2.printStackTrace();
             }
-        });
+        }
     }
 }

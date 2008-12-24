@@ -172,10 +172,6 @@ public class WidgetInstance {
                 widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, TypeInfo.String.emptySequence as Object) as Widget;
             } catch (e:Throwable) {
                 createError(e);
-            } finally {
-                if (widget != null) {
-                    widget.autoLaunch = false;
-                }
             }
         }
     }

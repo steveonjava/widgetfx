@@ -46,7 +46,6 @@ import java.awt.TrayIcon;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.geom.*;
 import java.awt.image.*;
 import java.awt.GraphicsEnvironment;
 import java.io.*;
@@ -63,10 +62,7 @@ var MIN_WIDTH = 120;
 var MAX_WIDTH = 400;
 var BORDER = 5;
 public var DS_RADIUS = 5;
-var BG_OPACITY = 0.7;
-var BUTTON_COLOR = Color.rgb(0xA0, 0xA0, 0xA0);
-var BUTTON_BG_COLOR = Color.rgb(0, 0, 0, 0.1);
-var instance;
+var instance:Dock;
 
 public function createInstance() {
     instance = Dock {};
@@ -77,11 +73,26 @@ public function getInstance() {
 }
 
 public class Dock extends Dialog {
-    var logoUrl:String;
-    var backgroundStartColor = [0.0, 0.0, 0.0];
-    var backgroundEndColor = [0.0, 0.0, 0.0];
+//    var logoX:Number = 12;
+//    var logoY:Number = 7;
+//    var logoUrl:String = "{__DIR__}images/WidgetFX-Logo.png";
+    var logoX:Number = -59;
+    var logoY:Number = 6;
+    var logoUrl:String = "{__DIR__}images/logo_6thspace.png";
+//    var backgroundStartColor = [0.0, 0.0, 0.0, 0.0];
+//    var backgroundEndColor = [0.0, 0.0, 0.0, 0.7];
+    var backgroundStartColor = [0.0, 0.0, 0.0, 0.2];
+    var backgroundEndColor = [0.0, 0.0, 0.0, 0.2];
     
     var themeProperties = [
+        NumberProperty {
+            name: "logoX"
+            value: bind logoX with inverse;
+        },
+        NumberProperty {
+            name: "logoY"
+            value: bind logoY with inverse;
+        },
         StringProperty {
             name: "logoUrl"
             value: bind logoUrl with inverse;
@@ -140,14 +151,38 @@ public class Dock extends Dialog {
     ]);
     
     var mainMenu:NativePopupMenu;
-    var logo:Node = bind if (logoUrl.isEmpty()) {
-        createWidgetFXLogo()
-    } else {
-        ImageView { // resolve the logoUrl against the theme
-            image: Image {url: (new URL(new URL(theme), logoUrl)).toString()}
+    var logo:Node = Group {
+        translateX: bind if (logoX < 0) width + logoX else logoX
+        translateY: bind logoY
+        effect: bind if (logo.hover) Glow {level: 0.7} else null
+        var imageView = ImageView {
+            image: bind Image {
+                url: if (theme.isEmpty()) {
+                    logoUrl
+                } else {
+                    // resolve the logoUrl against the theme
+                    (new URL(new URL(theme), logoUrl)).toString()
+                }
+            }
+        }
+        content: [
+            Rectangle {
+                width: bind imageView.boundsInLocal.width
+                height: bind imageView.boundsInLocal.height
+                fill: Color.TRANSPARENT
+            },
+            imageView
+        ]
+        onMouseReleased: function(e:MouseEvent) {
+            mainMenu.show(dialog, e.sceneX, e.sceneY);
         }
     }
     var headerHeight:Integer = bind BORDER * 2 + logo.boundsInLocal.height.intValue();
+    var deviceBar:DeviceBar = DeviceBar {
+        translateX: bind (width - deviceBar.layoutBounds.width) / 2
+        translateY: bind height - 87
+        opacity: bind rolloverOpacity
+    }
     
     var container:WidgetContainer = WidgetContainer {
         window: bind dialog
@@ -197,9 +232,8 @@ public class Dock extends Dialog {
         y = screenBounds.y + menuHeight;
     }
     
-    var bgOpacity = BG_OPACITY;
-    var startColor = bind Color.color(backgroundStartColor[0], backgroundStartColor[1], backgroundStartColor[2], 0);
-    var endColor = bind Color.color(backgroundEndColor[0], backgroundEndColor[1], backgroundEndColor[2], bgOpacity);
+    var startColor = bind Color.color(backgroundStartColor[0], backgroundStartColor[1], backgroundStartColor[2], rolloverOpacity * (if (backgroundStartColor.size() < 4) 1 else backgroundStartColor[3]));
+    var endColor = bind Color.color(backgroundEndColor[0], backgroundEndColor[1], backgroundEndColor[2], rolloverOpacity * (if (backgroundEndColor.size() < 4) 1 else backgroundEndColor[3]));
     var leftBG = bind LinearGradient {
         endY: 0
         stops: [
@@ -346,161 +380,43 @@ public class Dock extends Dialog {
         }
     }
     
-    package var rolloverOpacity = 0.01;
+    package var rolloverOpacity = 0.0;
     package var rolloverTimeline = Timeline {
-        keyFrames: at (1s) {[rolloverOpacity => BG_OPACITY tween Interpolator.EASEBOTH, bgOpacity => BG_OPACITY * 1.2 tween Interpolator.EASEBOTH]}
+        keyFrames: at (500ms) {rolloverOpacity => 1 tween Interpolator.EASEIN}
     }
+
+    var mouseOver:Boolean;
+
+    var draggingDock:Boolean;
     
-    function createWidgetFXLogo():Group {
-        return Group {
-            cache: true
-            content: HBox {
-                translateX: BORDER, translateY: BORDER + 11
-                effect: DropShadow {radius: 5, offsetX: 2, offsetY: 2}
-                content: [
-                    ImageView {
-                        y: -13
-                        image: WidgetFXConfiguration.getInstance().widgetFXIcon16
-                    },
-                    Text {
-                        font: Font {oblique: true}
-                        fill: Color.WHITE
-                        content: " Widget"
-                    },
-                    Text {
-                        x: -3
-                        font: Font {embolden: true, oblique: true}
-                        fill: Color.ORANGE
-                        content: "FX"
-                    },
-                    Text {
-                        x: -3
-                        font: Font {oblique: true, size: 9}
-                        fill: Color.WHITE
-                        content: "v{WidgetFXConfiguration.VERSION}"
+    var hoverDock = bind mouseOver or container.widgetDragging or draggingDock or resizing on replace oldValue {
+        // Defer the action to prevent spurious, alternating updates
+        if (hoverDock != oldValue) {
+            FX.deferAction(function ():Void {
+                    // Check the time to make sure we don't run over the end of the animation and reset it
+                    if ((hoverDock and rolloverTimeline.time < 500ms) or (not hoverDock and rolloverTimeline.time > 0s)) {
+                        rolloverTimeline.rate = if (hoverDock) 1 else -1;
+                        rolloverTimeline.play();
                     }
-                ]
-            }
+                }
+            )
         }
     }
     
     function loadContent():Void {
         onClose = function() {WidgetManager.getInstance().exit()};
-        var addWidgetButton = Group {
-            var color = BUTTON_COLOR;
-            translateY: 7
-            cache: true
-            content: [
-                Circle {
-                    stroke: bind color
-                    fill: BUTTON_BG_COLOR;
-                    radius: 7
-                },
-                Line {
-                    stroke: bind color
-                    strokeWidth: 2
-                    startX: -3, startY: 0
-                    endX: 3, endY: 0
-                },
-                Line {
-                    stroke: bind color
-                    strokeWidth: 2
-                    startX: 0, startY: -3
-                    endX: 0, endY: 3
-                }
-            ]
-            onMouseEntered: function(e) {
-                color = Color.WHITE;
-            }
-            onMouseExited: function(e) {
-                color = BUTTON_COLOR;
-            }
-            onMouseClicked: function(e) {
-                addWidget();
-            }
-        }
-        var mainMenuButton:Group = Group {
-            var color = BUTTON_COLOR;
-            translateY: 7
-            cache: true
-            content: [
-                Circle {
-                    stroke: bind color
-                    fill: BUTTON_BG_COLOR;
-                    radius: 7
-                },
-                Polygon {
-                    stroke: bind color
-                    fill: bind color
-                    points: [
-                        -3.0,-1.0, 
-                        3.0,-1.0,
-                        0.0,3.0
-                    ]
-                }
-            ]
-            onMouseEntered: function(e) {
-                color = Color.WHITE;
-            }
-            onMouseExited: function(e) {
-                color = BUTTON_COLOR;
-            }
-            onMouseReleased: function(e:MouseEvent) {
-                mainMenu.show(dialog, e.sceneX, e.sceneY);
-            }
-        }
-        var hideButton = Group {
-            var color = BUTTON_COLOR;
-            translateY: 7
-            cache: true
-            content: [
-                Circle {
-                    stroke: bind color
-                    fill: BUTTON_BG_COLOR;
-                    radius: 7
-                },
-                Line {
-                    stroke: bind color
-                    strokeWidth: 2
-                    startX: -3, startY: 2
-                    endX: 3, endY: 2
-                }
-            ]
-            onMouseEntered: function(e) {
-                color = Color.WHITE;
-            }
-            onMouseExited: function(e) {
-                color = BUTTON_COLOR;
-            }
-            onMouseClicked: function(e) {
-                hideDock();
-            }
-        }
-        var menus:HBox = HBox { // Menu Buttons
-            translateX: bind width - menus.boundsInLocal.width
-            translateY: 4
-            spacing: 4
-            content: [
-                addWidgetButton,
-                mainMenuButton,
-                hideButton
-            ]
-
-        }
         var dragBar:Group;
         scene = Scene {
             content: [
-                Group {
-                    content: bind logo
-                },
-                menus,
+                logo,
+                deviceBar,
                 container,
                 dragBar = Group { // Drag Bar
                     blocksMouse: true
                     content: [
-                        Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity / 4},
-                        Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity, translateX: 1},
-                        Line {endY: bind height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity / 3, translateX: 2}
+                        Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity * .175},
+                        Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity * .7, translateX: 1},
+                        Line {endY: bind height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity * .23, translateX: 2}
                     ]
                     translateX: bind if (dockLeft) width - dragBar.boundsInLocal.width else 0
                     cursor: Cursor.H_RESIZE
@@ -527,16 +443,18 @@ public class Dock extends Dialog {
         };
         (dialog as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
             override function mouseEntered(e) {
-                rolloverTimeline.rate = 1;
-                rolloverTimeline.play();
+                mouseOver = true;
             }
             override function mouseExited(e) {
-                rolloverTimeline.rate = -1;
-                rolloverTimeline.play();
+                mouseOver = false;
+            }
+            override function mouseReleased(e) {
+                draggingDock = false;
             }
         });
         (dialog as RootPaneContainer).getContentPane().addMouseMotionListener(MouseMotionAdapter {
             override function mouseDragged(e) {
+                draggingDock = true;
                 getGraphicsConfiguration(e.getLocationOnScreen());
             }
         });
