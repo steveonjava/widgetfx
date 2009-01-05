@@ -22,6 +22,8 @@ package org.widgetfx;
 
 import javax.swing.UIManager;
 import javafx.lang.FX;
+import org.widgetfx.config.*;
+import org.widgetfx.ui.*;
 
 /**
  * @author Stephen Chin
@@ -40,7 +42,7 @@ for (arg in FX.getArguments()) {
     }
 }
 
-Dock.createInstance();
+DockDialog.createInstance();
 
 FX.deferAction(
     function():Void {

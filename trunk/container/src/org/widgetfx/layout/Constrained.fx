@@ -18,16 +18,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx.widget.clock;
-
-import org.widgetfx.*;
+package org.widgetfx.layout;
 
 /**
  * @author Stephen Chin
+ * @author Keith Combs
  */
-public class Clock extends Widget {
-    override var width = 105;
-    override var height = 105;
-    override var resizable = false;
-    override var skin = ClockSkin {}
+public var UNBOUNDED:Number = -1;
+
+public abstract class Constrained {
+    public var maxWidth:Number = UNBOUNDED;
+    public var maxHeight:Number = UNBOUNDED;
 }

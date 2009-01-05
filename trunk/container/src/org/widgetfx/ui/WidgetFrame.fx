@@ -18,10 +18,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx;
+package org.widgetfx.ui;
 
+import org.widgetfx.*;
+import org.widgetfx.config.*;
+import org.widgetfx.layout.*;
 import org.widgetfx.toolbar.*;
-import org.widgetfx.ui.*;
+import org.widgetfx.widgets.*;
 import org.jfxtras.scene.*;
 import org.jfxtras.stage.*;
 import java.awt.event.*;
@@ -48,7 +51,7 @@ public var RESIZABLE_TOOLBAR_HEIGHT = 18;
 public var NONRESIZABLE_TOOLBAR_HEIGHT = RESIZABLE_TOOLBAR_HEIGHT - BORDER;
 public var DS_RADIUS = 5;
 
-public class WidgetFrame extends Dialog, DragContainer {
+public class WidgetFrame extends JFXDialog, DragContainer {
     var toolbarHeight = bind if (instance.widget.configuration == null) NONRESIZABLE_TOOLBAR_HEIGHT else RESIZABLE_TOOLBAR_HEIGHT;
     
     public-init var hidden = false;
@@ -309,6 +312,7 @@ public class WidgetFrame extends Dialog, DragContainer {
             width: bind width * 2 / 5
         }
         scene = Scene {
+            stylesheets: bind WidgetManager.getInstance().stylesheets
             content: sceneContents = Group {
                 var toolbar:WidgetToolbar;
                 content: [

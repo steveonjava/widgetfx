@@ -20,12 +20,6 @@
  */
 package org.widgetfx;
 
-import org.w3c.dom.Attr;
-import org.w3c.dom.NodeList;
-import org.widgetfx.config.*;
-import org.widgetfx.ui.ErrorWidget;
-import org.widgetfx.ui.FlashWidget;
-import org.jfxtras.stage.*;
 import com.sun.javafx.runtime.TypeInfo;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.sequence.Sequences;
@@ -39,10 +33,17 @@ import java.util.Arrays;
 import javafx.ext.swing.*;
 import javafx.reflect.*;
 import javafx.scene.*;
+import javafx.scene.image.*;
 import javafx.stage.*;
 import javax.jnlp.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.NodeList;
+import org.widgetfx.config.*;
+import org.widgetfx.widgets.*;
+import org.widgetfx.ui.*;
+import org.jfxtras.stage.*;
 
 /**
  * @author Stephen Chin
@@ -51,9 +52,7 @@ import javax.xml.xpath.*;
 public var MIN_WIDTH = 100;
 public var MIN_HEIGHT = 50;
 
-var JARS_TO_SKIP = ["widgetfx-api.jar", "widgetfx.jar", "jfxtras.jar",
-        "Scenario.jar", "gluegen-rt.jar", "javafx-swing.jar", "javafxc.jar",
-        "javafxdoc.jar", "javafxgui.jar", "javafxrt.jar", "jmc.jar", "jogl.jar"];
+var JARS_TO_SKIP = ["widgetfx", "jfxtras"];
     
 var loadedResources:URL[] = [];
 
@@ -266,8 +265,8 @@ public class WidgetInstance {
             if (widget.height < MIN_HEIGHT) {
                 setHeight(MIN_HEIGHT);
             }
-            undockedWidth = widget.width;
-            undockedHeight = widget.height;
+            dockedWidth = undockedWidth = widget.width;
+            dockedHeight = undockedHeight = widget.height;
         }
     }
     public var title:String;
@@ -302,11 +301,17 @@ public class WidgetInstance {
             if (widget.resizable) {
                 setWidth(dockedWidth);
                 setHeight(dockedHeight);
+            } else {
+                dockedWidth = widget.width;
+                dockedHeight = widget.height;
             }
         } else {
             if (widget.resizable) {
                 setWidth(undockedWidth);
                 setHeight(undockedHeight);
+            } else {
+                dockedWidth = widget.width;
+                dockedHeight = widget.height;
             }
             frame = WidgetFrame {
                 instance: this
@@ -354,7 +359,7 @@ public class WidgetInstance {
         }
     }
     
-    var configDialog:Dialog;
+    var configDialog:JFXDialog;
     
     public function save() {
         persister.save();
@@ -368,14 +373,15 @@ public class WidgetInstance {
         configDialog.close();
     }
     
-	// todo:merge - this needs to be commented out temporarily
     public function showConfigDialog():Void {
         if (widget instanceof FlashWidget) {
             (widget as FlashWidget).configure();
         } else if (widget.configuration != null) {
-            configDialog = Dialog {
+            configDialog = JFXDialog {
                 packed: true
-                icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
+                icons: Image {
+                    url: "{__DIR__}ui/images/WidgetFXIcon16.png"
+                }
                 title: "{title} Configuration"
                 resizable: false
                 onClose: save

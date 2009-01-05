@@ -22,8 +22,8 @@ package org.widgetfx.widget.slideshow;
 
 import org.widgetfx.*;
 import org.widgetfx.config.*;
-import org.jfxtras.layout.*;
 import org.jfxtras.async.*;
+import org.jfxtras.scene.layout.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
@@ -64,7 +64,7 @@ var imageHeight:Number;
 var currentFile:String;
 var currentImage:Image;
 var nextImage:Image;
-var worker:JavaFXWorker;
+var worker:JFXWorker;
 var timeline:Timeline;
 var tabbedPane:JTabbedPane;
 var maxFiles = 10000;
@@ -97,7 +97,7 @@ function updateImage():Void {
     if (worker != null) {
         worker.cancel();
     }
-    worker = JavaFXWorker {
+    worker = JFXWorker {
         inBackground: function() {
             
             var image = Image {url: currentFile, width: imageWidth, height: imageHeight, preserveRatio: true};
@@ -292,35 +292,39 @@ var slideShow:Widget = Widget {
         onSave: loadDirectory;
     }
     var view:ImageView;
-    content: [
-        view = ImageView {
-            x: bind (slideShow.width - view.boundsInLocal.width) / 2
-            y: bind (slideShow.height - view.boundsInLocal.height) / 2
-            fitWidth: bind slideShow.width
-            fitHeight: bind slideShow.height
-            preserveRatio: true
-            smooth: true
-            image: bind currentImage
-        },
-        Group {
-            var text:Text;
+    skin: Skin {
+        scene: Group {
             content: [
-                Rectangle {
-                    width: bind slideShow.width
-                    height: bind slideShow.height
-                    fill: Color.BLACK
-                    arcWidth: 8, arcHeight: 8
+                view = ImageView {
+                    x: bind (slideShow.width - view.boundsInLocal.width) / 2
+                    y: bind (slideShow.height - view.boundsInLocal.height) / 2
+                    fitWidth: bind slideShow.width
+                    fitHeight: bind slideShow.height
+                    preserveRatio: true
+                    smooth: true
+                    image: bind currentImage
                 },
-                text = Text {
-                    translateY: bind slideShow.height / 2
-                    translateX: bind (slideShow.width - text.boundsInLocal.width) / 2
-                    content: bind status
-                    fill: Color.WHITE
+                Group {
+                    var text:Text;
+                    content: [
+                        Rectangle {
+                            width: bind slideShow.width
+                            height: bind slideShow.height
+                            fill: Color.BLACK
+                            arcWidth: 8, arcHeight: 8
+                        },
+                        text = Text {
+                            translateY: bind slideShow.height / 2
+                            translateX: bind (slideShow.width - text.boundsInLocal.width) / 2
+                            content: bind status
+                            fill: Color.WHITE
+                        }
+                    ]
+                    opacity: bind if (status.isEmpty()) 0 else 1;
                 }
             ]
-            opacity: bind if (status.isEmpty()) 0 else 1;
         }
-    ]
+    }
     onResize: function(width:Number, height:Number) {
         if (imageWidth != width or imageHeight != height) {
             imageWidth = width;

@@ -18,8 +18,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx;
+package org.widgetfx.ui;
 
+import org.widgetfx.*;
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.EventQueue;

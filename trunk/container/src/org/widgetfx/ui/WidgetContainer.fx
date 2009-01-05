@@ -32,6 +32,7 @@ import javax.jnlp.*;
 import javax.swing.JPanel;
 import org.widgetfx.*;
 import org.widgetfx.communication.*;
+import org.widgetfx.layout.*;
 
 /**
  * @author Stephen Chin

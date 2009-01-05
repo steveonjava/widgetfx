@@ -20,10 +20,10 @@
  */
 package org.widgetfx;
 
-import org.widgetfx.ui.AddWidgetDialog;
 import javafx.lang.*;
 import javax.swing.UIManager;
-import java.lang.System;
+import org.widgetfx.config.*;
+import org.widgetfx.ui.AddWidgetDialog;
 
 /**
  * @author Stephen Chin

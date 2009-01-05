@@ -28,6 +28,8 @@ import javafx.scene.shape.*;
 import javafx.scene.paint.*;
 import javafx.stage.*;
 import org.widgetfx.communication.CommunicationManager;
+import org.widgetfx.config.*;
+import org.widgetfx.layout.*;
 
 /**
  * @author Stephen Chin

@@ -18,11 +18,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx;
+package org.widgetfx.ui;
 
 import org.jfxtras.scene.*;
-import org.widgetfx.toolbar.WidgetToolbar;
-import org.widgetfx.ui.*;
+import org.widgetfx.*;
+import org.widgetfx.config.*;
+import org.widgetfx.layout.*;
+import org.widgetfx.toolbar.*;
+import org.widgetfx.widgets.*;
 import java.awt.Point;
 import java.lang.*;
 import javafx.animation.*;

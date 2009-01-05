@@ -20,13 +20,14 @@
  */
 package org.widgetfx.toolbar;
 
-import org.widgetfx.*;
 import java.net.URL;
 import javafx.scene.*;
 import javafx.scene.shape.*;
 import javafx.scene.paint.*;
 import javafx.scene.transform.*;
 import javax.jnlp.*;
+import org.widgetfx.*;
+import org.widgetfx.config.*;
 
 /**
  * @author Stephen Chin
