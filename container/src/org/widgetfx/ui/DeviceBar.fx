@@ -20,8 +20,8 @@
  */
 package org.widgetfx.ui;
 
-import org.jfxtras.layout.*;
 import org.jfxtras.stage.*;
+import org.jfxtras.scene.layout.*;
 import org.widgetfx.*;
 import javafx.ext.swing.*;
 import javafx.geometry.*;
@@ -29,6 +29,7 @@ import javafx.scene.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.*;
+import javafx.stage.*;
 import javax.swing.JProgressBar;
 
 import javafx.scene.paint.*;
@@ -41,10 +42,12 @@ import javafx.animation.*;
  */
 public class DeviceBar extends CustomNode, WidgetDragListener {
 
+    public var owner:Stage;
+
     function sendTo(device:String) {
         var progressBar = new JProgressBar();
-        var dialog = Dialog {
-            owner: Dock.getInstance()
+        var dialog = JFXDialog {
+            owner: owner
             packed: true
             title: "Device Transfer"
             scene: Scene {

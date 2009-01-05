@@ -1,0 +1,13 @@
+"org.widgetfx.widget.clock.Clock" {
+    shadowColor: darkred;
+    faceEndColor: darkred;
+    secondHandColor: red;
+}
+"org.widgetfx.ui.Dock" {
+    backgroundStartColor: #00000033;
+    backgroundEndColor: #00000033;
+    showDeviceBar: true;
+    logoX: -59;
+    logoY: 6;
+    logoImage: url(file:/c:/dev/widgetfx/container/src/org/widgetfx/ui/images/logo_6thspace.png);
+}

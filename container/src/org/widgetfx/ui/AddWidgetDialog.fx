@@ -20,18 +20,20 @@
  */
 package org.widgetfx.ui;
 
-import org.widgetfx.*;
-import org.jfxtras.layout.*;
-import org.jfxtras.stage.*;
 import java.io.File;
 import javafx.ext.swing.*;
 import javafx.scene.*;
+import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
 import javafx.stage.*;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.jfxtras.stage.*;
+import org.jfxtras.scene.layout.*;
+import org.widgetfx.*;
+import org.widgetfx.config.*;
 
 /**
  * @author Stephen Chin
@@ -46,7 +48,7 @@ public class AddWidgetDialog {
     
     var jnlpUrl:String;
     
-    var dialog:Dialog;
+    var dialog:JFXDialog;
     
     postinit {
         showDialog();
@@ -99,12 +101,14 @@ public class AddWidgetDialog {
             }
         }
         
-        dialog = Dialog {
+        dialog = JFXDialog {
             title: "Add Widget"
             resizable: false
             packed: true
             modal: true
-            icons: WidgetFXConfiguration.getInstance().widgetFXIcon16s
+            icons: Image {
+                url: "{__DIR__}images/WidgetFXIcon16.png"
+            }
             owner: owner
             scene: Scene {
                 var grid:Grid;

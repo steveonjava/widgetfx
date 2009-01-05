@@ -12,6 +12,6 @@
         <j2se version="1.6+"/>
         <jar href="Clock.jar" main="true" download="eager"/>
     </resources>
-    <application-desc main-class="org.widgetfx.widget.clock.Clock">
+    <application-desc main-class="org.widgetfx.widget.clock.Main">
     </application-desc>
 </jnlp>

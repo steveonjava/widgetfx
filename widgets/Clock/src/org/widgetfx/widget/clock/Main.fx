@@ -18,13 +18,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx;
-
-import java.awt.event.MouseEvent;
+package org.widgetfx.widget.clock;
 
 /**
  * @author Stephen Chin
  */
-public interface EventInterceptor {
-    boolean shouldIntercept(MouseEvent event);
+Clock {
+    launchHref: "Clock.jnlp";
 }

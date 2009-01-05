@@ -25,8 +25,7 @@ import java.lang.NoClassDefFoundError;
 import java.lang.Throwable;
 import java.net.URL;
 import javafx.lang.FX;
-import javafx.scene.layout.Resizable;
-import javafx.scene.Group;
+import javafx.scene.control.*;
 import javax.jnlp.BasicService;
 import javax.jnlp.ServiceManager;
 
@@ -96,12 +95,12 @@ public var autoLaunch = true;
  * @author Stephen Chin
  * @author Keith Combs
  */
- public class Widget extends Group, Resizable {
+ public class Widget extends Control {
 
     /**
      * The external url to the widget runner process that will be launched.
      */
-    def WIDGET_RUNNER_URL = "http://widgetfx.org/beta/runner.jnlp";
+    def WIDGET_RUNNER_URL = "http://widgetfx.org/dock/runner.jnlp";
     
     /**
      * Used to give widgets a fixed aspectRatio.  The default value of 0 allows
@@ -123,7 +122,12 @@ public var autoLaunch = true;
      * class for more information.
      */
     public-init var configuration:Configuration;
-    
+
+    /**
+     * All widgets extend Resizable, and by default can be resized by the user,
+     * but if intend the widget to be displayed at a fixed size, this variable
+     * can be set to false to remove the resize controls.
+     */
     public-init var resizable:Boolean = true;
     
     /**
@@ -153,6 +157,8 @@ public var autoLaunch = true;
     public-init var onUndock:function():Void;
 
     /**
+     * WARNING: NOT YET IMPLEMENTED
+     * <p>
      * Allows multiple instances of this widget to be added to the same dock with
      * unique configuration options.  When launched from a url, a new instance will
      * only be added if it has configuration options and those configuration options

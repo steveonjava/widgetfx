@@ -18,12 +18,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx.ui;
+package org.widgetfx.widgets;
 
 import javafx.scene.*;
-import javafx.scene.shape.*;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
+import javafx.scene.shape.*;
 import javafx.scene.text.*;
 import org.widgetfx.Widget;
 
@@ -42,8 +43,8 @@ public class ErrorWidget extends Widget {
     
     override var height = 150;
     
-    override var content = [
-        Group {
+    override var skin = Skin {
+        scene: Group {
             clip: Rectangle {
                 smooth: false
                 width: bind width
@@ -84,5 +85,5 @@ public class ErrorWidget extends Widget {
                 }
             ]
         }
-    ]
+    }
 }

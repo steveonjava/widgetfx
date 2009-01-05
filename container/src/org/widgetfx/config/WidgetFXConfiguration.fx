@@ -18,12 +18,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx;
+package org.widgetfx.config;
 
 import java.io.File;
 import java.lang.System;
 import java.net.URL;
-import javafx.scene.image.*;
 import javax.jnlp.BasicService;
 import javax.jnlp.ServiceManager;
 import org.widgetfx.WidgetManager;
@@ -33,8 +32,8 @@ import org.widgetfx.config.*;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public def PUBLIC_CODEBASE = "http://widgetfx.org/beta/";
-public def VERSION = "1.0b1";
+public def PUBLIC_CODEBASE = "http://widgetfx.org/dock/";
+public def VERSION = "1.0";
 public def IS_MAC = System.getProperty("os.name").contains("Mac OS");
 public def IS_VISTA = System.getProperty("os.name").contains("Vista");
 public var TRANSPARENT = true;
@@ -55,10 +54,6 @@ public class WidgetFXConfiguration {
     var properties:Property[] = [];
     
     public var mergeProperties = false;
-    
-    public-read var widgetFXIcon16 = Image {url: getClass().getResource("nut9_16.png").toString()};
-    public-read var widgetFXIcon16s = Image {url: getClass().getResource("nut9_16s.png").toString()};
-    public-read var widgetFXIcon16t = Image {url: getClass().getResource("nut9_16s.gif").toString()};
     
     public-read var codebase = (ServiceManager.lookup("javax.jnlp.BasicService") as BasicService).getCodeBase();
     

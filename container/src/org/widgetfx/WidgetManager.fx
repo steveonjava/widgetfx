@@ -26,10 +26,10 @@ import java.net.URL;
 import javafx.lang.*;
 import javafx.util.*;
 import javax.jnlp.*;
-import org.widgetfx.config.IntegerSequenceProperty;
-import org.widgetfx.config.StringSequenceProperty;
 import org.widgetfx.communication.*;
-import org.widgetfx.ui.ErrorWidget;
+import org.widgetfx.config.*;
+import org.widgetfx.widgets.*;
+import org.widgetfx.ui.*;
 
 /**
  * @author Stephen Chin
@@ -78,8 +78,9 @@ public class WidgetManager {
     
     var loginPasswords:String[] = [];
 
-    var configuration = WidgetFXConfiguration.getInstanceWithProperties([
+    public var stylesheets:String[] = [];
 
+    var configuration = WidgetFXConfiguration.getInstanceWithProperties([
         IntegerSequenceProperty {
             name: "widgets"
             value: bind widgetIds with inverse
@@ -99,6 +100,10 @@ public class WidgetManager {
         StringSequenceProperty {
             name: "loginPasswords"
             value: bind loginPasswords with inverse
+        },
+        StringSequenceProperty {
+            name: "styles"
+            value: bind stylesheets with inverse;
         }
     ]);
 
@@ -150,8 +155,8 @@ public class WidgetManager {
         for (param in params where param.toLowerCase().endsWith(".jnlp") or param.toLowerCase().endsWith(".swf") or param.toLowerCase().endsWith(".swfi")) {
             addWidget(param);
         }
-        for (param in params where param.toLowerCase().endsWith(".theme")) {
-            Dock.getInstance().theme = param;
+        for (param in params where param.toLowerCase().endsWith(".css")) {
+            addStylesheet(param);
         }
     }
     
@@ -160,7 +165,7 @@ public class WidgetManager {
         override function newActivation(params) {
             FX.deferAction(
                 function():Void {
-                    Dock.getInstance().showDockAndWidgets();
+                    DockDialog.getInstance().showDockAndWidgets();
                     loadParams(for (s in Arrays.asList(params)) s);
                 }
             );
@@ -243,6 +248,15 @@ public class WidgetManager {
         var instance = getWidget(url);
         insert instance into widgets;
         return instance;
+    }
+
+    public function clearStylesheets() {
+        stylesheets = [];
+    }
+
+    public function addStylesheet(url:String) {
+        delete url from stylesheets;
+        insert url into stylesheets;
     }
     
     public function addRecentWidget(instance:WidgetInstance):Void {

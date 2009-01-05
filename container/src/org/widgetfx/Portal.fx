@@ -20,6 +20,8 @@
  */
 package org.widgetfx;
 
+import org.widgetfx.config.*;
+import org.widgetfx.layout.*;
 import org.widgetfx.ui.*;
 import org.jfxtras.stage.*;
 import javafx.lang.FX;

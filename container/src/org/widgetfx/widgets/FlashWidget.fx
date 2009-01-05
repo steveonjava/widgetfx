@@ -18,12 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx.ui;
+package org.widgetfx.widgets;
 
-import org.jdic.web.BrComponent;
-import org.jdic.web.event.*;
-import org.widgetfx.*;
-import org.widgetfx.install.InstallUtil;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -31,10 +27,17 @@ import java.io.*;
 import java.lang.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
+import javafx.scene.control.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.jdic.web.BrComponent;
+import org.jdic.web.event.*;
+import org.widgetfx.*;
+import org.widgetfx.install.InstallUtil;
+import org.widgetfx.layout.*;
+import org.widgetfx.ui.*;
 
 /**
  * @author Stephen Chin
@@ -193,5 +196,7 @@ public class FlashWidget extends Widget, BrComponentListener {
     
     override var height = 300;
     
-    override var content = Rectangle {width: bind width, height: bind height, fill: Color.rgb(0xD9, 0xD9, 0xD9)};
+    override var skin = Skin {
+        scene: Rectangle {width: bind width, height: bind height, fill: Color.rgb(0xD9, 0xD9, 0xD9)}
+    }
 }

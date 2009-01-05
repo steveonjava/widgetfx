@@ -21,14 +21,15 @@
 package org.widgetfx.widget.webfeed;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.jfxtras.layout.*;
 import org.jfxtras.scene.*;
+import org.jfxtras.scene.layout.*;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
 import javafx.ext.swing.*;
 import javafx.animation.*;
 import javafx.async.*;
 import javafx.scene.*;
+import javafx.scene.control.*;
 import javafx.scene.effect.*;
 import javafx.scene.effect.light.*;
 import javafx.scene.input.*;
@@ -199,48 +200,52 @@ var webFeed:Widget = Widget {
             updateFeed();
         }
     }
-    content: bind [
-        CacheSafeGroup {
-            cache: true
-            content: Rectangle {
-                // todo - this is too slow, figure out something else
-//                    effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
-                width: bind webFeed.width, height: bind webFeed.height
-                fill: Color.BLACK
-                arcHeight: 7, arcWidth: 7
-            }
-        },
-        VBox {
-            visible: bind not error.isEmpty()
-            translateY: bind webFeed.height / 2
-            var errorText:Text;
-            var feedText:Text;
-            content: [
-                errorText = Text {
-                    translateX: bind Math.max(0, (webFeed.width - errorText.boundsInLocal.width) / 2)
-                    content: bind error
-                    fill: Color.WHITE
-                    wrappingWidth: bind webFeed.width
+    skin: Skin {
+        scene: Group {
+            content: bind [
+                CacheSafeGroup {
+                    cache: true
+                    content: Rectangle {
+                        // todo - this is too slow, figure out something else
+//                      effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
+                        width: bind webFeed.width, height: bind webFeed.height
+                        fill: Color.BLACK
+                        arcHeight: 7, arcWidth: 7
+                    }
                 },
-                feedText = Text {
-                    translateX: bind Math.max(0, (webFeed.width - feedText.boundsInLocal.width) / 2)
-                    content: bind feedUrl
-                    font: Font {size: 11}
-                    fill: Color.LIGHTSTEELBLUE
-                    wrappingWidth: bind webFeed.width
+                VBox {
+                    visible: bind not error.isEmpty()
+                    translateY: bind webFeed.height / 2
+                    var errorText:Text;
+                    var feedText:Text;
+                    content: [
+                        errorText = Text {
+                            translateX: bind Math.max(0, (webFeed.width - errorText.boundsInLocal.width) / 2)
+                            content: bind error
+                            fill: Color.WHITE
+                            wrappingWidth: bind webFeed.width
+                        },
+                        feedText = Text {
+                            translateX: bind Math.max(0, (webFeed.width - feedText.boundsInLocal.width) / 2)
+                            content: bind feedUrl
+                            font: Font {size: 11}
+                            fill: Color.LIGHTSTEELBLUE
+                            wrappingWidth: bind webFeed.width
+                        }
+                    ]
+                }
+                if (entrySequence.size() == 0) then [] else {
+                    VBox {
+                        translateX: border, translateY: border
+                        clip: Rectangle {width: bind entryWidth, height: bind webFeed.height - border * 2, smooth: false}
+                        content: bind for (entry in entrySequence) {
+                            createEntryDisplay(entry);
+                        }
+                    }
                 }
             ]
-        },
-        if (entrySequence.size() == 0) then [] else {
-            VBox {
-                translateX: border, translateY: border
-                clip: Rectangle {width: bind entryWidth, height: bind webFeed.height - border * 2, smooth: false}
-                content: bind for (entry in entrySequence) {
-                    createEntryDisplay(entry);
-                }
-            }
         }
-    ]
+    }
 }
 
 var entryWidth = bind webFeed.width - border * 2;

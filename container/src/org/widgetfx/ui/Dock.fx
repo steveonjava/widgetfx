@@ -18,16 +18,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.widgetfx.widget.clock;
+package org.widgetfx.ui;
 
-import org.widgetfx.*;
+import javafx.scene.control.*;
+
+public var DS_RADIUS = 5;
 
 /**
  * @author Stephen Chin
  */
-public class Clock extends Widget {
-    override var width = 105;
-    override var height = 105;
-    override var resizable = false;
-    override var skin = ClockSkin {}
+public class Dock extends Control {
+    public-init var dockDialog:DockDialog;
+
+    init {
+        skin = DockSkin {
+            dockDialog: dockDialog;
+        }
+    }
 }

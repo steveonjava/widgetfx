@@ -20,13 +20,11 @@
  */
 package org.widgetfx.ui;
 
+import java.awt.event.MouseEvent;
+
 /**
  * @author Stephen Chin
- * @author Keith Combs
  */
-public var UNBOUNDED:Number = -1;
-
-public abstract class Constrained {
-    public var maxWidth:Number = UNBOUNDED;
-    public var maxHeight:Number = UNBOUNDED;
+public interface EventInterceptor {
+    boolean shouldIntercept(MouseEvent event);
 }
