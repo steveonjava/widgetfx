@@ -57,7 +57,7 @@ var status = "Loading Images...";
 var imageFiles:String[];
 var shuffle = true;
 var duration:Integer = 10;
-var keywords : String;
+var filter : String;
 var imageIndex:Integer;
 var imageWidth:Number;
 var imageHeight:Number;
@@ -154,8 +154,8 @@ function loadDirectory() {
 }
 
 function excludesFile(name:String):Boolean {
-    if (keywords != null and keywords.length() > 0) {
-        if (name.toLowerCase().contains(keywords.toLowerCase())) {
+    if (filter != null and filter.length() > 0) {
+        if (name.toLowerCase().contains(filter.toLowerCase())) {
             return true;
         }
     }
@@ -214,7 +214,7 @@ function getConfigUI():Grid {
     var directoryLabel = Text {content: "Directory:"};
     var directoryEdit = TextBox {text: bind directoryName with inverse, columns: 40};
     var keywordLabel = Text {content: "Filter:"};
-    var keywordEdit = TextBox {text: bind keywords with inverse, columns: 40};
+    var keywordEdit = TextBox {text: bind filter with inverse, columns: 40};
     var durationLabel = Text {content: "Duration"};
     var shuffleCheckBox = SwingCheckBox {text: "Shuffle", selected: bind shuffle with inverse};
 
@@ -251,7 +251,7 @@ function getConfigUI():Grid {
 var slideShow:Widget = Widget {
     launchHref: "SlideShow.jnlp";
     width: 300
-    height: 200
+    height: 220
     aspectRatio: 4.0/3.0
     configuration: Configuration {
         properties: [
@@ -269,7 +269,7 @@ var slideShow:Widget = Widget {
             },
             StringProperty {
                 name : "keywords"
-                value : bind keywords with inverse
+                value : bind filter with inverse
             },
             IntegerProperty {
                 name: "maxFiles"
