@@ -119,7 +119,10 @@ public class DockSkin extends Skin {
     
     package var rolloverOpacity = 0.0;
     package var rolloverTimeline = Timeline {
-        keyFrames: at (500ms) {rolloverOpacity => 1 tween Interpolator.EASEIN}
+        keyFrames: [
+            at (0ms) {rolloverOpacity => 0.0}
+            at (500ms) {rolloverOpacity => 1.0 tween Interpolator.LINEAR}
+        ]
     }
 
     var hoverDock = bind dockDialog.mouseOver or container.widgetDragging or dockDialog.draggingDock or dockDialog.resizing on replace oldValue {
