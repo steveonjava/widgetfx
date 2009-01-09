@@ -323,8 +323,8 @@ public class DockDialog extends JFXDialog {
         resizing = false;
     }
 
-    var rolloverStartColor = bind Color.color(dockSkin.backgroundStartColor.red, dockSkin.backgroundStartColor.blue, dockSkin.backgroundStartColor.green, dockSkin.backgroundStartColor.opacity * rolloverOpacity);
-    var rolloverEndColor = bind Color.color(dockSkin.backgroundEndColor.red, dockSkin.backgroundEndColor.blue, dockSkin.backgroundEndColor.green, dockSkin.backgroundEndColor.opacity * rolloverOpacity);
+    var rolloverStartColor = bind Color.color(dockSkin.backgroundStartColor.red, dockSkin.backgroundStartColor.blue, dockSkin.backgroundStartColor.green, dockSkin.backgroundStartColor.opacity * dockSkin.rolloverOpacity);
+    var rolloverEndColor = bind Color.color(dockSkin.backgroundEndColor.red, dockSkin.backgroundEndColor.blue, dockSkin.backgroundEndColor.green, dockSkin.backgroundEndColor.opacity * dockSkin.rolloverOpacity);
 
     var leftBG = bind LinearGradient {
         endY: 0
@@ -341,25 +341,6 @@ public class DockDialog extends JFXDialog {
         ]
     }
     var transparentBG = bind if (dockLeft) leftBG else rightBG;
-
-    package var rolloverOpacity = 0.0;
-    package var rolloverTimeline = Timeline {
-        keyFrames: at (500ms) {rolloverOpacity => 1 tween Interpolator.EASEIN}
-    }
-
-    var hoverDock = bind mouseOver or dockSkin.container.widgetDragging or draggingDock or resizing on replace oldValue {
-        // Defer the action to prevent spurious, alternating updates
-        if (hoverDock != oldValue) {
-            FX.deferAction(function ():Void {
-                    // Check the time to make sure we don't run over the end of the animation and reset it
-                    if ((hoverDock and rolloverTimeline.time < 500ms) or (not hoverDock and rolloverTimeline.time > 0s)) {
-                        rolloverTimeline.rate = if (hoverDock) 1 else -1;
-                        rolloverTimeline.play();
-                    }
-                }
-            )
-        }
-    }
 
     function loadContent():Void {
         onClose = function() {WidgetManager.getInstance().exit()};

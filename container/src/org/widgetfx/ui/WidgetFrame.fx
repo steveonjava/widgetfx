@@ -163,7 +163,10 @@ public class WidgetFrame extends JFXDialog, DragContainer {
 
     var rolloverOpacity = 0.0;
     var rolloverTimeline = Timeline {
-        keyFrames: at (500ms) {rolloverOpacity => 1.0 tween Interpolator.EASEIN}
+        keyFrames: [
+            at (0s) {rolloverOpacity => 0.0}
+            at (500ms) {rolloverOpacity => 1.0 tween Interpolator.EASEIN}
+        ]
     }
     
     var sceneContents:Group;

@@ -88,7 +88,10 @@ public class WidgetView extends CacheSafeGroup, Constrained, DragContainer {
     
     var rolloverOpacity = 0.0;
     var rolloverTimeline = Timeline {
-        keyFrames: at (500ms) {rolloverOpacity => 1.0 tween Interpolator.EASEIN}
+        keyFrames: [
+            at (0s) {rolloverOpacity => 0.0}
+            at (500ms) {rolloverOpacity => 1.0 tween Interpolator.EASEIN}
+        ]
     }
     
     function resize(oldMaxWidth:Number, oldMaxHeight:Number) {

@@ -61,18 +61,20 @@ public var autoLaunch = true;
  * import javafx.scene.shape.Ellipse;
  * import javafx.scene.paint.Color;
  * import javafx.stage.Stage;
- * var widget:Widget = Widget {
+ * var widget:Widget;
+ * widget = Widget {
  *     width = 100;
  *     height = 100;
- *     content: Ellipse {
- *         centerX: bind widget.width / 2
- *         centerY: bind widget.height / 2
- *         radiusX: bind widget.width / 2
- *         radiusY: bind widget.height / 2
- *         fill: Color.RED
+ *     skin: Skin {
+ *         scene: Ellipse {
+ *             centerX: bind widget.width / 2
+ *             centerY: bind widget.height / 2
+ *             radiusX: bind widget.width / 2
+ *             radiusY: bind widget.height / 2
+ *             fill: Color.RED
+ *         }
  *     }
  * }
- * return widget;
  * </pre></blockquote>
  * <p>
  * Sample JNLP file for the above widget:

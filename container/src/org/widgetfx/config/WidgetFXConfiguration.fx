@@ -33,7 +33,7 @@ import org.widgetfx.config.*;
  * @author Keith Combs
  */
 public def PUBLIC_CODEBASE = "http://widgetfx.org/dock/";
-public def VERSION = "1.0";
+public def VERSION = "1.0.2";
 public def IS_MAC = System.getProperty("os.name").contains("Mac OS");
 public def IS_VISTA = System.getProperty("os.name").contains("Vista");
 public var TRANSPARENT = true;
