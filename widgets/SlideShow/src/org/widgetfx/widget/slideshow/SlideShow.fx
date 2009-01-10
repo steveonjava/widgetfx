@@ -207,8 +207,10 @@ var browseButton:SwingButton = SwingButton {
 }
 
 function setDefaultDirectory() {
-    directoryName = (defaultDirectories[0]).getAbsolutePath();
+    directoryName = defaultDirectories[0].getAbsolutePath();
 }
+
+var durationSpinner:JSpinner;
 
 function getConfigUI():Grid {
     var directoryLabel = Text {content: "Directory:"};
@@ -222,12 +224,7 @@ function getConfigUI():Grid {
     setDefaultDirectory();
 
     // todo - replace with javafx spinner when one exists
-    var durationSpinner = new JSpinner(new SpinnerNumberModel(duration, 2, 60, 1));
-    durationSpinner.addChangeListener(ChangeListener {
-        override function stateChanged(e):Void {
-            duration = durationSpinner.getValue() as Integer;
-        }
-    });
+    durationSpinner = new JSpinner(new SpinnerNumberModel(duration, 2, 60, 1));
     var durationSpinnerComponent = SwingComponent.wrap(durationSpinner);
 
     return Grid {
@@ -281,15 +278,22 @@ var slideShow:Widget = Widget {
             }
         ]
         scene: Scene {
-            content: getConfigUI()
+            content: bind getConfigUI();
         }
 
         onLoad: function() {
+            // make sure the spinner value is set, since this is not bound:
+            durationSpinner.setValue(duration);
             imageWidth = slideShow.width;
             imageHeight = slideShow.height;
             loadDirectory();
         }
-        onSave: loadDirectory;
+        onSave: function() {
+            // make sure the duration value is set, since this is not bound:
+            durationSpinner.commitEdit();
+            duration = durationSpinner.getValue() as Integer;
+            loadDirectory();
+        }
     }
     var view:ImageView;
     skin: Skin {
