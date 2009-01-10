@@ -28,7 +28,6 @@ import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.lang.*;
 import java.net.URL;
-import java.net.HttpURLConnection;
 import java.util.Arrays;
 import javafx.ext.swing.*;
 import javafx.reflect.*;
@@ -67,14 +66,6 @@ public class WidgetInstance {
     
     // todo - possibly prevent widgets from loading if they define user properties that start with "widget."
     var properties = [
-        StringSequenceProperty {
-            name: "widget.resourceUrls"
-            value: bind resourceUrls with inverse;
-        },
-        LongSequenceProperty {
-            name: "widget.resourceTimestamps"
-            value: bind resourceTimestamps with inverse;
-        },
         StringProperty {
             name: "widget.jnlpUrl"
             value: bind jnlpUrl with inverse
@@ -114,10 +105,6 @@ public class WidgetInstance {
             value: bind undockedHeight with inverse;
         }
     ];
-
-    var resourceUrls:String[];
-
-    var resourceTimestamps:Long[];
     
     var persister = bind ConfigPersister {properties: bind [properties, widget.configuration.properties], file: getPropertyFile()}
     
@@ -151,7 +138,7 @@ public class WidgetInstance {
                         var url = new URL(codeBase, jarUrl);
                         if (javafx.util.Sequences.indexOf(loadedResources, url) == -1) {
                             if (version == null) {
-                                maybeUnload(url);
+                                WidgetManager.getInstance().maybeUnload(url);
                             }
                             ds.loadResource(url, version, DownloadServiceListener {
                                 override function downloadFailed(url, version) {
@@ -178,40 +165,6 @@ public class WidgetInstance {
                 createError(e);
             }
         }
-    }
-
-    function maybeUnload(url:URL):Void {
-        var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
-        if (ds.isResourceCached(url, null)) {
-            if (urlUpdated(url)) {
-                println("Resource updated: {url}");
-                ds.removeResource(url, null);
-            }
-        }
-    }
-
-    function urlUpdated(url:URL):Boolean {
-        var conn = url.openConnection();
-        if (conn instanceof HttpURLConnection) {
-            var httpConn = conn as HttpURLConnection;
-            httpConn.setRequestMethod("HEAD");
-            var time:Long = conn.getLastModified();
-            httpConn.disconnect();
-            var urlInd = Sequences.indexOf(resourceUrls, url.toString());
-            if (urlInd != -1) {
-                if (time.longValue() > resourceTimestamps[urlInd]) {
-                    resourceTimestamps[urlInd] = time;
-                    saveWithoutNotification();
-                    return true;
-                }
-            } else {
-                insert url.toString() into resourceUrls;
-                insert time into resourceTimestamps;
-                saveWithoutNotification();
-                return true;
-            }
-        }
-        return false;
     }
     
     public-init var mainClass:String on replace {
@@ -362,7 +315,6 @@ public class WidgetInstance {
     var configDialog:JFXDialog;
     
     public function save() {
-        persister.save();
         if (widget.configuration.onSave != null) {
             try {
                 widget.configuration.onSave();
@@ -370,6 +322,7 @@ public class WidgetInstance {
                 e.printStackTrace();
             }
         }
+        persister.save();
         configDialog.close();
     }
     

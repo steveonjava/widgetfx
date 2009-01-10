@@ -85,8 +85,9 @@ public class Configuration {
     /**
      * If set, this provides a save handler that will be called when the user
      * explicitly saves configuration by clicking on the "Save" button in the
-     * configuration dialog.  This will not be called for auto-save operations
-     * which can be enabled per (@see Property}.
+     * configuration dialog, but before the properties are written to disk.
+     * This will not be called for auto-save operations which can be enabled
+     * per (@see Property}.
      */
     public-init var onSave:function();
 }

@@ -20,8 +20,10 @@
  */
 package org.widgetfx;
 
+import java.lang.Long;
 import java.lang.System;
 import java.util.Arrays;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import javafx.lang.*;
 import javafx.util.*;
@@ -80,7 +82,19 @@ public class WidgetManager {
 
     public var stylesheets:String[] = [];
 
+    var resourceUrls:String[];
+
+    var resourceTimestamps:Long[];
+
     var configuration = WidgetFXConfiguration.getInstanceWithProperties([
+        StringSequenceProperty {
+            name: "resourceUrls"
+            value: bind resourceUrls with inverse;
+        },
+        LongSequenceProperty {
+            name: "resourceTimestamps"
+            value: bind resourceTimestamps with inverse;
+        },
         IntegerSequenceProperty {
             name: "widgets"
             value: bind widgetIds with inverse
@@ -106,6 +120,38 @@ public class WidgetManager {
             value: bind stylesheets with inverse;
         }
     ]);
+
+    public function maybeUnload(url:URL):Void {
+        var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
+        if (ds.isResourceCached(url, null)) {
+            if (urlUpdated(url)) {
+                println("Resource updated: {url}");
+                ds.removeResource(url, null);
+            }
+        }
+    }
+
+    function urlUpdated(url:URL):Boolean {
+        var conn = url.openConnection();
+        if (conn instanceof HttpURLConnection) {
+            var httpConn = conn as HttpURLConnection;
+            httpConn.setRequestMethod("HEAD");
+            var time:Long = conn.getLastModified();
+            httpConn.disconnect();
+            var urlInd = Sequences.indexOf(resourceUrls, url.toString());
+            if (urlInd != -1) {
+                if (time.longValue() > resourceTimestamps[urlInd]) {
+                    resourceTimestamps[urlInd] = time;
+                    return true;
+                }
+            } else {
+                insert url.toString() into resourceUrls;
+                insert time into resourceTimestamps;
+                return true;
+            }
+        }
+        return false;
+    }
 
     public function lookupCredentials(token:String):String[] {
         var index = Sequences.indexOf(loginTokens, token);
