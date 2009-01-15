@@ -105,7 +105,6 @@ public class AddWidgetDialog {
             title: "Add Widget"
             resizable: false
             packed: true
-            modal: true
             icons: Image {
                 url: "{__DIR__}images/WidgetFXIcon16.png"
             }

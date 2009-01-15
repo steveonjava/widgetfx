@@ -33,7 +33,7 @@ import org.widgetfx.config.*;
  * @author Keith Combs
  */
 public def PUBLIC_CODEBASE = "http://widgetfx.org/dock/";
-public def VERSION = "1.0.2";
+public def VERSION = "1.0.3";
 public def IS_MAC = System.getProperty("os.name").contains("Mac OS");
 public def IS_VISTA = System.getProperty("os.name").contains("Vista");
 public var TRANSPARENT = true;
@@ -83,8 +83,9 @@ public class WidgetFXConfiguration {
     public function load() {
         if (not persister.load()) {
             WidgetManager.getInstance().loadInitialWidgets();
-            persister.save(); // initial save
         }
+        // save any properties that may have changed during load
+        persister.save();
     }
     
     public function save() {

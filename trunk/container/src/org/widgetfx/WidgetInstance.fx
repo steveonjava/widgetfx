@@ -51,7 +51,7 @@ import org.jfxtras.stage.*;
 public var MIN_WIDTH = 100;
 public var MIN_HEIGHT = 50;
 
-var JARS_TO_SKIP = ["widgetfx", "jfxtras"];
+var JARS_TO_SKIP = ["widgetfx-api", "jfxtras"];
     
 var loadedResources:URL[] = [];
 
