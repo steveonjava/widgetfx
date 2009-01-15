@@ -170,8 +170,8 @@ public class WidgetInstance {
     public-init var mainClass:String on replace {
         if (mainClass.length() > 0) {
             try {
-                var widgetClass:Class = Class.forName(mainClass);
                 var name = Entry.entryMethodName();
+                var widgetClass:Class = Class.forName(mainClass);
                 widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, TypeInfo.String.emptySequence as Object) as Widget;
             } catch (e:Throwable) {
                 createError(e);
@@ -212,12 +212,6 @@ public class WidgetInstance {
     
     public-init var widget:Widget on replace {
         if (widget != null) {
-            if (widget.width < MIN_WIDTH) {
-                setWidth(MIN_WIDTH);
-            }
-            if (widget.height < MIN_HEIGHT) {
-                setHeight(MIN_HEIGHT);
-            }
             dockedWidth = undockedWidth = widget.width;
             dockedHeight = undockedHeight = widget.height;
         }
@@ -273,6 +267,18 @@ public class WidgetInstance {
             }
         }
     }
+
+    function validateConfig() {
+        if (widget.width < MIN_WIDTH) {
+            setWidth(MIN_WIDTH);
+        }
+        if (widget.height < MIN_HEIGHT) {
+            setHeight(MIN_HEIGHT);
+        }
+        if (opacity < 10 or opacity > 100) {
+            opacity = 100;
+        }
+    }
     
     public function dock() {
         frame.close();
@@ -303,6 +309,7 @@ public class WidgetInstance {
             persister.save(); // initial save
         }
         initializeDimensions();
+        validateConfig();
         if (widget.configuration.onLoad != null) {
             try {
                 widget.configuration.onLoad();

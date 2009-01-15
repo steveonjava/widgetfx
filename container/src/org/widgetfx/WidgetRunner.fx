@@ -57,7 +57,6 @@ function runWidget(jnlpUrl:String) {
     instance.load();
     instance.frame.onClose = closeHook;
     WidgetManager.getInstance().addRecentWidget(instance);
-    instance.dockIfOffscreen();
 }
 
 WidgetManager.createWidgetRunnerInstance();
