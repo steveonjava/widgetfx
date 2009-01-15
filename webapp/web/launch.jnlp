@@ -9,6 +9,7 @@
         <icon href="icon48.png"/>
         <icon kind="shortcut" href="icon16.png" width="16" height="16"/>
         <icon kind="shortcut" href="icon32.png" width="32" height="32"/>
+        <icon kind="shortcut" href="icon48.png" width="48" height="48"/>
         <offline-allowed/>
         <shortcut>
             <desktop/>
@@ -22,7 +23,7 @@
         <property name="jnlp.packEnabled" value="true"/>
         <property name="jnlp.versionEnabled" value="true"/>
         <extension name="JavaFX Runtime" href="http://widgetfx.org/javafx/javafx-rt.jnlp"/>
-        <jar href="WidgetFX.jar" main="true" download="eager" version="1.0.2"/>
+        <jar href="WidgetFX.jar" main="true" download="eager" version="1.0.3"/>
         <jar href="lib/jnlp.jar" download="eager" version="1.6.0_10"/>
         <jar href="lib/widgetfx-api.jar" download="eager" version="1.0.0"/>
         <jar href="lib/JDICplus.jar" download="eager" version="0.2.2"/>
