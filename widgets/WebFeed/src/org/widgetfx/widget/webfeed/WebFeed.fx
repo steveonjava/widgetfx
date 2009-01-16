@@ -174,7 +174,6 @@ Timeline {
 }.play();
 
 var webFeed:Widget = Widget {
-    launchHref: "WebFeed.jnlp";
     width: 300;
     height: 200;
     configuration: Configuration {

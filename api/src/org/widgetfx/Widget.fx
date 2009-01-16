@@ -24,6 +24,8 @@ import org.widgetfx.config.Configuration;
 import java.lang.NoClassDefFoundError;
 import java.lang.Throwable;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.regex.Pattern;
 import javafx.lang.FX;
 import javafx.scene.control.*;
 import javax.jnlp.BasicService;
@@ -179,15 +181,27 @@ public var autoLaunch = true;
     public var alert = false;
     
     /**
-     * The href used to launch the Widget Runner process.  The default value is "launch.jnlp",
-     * and must be updated if you use a different jnlp filename.
+     * The href used to launch the Widget Runner process.  The default value is
+     * the same as the jar for the main class and must be updated if you use
+     * a different jnlp filename.
      */
-    public-init var launchHref = "launch.jnlp";
+    public-init var launchHref:String;
     
     init {
         if (autoLaunch) {
             try {
                 var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+                if (launchHref.isEmpty()) {
+                    var classLoader = getClass().getClassLoader() as java.net.URLClassLoader;
+                    var urls = classLoader.getURLs();
+                    var jarUrl = urls[0].toString();
+                    var matcher = Pattern.compile("/([^/]*)\\.jar").matcher(jarUrl);
+                    launchHref = if (matcher.find()) {
+                        "{matcher.group(1)}.jnlp"
+                    } else {
+                        "launch.jnlp"
+                    }
+                }
                 basicService.showDocument(new URL("{WIDGET_RUNNER_URL}?arg={basicService.getCodeBase()}{launchHref}"));
                 FX.exit();
             } catch (e1:NoClassDefFoundError) {

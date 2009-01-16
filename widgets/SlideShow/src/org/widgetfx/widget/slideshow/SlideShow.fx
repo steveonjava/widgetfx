@@ -246,7 +246,6 @@ function getConfigUI():Grid {
 }
 
 var slideShow:Widget = Widget {
-    launchHref: "SlideShow.jnlp";
     width: 300
     height: 220
     aspectRatio: 4.0/3.0
