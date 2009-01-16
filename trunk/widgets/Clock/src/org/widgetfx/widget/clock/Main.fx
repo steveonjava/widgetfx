@@ -23,6 +23,4 @@ package org.widgetfx.widget.clock;
 /**
  * @author Stephen Chin
  */
-Clock {
-    launchHref: "Clock.jnlp";
-}
+Clock {}
