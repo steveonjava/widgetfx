@@ -26,12 +26,20 @@ package org.widgetfx.widget.calendar;
  * @author Keith Combs
  */
 import org.widgetfx.*;
+import org.widgetfx.config.*;
+import org.jfxtras.scene.layout.*;
+import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
 import javafx.scene.text.*;
-import java.util.Locale;
+import java.util.*;
+
+var language:String = Locale.getDefault().getLanguage();
+var country:String = Locale.getDefault().getCountry();
+var variant:String = Locale.getDefault().getVariant();
+var locale = bind new Locale(language, country, variant);
 
 def calendar = java.util.Calendar.getInstance();
 
@@ -39,43 +47,90 @@ def widget:Widget = Widget {
     width: 180
     height: 200
     aspectRatio: .9
-    def offset = bind widget.width / 60;
-    def arcHeight = bind widget.width / 20;
+//    configuration: Configuration {
+//        properties: [
+//            StringProperty {
+//                name: "language"
+//                value: bind language with inverse
+//            },
+//            StringProperty {
+//                name: "country"
+//                value: bind country with inverse
+//            },
+//            StringProperty {
+//                name: "variant"
+//                value: bind variant with inverse
+//            }
+//        ]
+//        var localePicker = SwingComboBox {
+//            items: for (l in Arrays.asList(Locale.getAvailableLocales())) {
+//                SwingComboBoxItem {
+//                    selected: l == locale
+//                    text: l.getDisplayName()
+//                    value: l
+//                }
+//            }
+//        }
+//        scene: Scene {
+//            content: Grid {
+//                rows: [
+//                    Row {
+//                        cells: [
+//                            Text {content: "Locale:"},
+//                            localePicker
+//                        ]
+//                    }
+//                ]
+//            }
+//        }
+//        onSave: function() {
+//            var l = localePicker.selectedItem.value as Locale;
+//            language = l.getLanguage();
+//            country = l.getCountry();
+//            variant = l.getVariant();
+//        }
+//    }
     skin: Skin {
         scene: Group {
+            def arcHeight = bind widget.width / 20;
+            def offset = bind widget.width / 25;
             content: bind [
-                Rectangle {
-                    translateX: offset
-                    translateY: offset + arcHeight
-                    width: widget.width - offset
-                    height: widget.height - offset
-                    fill: Color.BLACK
+                for (i in reverse [0..3]) {
+                    createPage(offset * i / 3, offset * i / 3 + arcHeight, widget.width - offset - 1, widget.height - offset - 1 - arcHeight)
                 },
-                createPage(widget.width - offset, widget.height - offset, arcHeight)
+                createSpiral(widget.width - offset - 1, arcHeight),
+                createPageContents(0, arcHeight * 2, widget.width - offset - 1, widget.height - offset - 1 - arcHeight * 2)
             ]
         }
     }
 }
 
-bound function createPage(width:Number, height:Number, arcHeight:Number) {
+bound function createPage(x:Number, y:Number, width:Number, height:Number):Group {
     Group {
         content: [
             Rectangle {
-                translateY: arcHeight
+                translateX: x
+                translateY: y
                 width: bind width
-                height: bind height - arcHeight
+                height: bind height
                 fill: Color.WHITE
             },
-            createPageContents(0, arcHeight * 2, width, height - arcHeight * 2),
             Rectangle {
-                translateY: arcHeight
+                translateX: x
+                translateY: y + height - height / 7
                 width: bind width
-                height: bind height - arcHeight
-                strokeWidth: bind java.lang.Math.max(1, width / 150)
-                stroke: Color.BLACK
-                fill: null
+                height: bind height / 7
+                fill: Color.MIDNIGHTBLUE
             },
-            createSpiral(width, arcHeight)
+            Rectangle {
+                translateX: x
+                translateY: y
+                width: bind width
+                height: bind height
+                fill: null
+                strokeWidth: bind java.lang.Math.max(1, widget.width / 180)
+                stroke: Color.BLACK
+            }
         ]
     }
 }
@@ -102,7 +157,6 @@ bound function createPageContents(x:Number, y: Number, width:Number, height:Numb
     var date:Text;
     var year:Text;
     var month:Text;
-    var backDrop:Rectangle;
     var dayOfWeek:Text;
     var fontHeight = bind height / 10;
     def offset = bind width / 40;
@@ -127,23 +181,17 @@ bound function createPageContents(x:Number, y: Number, width:Number, height:Numb
                 translateX: bind width - month.layoutBounds.width - offset
                 translateY: bind offset + fontHeight
                 font: bind Font.font(null, fontHeight)
-                content: calendar.getDisplayName(java.util.Calendar.MONTH, java.util.Calendar.LONG, Locale.getDefault())
-            },
-            backDrop = Rectangle {
-                translateY: bind height - backDrop.layoutBounds.height;
-                width: bind width
-                height: bind 2 * offset + fontHeight
-                fill: Color.MIDNIGHTBLUE
+                content: bind calendar.getDisplayName(java.util.Calendar.MONTH, java.util.Calendar.LONG, locale)
             },
             dayOfWeek = Text {
                 translateX: bind (width - month.layoutBounds.width) / 2
                 translateY: bind height - offset * 1.5
                 font: bind Font.font(null, fontHeight)
-                content: calendar.getDisplayName(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.LONG, Locale.getDefault())
+                content: bind calendar.getDisplayName(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.LONG, locale)
                 fill: Color.WHITESMOKE
             }
         ]
     }
 }
 
-return widget
+return widget;
