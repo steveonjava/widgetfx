@@ -68,33 +68,37 @@ public class ConfigPersister {
     
     public function load():Boolean {
         validateRequiredAttributes();
-        disableAutoSave = true;
-        try {
-            if (file.exists() and properties != null) {
-                savedProperties = Properties {};
-                var reader = new FileReader(file);
-                try {
-                    savedProperties.load(reader);
-                } finally {
-                    reader.close();
-                }
-                // uses a counter/while loop so properties appended to the sequence are loaded
-                var i = 0;
-                while (i < properties.size()) {
-                    var property = properties[i++];
-                    if (savedProperties.containsKey(property.name)) {
-                        property.setStringValue(savedProperties.get(property.name) as String);
-                    }
-                }
-                return true;
+        if (file.exists() and properties != null) {
+            savedProperties = Properties {};
+            var reader = new FileReader(file);
+            try {
+                savedProperties.load(reader);
+            } finally {
+                reader.close();
             }
-        } finally {
-            disableAutoSave = false;
+            load(savedProperties);
             if (not mergeProperties) {
                 savedProperties = null;
             }
+            return true;
         }
         return false;
+    }
+
+    public function load(savedProperties:Properties) {
+        disableAutoSave = true;
+        try {
+            // uses a counter/while loop so properties appended to the sequence are loaded
+            var i = 0;
+            while (i < properties.size()) {
+                var property = properties[i++];
+                if (savedProperties.containsKey(property.name)) {
+                    property.setStringValue(savedProperties.get(property.name) as String);
+                }
+            }
+        } finally {
+            disableAutoSave = false;
+        }
     }
     
     public function save() {
@@ -104,9 +108,7 @@ public class ConfigPersister {
             if (not mergeProperties or savedProperties == null) {
                 savedProperties = Properties {};
             }
-            for (property in properties) {
-                savedProperties.put(property.name, property.getStringValue());
-            }
+            save(savedProperties);
             file.getParentFile().mkdirs();
             file.createNewFile();
             var writer = new FileWriter(file);
@@ -115,6 +117,12 @@ public class ConfigPersister {
             } finally {
                 writer.close();
             }
+        }
+    }
+
+    public function save(savedProperties:Properties) {
+        for (property in properties) {
+            savedProperties.put(property.name, property.getStringValue());
         }
     }
 }

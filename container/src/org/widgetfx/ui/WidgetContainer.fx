@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import org.widgetfx.*;
 import org.widgetfx.communication.*;
 import org.widgetfx.layout.*;
+import java.util.Properties;
 
 /**
  * @author Stephen Chin
@@ -119,7 +120,6 @@ public class WidgetContainer extends Container, WidgetDragListener {
     override function finishHover(instance:WidgetInstance, screenX:Number, screenY:Number):Rectangle2D {
         widgetDragging = false;
         def showing = visible and scene != null;
-        // todo - don't animate the widget going back
         if ((showing and copyOnContainerDrop)
             or (showing and layout.containsScreenXY(screenX, screenY))) {
             return layout.getGapScreenBounds();
@@ -132,13 +132,13 @@ public class WidgetContainer extends Container, WidgetDragListener {
         }
     }
 
-    override function finishHover(jnlpUrl:String, screenX:Number, screenY:Number):Rectangle2D {
+    override function finishHover(jnlpUrl:String, screenX:Number, screenY:Number, properties:Properties):Rectangle2D {
         widgetDragging = false;
         def showing = visible and scene != null;
-        if (showing and layout.containsScreenXY(screenX, screenY) and not WidgetManager.getInstance().hasWidget(jnlpUrl)) {
+        if (showing and layout.containsScreenXY(screenX, screenY) and not WidgetManager.getInstance().hasWidget(jnlpUrl, properties)) {
             FX.deferAction(function():Void {
-                var instance = WidgetManager.getInstance().getWidget(jnlpUrl);
-                insert instance into widgets;
+                var instance = WidgetManager.getInstance().getWidget(jnlpUrl, properties);
+                dockAfterHover(instance);
             });
             return layout.getGapScreenBounds();
         } else {

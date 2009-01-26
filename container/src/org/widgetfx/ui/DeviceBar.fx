@@ -36,6 +36,7 @@ import javafx.scene.paint.*;
 import javafx.scene.shape.*;
 import org.widgetfx.ui.WidgetDragListener;
 import javafx.animation.*;
+import java.util.Properties;
 
 /**
  * @author Stephen Chin
@@ -144,7 +145,7 @@ public class DeviceBar extends CustomNode, WidgetDragListener {
         return null;
     }
 
-    override function finishHover(jnlpUrl:String, screenX:Number, screenY:Number):Rectangle2D {
+    override function finishHover(jnlpUrl:String, screenX:Number, screenY:Number, properties:Properties):Rectangle2D {
         return finishHover(null as WidgetInstance, screenX, screenY);
     }
 }

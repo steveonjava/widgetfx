@@ -28,6 +28,7 @@ package org.widgetfx.widget.calendar;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
 import org.jfxtras.scene.layout.*;
+import org.jfxtras.scene.layout.GridConstraints.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
@@ -95,14 +96,10 @@ def config = Configuration {
     }
     scene: Scene {
         content: Grid {
-            rows: [
-                Row {
-                    cells: [
-                        Text {content: "Locale:"},
-                        localePicker
-                    ]
-                }
-            ]
+            rows: row([
+                Text {content: "Locale:"},
+                localePicker
+            ])
         }
     }
     onSave: function() {

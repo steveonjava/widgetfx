@@ -22,6 +22,7 @@ package org.widgetfx.ui;
 
 import org.widgetfx.*;
 import javafx.geometry.*;
+import java.util.Properties;
 
 /**
  * @author Stephen Chin
@@ -35,5 +36,5 @@ public abstract class WidgetDragListener {
 
     public abstract function finishHover(instance:WidgetInstance, screenX:Number, screenY:Number):Rectangle2D;
 
-    public abstract function finishHover(jnlpUrl:String, screenX:Number, screenY:Number):Rectangle2D;
+    public abstract function finishHover(jnlpUrl:String, screenX:Number, screenY:Number, properties:Properties):Rectangle2D;
 }

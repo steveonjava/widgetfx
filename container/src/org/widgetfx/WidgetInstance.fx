@@ -43,6 +43,8 @@ import org.widgetfx.config.*;
 import org.widgetfx.widgets.*;
 import org.widgetfx.ui.*;
 import org.jfxtras.stage.*;
+import java.util.Properties;
+import java.io.StringWriter;
 
 /**
  * @author Stephen Chin
@@ -281,11 +283,13 @@ public class WidgetInstance {
     }
     
     public function dock() {
-        frame.close();
-        frame = null;
-        docked = true;
-        if (widget.onDock != null) {
-            widget.onDock();
+        if (not docked) {
+            frame.close();
+            frame = null;
+            docked = true;
+            if (widget.onDock != null) {
+                widget.onDock();
+            }
         }
     }
     
@@ -304,9 +308,15 @@ public class WidgetInstance {
         }
     }
     
-    public function load() {
-        if (not persister.load()) {
+    public function load(properties:Properties) {
+        if (properties != null) {
+            persister.load(properties);
             persister.save(); // initial save
+        } else if (not persister.load()) {
+            persister.save(); // initial save
+        }
+        if (jnlpUrl.isEmpty()) {
+            createError(new java.lang.IllegalStateException("Widget URL is empty"));
         }
         initializeDimensions();
         validateConfig();
@@ -331,6 +341,17 @@ public class WidgetInstance {
         }
         persister.save();
         configDialog.close();
+    }
+
+    public function getPropertyString(forceDocked:Boolean):String {
+        var properties = new Properties();
+        persister.save(properties);
+        if (forceDocked) {
+            properties.put("widget.docked", "true");
+        }
+        var stringWriter = new StringWriter();
+        properties.store(stringWriter, null);
+        return stringWriter.toString();
     }
     
     public function showConfigDialog():Void {
