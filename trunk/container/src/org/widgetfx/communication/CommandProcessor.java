@@ -21,6 +21,7 @@
 package org.widgetfx.communication;
 
 import java.awt.geom.*;
+import java.util.Properties;
 
 /**
  * @author Stephen Chin
@@ -28,5 +29,5 @@ import java.awt.geom.*;
 public interface CommandProcessor {
     Rectangle2D hover(double dockedHeight, double x, double y);
 
-    Rectangle2D finishHover(String jnlpUrl, double x, double y);
+    Rectangle2D finishHover(String jnlpUrl, double x, double y, Properties properties);
 }

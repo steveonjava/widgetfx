@@ -24,6 +24,7 @@ import org.widgetfx.*;
 import org.widgetfx.communication.*;
 import javafx.geometry.*;
 import javafx.animation.*;
+import java.net.URLEncoder;
 
 /**
  * @author Stephen Chin
@@ -58,6 +59,8 @@ public abstract class DragContainer {
     public var animating = bind if (animateHover == null) false else animateHover.running;
     var animateDocked:Boolean;
     var saveDocked:Boolean;
+    var saveWidth:Number;
+    var saveHeight:Number;
     var saveUndockedWidth:Number;
     var saveUndockedHeight:Number;
     var xHoverOffset:Number on replace oldValue {
@@ -77,6 +80,8 @@ public abstract class DragContainer {
         yHoverOffset = 0;
         animatingInstance = instance;
         saveDocked = instance.docked;
+        saveWidth = instance.widget.width;
+        saveHeight = instance.widget.height;
         saveUndockedWidth = instance.undockedWidth;
         saveUndockedHeight = instance.undockedHeight;
         var newWidth = if (instance.docked) instance.undockedWidth else instance.dockedWidth;
@@ -169,26 +174,42 @@ public abstract class DragContainer {
         if (moved and not docking) {
             moved = false;
             var dropBounds:Rectangle2D = null;
+            var propertyString = instance.getPropertyString(true);
+            var responses = CommunicationManager.INSTANCE.broadcast("finishHover", [instance.jnlpUrl, "{screenX}", "{screenY}", URLEncoder.encode(propertyString, "UTF-8")]);
+            var remoteHover = false;
+            // todo harvest rectangle responses
+            for (response in responses) {
+                if (not response.equals("null")) {
+                    remoteHover = true;
+                }
+            }
             for (dragListener in WidgetDragListener.dragListeners) {
-                var targetBounds = dragListener.finishHover(instance, screenX, screenY);
+                var targetBounds = if (remoteHover) {
+                    var dockedHeight = if (instance.dockedHeight == 0) instance.widget.height else instance.dockedHeight;
+                    dragListener.hover(dockedHeight, initialScreenX, initialScreenY);
+                    dragListener.finishHover(instance, initialScreenX, initialScreenY);
+                } else {
+                    dragListener.finishHover(instance, screenX, screenY);
+                }
                 dragComplete(dragListener, targetBounds);
                 if (targetBounds != null) {
                     dropBounds = targetBounds;
                 }
             }
-            var responses = CommunicationManager.INSTANCE.broadcast("finishHover", [instance.jnlpUrl, "{screenX}", "{screenY}"]);
-            var hover = dropBounds != null;
-            // todo harvest rectangle responses
-            for (response in responses) {
-                if (not response.equals("null")) {
-                    hover = true;
-                }
-            }
-            if (hover) {
+            var localHover = dropBounds != null;
+            if (localHover) {
                 animateHover.stop();
                 animateHover = null;
                 instance.undockedWidth = saveUndockedWidth;
                 instance.undockedHeight = saveUndockedHeight;
+            } else if (remoteHover) {
+                animateHover.stop();
+                animateHover = null;
+                instance.setWidth(saveWidth);
+                instance.setHeight(saveHeight);
+                instance.frame.x = initialX;
+                instance.frame.y = initialY;
+
             } else {
                 if (animateHover != null and animateDocked) {
                     animateDocked = false;
@@ -200,7 +221,6 @@ public abstract class DragContainer {
             instance.saveWithoutNotification();
         }
         dragging = false;
-
     }
     
     protected abstract function dragComplete(dragListener:WidgetDragListener, targetBounds:Rectangle2D):Void;

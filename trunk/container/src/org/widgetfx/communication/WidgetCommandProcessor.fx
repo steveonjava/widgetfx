@@ -24,6 +24,7 @@ import org.jfxtras.util.*;
 import org.widgetfx.communication.*;
 import org.widgetfx.ui.*;
 import javafx.geometry.*;
+import java.util.Properties;
 
 /**
  * @author Stephen Chin
@@ -40,10 +41,10 @@ public class WidgetCommandProcessor extends CommandProcessor {
         return GeometryUtil.rectangleToJava(hoverBounds);
     }
 
-    override function finishHover(jnlpUrl:String, x:Number, y:Number) {
+    override function finishHover(jnlpUrl:String, x:Number, y:Number, properties:Properties) {
         var dropBounds:Rectangle2D = null;
         for (dragListener in WidgetDragListener.dragListeners) {
-            var result = dragListener.finishHover(jnlpUrl, x, y);
+            var result = dragListener.finishHover(jnlpUrl, x, y, properties);
             if (result != null) {
                 dropBounds = result;
             }

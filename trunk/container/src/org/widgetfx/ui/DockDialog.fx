@@ -39,6 +39,7 @@ import javafx.animation.*;
 import javafx.scene.*;
 import javafx.scene.input.*;
 import javafx.scene.paint.*;
+import javafx.scene.shape.*;
 import javafx.stage.*;
 import javax.swing.*;
 import org.jfxtras.menu.*;
@@ -323,21 +324,18 @@ public class DockDialog extends JFXDialog {
         resizing = false;
     }
 
-    var rolloverStartColor = bind Color.color(dockSkin.backgroundStartColor.red, dockSkin.backgroundStartColor.blue, dockSkin.backgroundStartColor.green, dockSkin.backgroundStartColor.opacity * dockSkin.rolloverOpacity);
-    var rolloverEndColor = bind Color.color(dockSkin.backgroundEndColor.red, dockSkin.backgroundEndColor.blue, dockSkin.backgroundEndColor.green, dockSkin.backgroundEndColor.opacity * dockSkin.rolloverOpacity);
-
     var leftBG = bind LinearGradient {
         endY: 0
         stops: [
-            Stop {offset: 0.0, color: rolloverEndColor},
-            Stop {offset: 1.0, color: rolloverStartColor}
+            Stop {offset: 0.0, color: dockSkin.backgroundEndColor},
+            Stop {offset: 1.0, color: dockSkin.backgroundStartColor}
         ]
     }
     var rightBG = bind LinearGradient {
         endY: 0
         stops: [
-            Stop {offset: 0.0, color: rolloverStartColor},
-            Stop {offset: 1.0, color: rolloverEndColor}
+            Stop {offset: 0.0, color: dockSkin.backgroundStartColor},
+            Stop {offset: 1.0, color: dockSkin.backgroundEndColor}
         ]
     }
     var transparentBG = bind if (dockLeft) leftBG else rightBG;
@@ -346,24 +344,30 @@ public class DockDialog extends JFXDialog {
         onClose = function() {WidgetManager.getInstance().exit()};
         scene = Scene {
             stylesheets: bind WidgetManager.getInstance().stylesheets
-            content: dock
-            fill: bind transparentBG
+            content: [
+                Rectangle {
+                    width: bind width
+                    height: bind height
+                    fill: bind transparentBG
+                    opacity: bind dockSkin.rolloverOpacity
+                },
+                dock
+            ]
+            fill: null
         };
-        (dialog as RootPaneContainer).getContentPane().addMouseListener(MouseAdapter {
-            override function mouseEntered(e) {
-                mouseOver = true;
-            }
-            override function mouseExited(e) {
-                mouseOver = false;
-            }
-            override function mouseReleased(e) {
-                draggingDock = false;
-            }
-        });
-        (dialog as RootPaneContainer).getContentPane().addMouseMotionListener(MouseMotionAdapter {
-            override function mouseDragged(e) {
-                draggingDock = true;
-                getGraphicsConfiguration(e.getLocationOnScreen());
+        WidgetEventQueue.getInstance().registerInterceptor(dialog, EventInterceptor {
+            override function shouldIntercept(event):Boolean {
+                if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
+                    mouseOver = true;
+                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
+                    mouseOver = false;
+                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_RELEASED) {
+                    draggingDock = false;
+                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_DRAGGED) {
+                    draggingDock = true;
+                    getGraphicsConfiguration(event.getLocationOnScreen());
+                }
+                return false;
             }
         });
     }

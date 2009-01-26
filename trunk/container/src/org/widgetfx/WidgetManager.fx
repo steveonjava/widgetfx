@@ -32,6 +32,7 @@ import org.widgetfx.communication.*;
 import org.widgetfx.config.*;
 import org.widgetfx.widgets.*;
 import org.widgetfx.ui.*;
+import java.util.Properties;
 
 /**
  * @author Stephen Chin
@@ -257,7 +258,7 @@ public class WidgetManager {
     
     function loadWidget(id:Integer):WidgetInstance {
         var instance = WidgetInstance{id: id};
-        instance.load();
+        instance.load(null);
         return instance;
     }
     
@@ -268,7 +269,10 @@ public class WidgetManager {
         delete instance from widgets;
     }
 
-    public function hasWidget(url:String):Boolean {
+    public function hasWidget(url:String, properties:Properties):Boolean {
+        if (properties != null) {
+            return false;
+        }
         for (widget in widgets) {
             if (widget.jnlpUrl.equals(url)) {
                 println("Widget already loaded: {url}");
@@ -279,13 +283,17 @@ public class WidgetManager {
     }
     
     public function getWidget(url:String):WidgetInstance {
+        getWidget(url, null);
+    }
+
+    public function getWidget(url:String, properties:Properties):WidgetInstance {
         println("adding widget: {url}");
-        if (hasWidget(url)) {
+        if (hasWidget(url, properties)) {
             return null;
         }
         var maxId = if (widgetIds.isEmpty()) 0 else (Sequences.max(widgetIds) as Integer).intValue();
         var instance = WidgetInstance{jnlpUrl: url, id: maxId + 1};
-        instance.load();
+        instance.load(properties);
         addRecentWidget(instance);
         return instance;
     }

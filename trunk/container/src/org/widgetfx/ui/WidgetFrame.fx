@@ -402,7 +402,6 @@ public class WidgetFrame extends JFXDialog, DragContainer {
             }
         });
         addFlash();
-        visible = true;
     }
 
     override function dragComplete(dragListener:WidgetDragListener, targetBounds:Rectangle2D):Void {

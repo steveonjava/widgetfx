@@ -24,6 +24,7 @@ import org.widgetfx.*;
 import org.widgetfx.config.*;
 import org.jfxtras.async.*;
 import org.jfxtras.scene.layout.*;
+import org.jfxtras.scene.layout.GridConstraints.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
@@ -45,211 +46,200 @@ import javax.swing.event.ChangeListener;
  * @author Stephen Chin
  * @author Keith Combs
  */
-var home = System.getProperty("user.home");
-var defaultDirectories:File[] = [
-    new File(home, "Pictures"),
-    new File(home, "My Documents\\My Pictures"),
-    new File(home)
-][d|d.exists()];
-var directoryName:String;
-var directory:File;
-var status = "Loading Images...";
-var imageFiles:String[];
-var shuffle = true;
-var duration:Integer = 10;
-var filter : String;
-var imageIndex:Integer;
-var imageWidth:Number;
-var imageHeight:Number;
-var currentFile:String;
-var currentImage:Image;
-var nextImage:Image;
-var worker:JFXWorker;
-var timeline:Timeline;
-var tabbedPane:JTabbedPane;
-var maxFiles = 10000;
-var maxFolders = 1000;
-var folderCount = 0;
-var fileCount = 0;
+public class SlideShow extends Widget {
+    var home = System.getProperty("user.home");
+    var defaultDirectories:File[] = [
+        new File(home, "Pictures"),
+        new File(home, "My Documents\\My Pictures"),
+        new File(home)
+    ][d|d.exists()];
+    var directoryName:String;
+    var directory:File;
+    var status = "Loading Images...";
+    var imageFiles:String[];
+    var shuffle = true;
+    var duration:Integer = 10;
+    var filter : String;
+    var imageIndex:Integer;
+    var imageWidth:Number;
+    var imageHeight:Number;
+    var currentFile:String;
+    var currentImage:Image;
+    var nextImage:Image;
+    var worker:JFXWorker;
+    var timeline:Timeline;
+    var tabbedPane:JTabbedPane;
+    var maxFiles = 10000;
+    var maxFolders = 1000;
+    var folderCount = 0;
+    var fileCount = 0;
 
-function initTimeline() {
-    imageIndex = 0;
-    timeline = Timeline {
-        repeatCount: Timeline.INDEFINITE
-        keyFrames: [
-            KeyFrame {time: 0s,
-                action: function() {
-                    currentFile = imageFiles[imageIndex++ mod imageFiles.size()];
-                    updateImage();
+    function initTimeline() {
+        imageIndex = 0;
+        timeline = Timeline {
+            repeatCount: Timeline.INDEFINITE
+            keyFrames: [
+                KeyFrame {time: 0s,
+                    action: function() {
+                        currentFile = imageFiles[imageIndex++ mod imageFiles.size()];
+                        updateImage();
+                    }
+                },
+                KeyFrame {time: 1s * duration}
+            ]
+        }
+    }
+
+    function updateImage():Void {
+    //    if (not (new File(currentFile)).exists()) {
+    //        currentImage = null;
+    //        status = "Missing File: {currentFile}";
+    //        return;
+    //    }
+        if (worker != null) {
+            worker.cancel();
+        }
+        worker = JFXWorker {
+            inBackground: function() {
+
+                var image = Image {url: currentFile, width: imageWidth, height: imageHeight, preserveRatio: true};
+                if (image.error) {
+                    throw new RuntimeException("Error loading image: {currentFile}");
                 }
-            },
-            KeyFrame {time: 1s * duration}
-        ]
-    }
-}
-
-function updateImage():Void {
-//    if (not (new File(currentFile)).exists()) {
-//        currentImage = null;
-//        status = "Missing File: {currentFile}";
-//        return;
-//    }
-    if (worker != null) {
-        worker.cancel();
-    }
-    worker = JFXWorker {
-        inBackground: function() {
-            
-            var image = Image {url: currentFile, width: imageWidth, height: imageHeight, preserveRatio: true};
-            if (image.error) {
-                throw new RuntimeException("Error loading image: {currentFile}");
+                return image;
             }
-            return image;
-        }
-        onDone: function(result) {
-            currentImage = result as Image;
-            status = "";
-            System.runFinalization();
-            System.gc();
-        }
-        onFailure: function(e) {
-            currentImage = null;
-            status = "Error Loading Image: {currentFile}";
-        }
-    }
-}
-
-function loadDirectory() {
-    var directory = new File(directoryName);
-    currentImage = null;
-    timeline.stop();
-    if (worker != null) {
-        worker.cancel();
-    }
-    if (not directory.exists()) {
-        status = "Directory Doesn't Exist";
-    } else if (not directory.isDirectory()) {
-        status = "Selected File is Not a Directory";
-    } else {
-        status = "Loading Images...";
-        folderCount = 0;
-        fileCount = 0;
-        imageFiles = getImageFiles(directory);
-        if (fileCount > maxFiles) {
-            println("Slide Show exceeded limit of {maxFiles} image files.");
-        }
-        if (folderCount > maxFolders) {
-            println("Slide Show exceeded limit of {maxFolders} folders to scan.");
-        }
-        if (imageFiles.size() > 0) {
-            if (shuffle) {
-                imageFiles = Sequences.shuffle(imageFiles) as String[];
+            onDone: function(result) {
+                currentImage = result as Image;
+                status = "";
+                System.runFinalization();
+                System.gc();
             }
-            initTimeline();
-            timeline.play();
-        } else {
-            status = "No Images Found"
+            onFailure: function(e) {
+                currentImage = null;
+                status = "Error Loading Image: {currentFile}";
+            }
         }
     }
-}
 
-function excludesFile(name:String):Boolean {
-    if (filter != null and filter.length() > 0) {
-        if (name.toLowerCase().contains(filter.toLowerCase())) {
-            return true;
+    function loadDirectory() {
+        var directory = new File(directoryName);
+        currentImage = null;
+        timeline.stop();
+        if (worker != null) {
+            worker.cancel();
         }
-    }
-    return false;
-}
-
-function getImageFiles(directory:File):String[] {
-    var emptyFile:String[] = [];
-    if (folderCount++ >= maxFolders or fileCount >= maxFiles) {
-        return emptyFile;
-    }
-    var fileArray = directory.listFiles();
-    if (fileArray == null) {
-        return emptyFile;
-    }
-    var files = Arrays.asList(fileArray);
-    return for (file in files) {
-        var name = file.getName();
-        if (excludesFile(name)) {
-            emptyFile;
+        if (not directory.exists()) {
+            status = "Directory Doesn't Exist";
+        } else if (not directory.isDirectory()) {
+            status = "Selected File is Not a Directory";
         } else {
-            var index = name.lastIndexOf('.');
-            var extension = if (index == -1) null else name.substring(index + 1);
-            if (file.isDirectory()) {
-                getImageFiles(file);
-            } else if (extension != null and ImageIO.getImageReadersBySuffix(extension).hasNext()) {
-                fileCount++;
-                var url = file.toURL();
-                var uri = new java.net.URI(url.getProtocol(), url.getUserInfo(), 
-                    url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
-                uri.toString().replaceAll("#", "%23");
+            status = "Loading Images...";
+            folderCount = 0;
+            fileCount = 0;
+            imageFiles = getImageFiles(directory);
+            if (fileCount > maxFiles) {
+                println("Slide Show exceeded limit of {maxFiles} image files.");
+            }
+            if (folderCount > maxFolders) {
+                println("Slide Show exceeded limit of {maxFolders} folders to scan.");
+            }
+            if (imageFiles.size() > 0) {
+                if (shuffle) {
+                    imageFiles = Sequences.shuffle(imageFiles) as String[];
+                }
+                initTimeline();
+                timeline.play();
             } else {
+                status = "No Images Found"
+            }
+        }
+    }
+
+    function excludesFile(name:String):Boolean {
+        if (filter != null and filter.length() > 0) {
+            if (name.toLowerCase().contains(filter.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function getImageFiles(directory:File):String[] {
+        var emptyFile:String[] = [];
+        if (folderCount++ >= maxFolders or fileCount >= maxFiles) {
+            return emptyFile;
+        }
+        var fileArray = directory.listFiles();
+        if (fileArray == null) {
+            return emptyFile;
+        }
+        var files = Arrays.asList(fileArray);
+        return for (file in files) {
+            var name = file.getName();
+            if (excludesFile(name)) {
                 emptyFile;
+            } else {
+                var index = name.lastIndexOf('.');
+                var extension = if (index == -1) null else name.substring(index + 1);
+                if (file.isDirectory()) {
+                    getImageFiles(file);
+                } else if (extension != null and ImageIO.getImageReadersBySuffix(extension).hasNext()) {
+                    fileCount++;
+                    var url = file.toURL();
+                    var uri = new java.net.URI(url.getProtocol(), url.getUserInfo(),
+                        url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
+                    uri.toString().replaceAll("#", "%23");
+                } else {
+                    emptyFile;
+                }
             }
         }
     }
-}
 
-var browseButton:SwingButton = SwingButton {
-    text: "Browse...";
-    action: function() {
-        var chooser:JFileChooser = new JFileChooser(directoryName);
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        var returnVal = chooser.showOpenDialog(browseButton.getJButton());
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            directoryName = chooser.getSelectedFile().getAbsolutePath();
+    var browseButton:SwingButton = SwingButton {
+        text: "Browse...";
+        action: function() {
+            var chooser:JFileChooser = new JFileChooser(directoryName);
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            var returnVal = chooser.showOpenDialog(browseButton.getJButton());
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                directoryName = chooser.getSelectedFile().getAbsolutePath();
+            }
         }
     }
-}
 
-function setDefaultDirectory() {
-    directoryName = defaultDirectories[0].getAbsolutePath();
-}
-
-var durationSpinner:JSpinner;
-
-function getConfigUI():Grid {
-    var directoryLabel = Text {content: "Directory:"};
-    var directoryEdit = TextBox {text: bind directoryName with inverse, columns: 40};
-    var keywordLabel = Text {content: "Filter:"};
-    var keywordEdit = TextBox {text: bind filter with inverse, columns: 40};
-    var durationLabel = Text {content: "Duration"};
-    var shuffleCheckBox = SwingCheckBox {text: "Shuffle", selected: bind shuffle with inverse};
-
-    // do this after TextBox is created to work around a JavaFX initialization bug
-    setDefaultDirectory();
-
-    // todo - replace with javafx spinner when one exists
-    durationSpinner = new JSpinner(new SpinnerNumberModel(duration, 2, 60, 1));
-    var durationSpinnerComponent = SwingComponent.wrap(durationSpinner);
-
-    return Grid {
-        rows: [
-            Row {
-                cells: [directoryLabel, directoryEdit, browseButton]
-            },
-            Row {
-                cells: [keywordLabel, Cell {content: keywordEdit, columnSpan: 2}]
-            },
-            Row {
-                cells: [durationLabel, Cell {content: durationSpinnerComponent, preferredWidth: 52}]
-            }
-            Row {
-                cells: shuffleCheckBox
-            }
-        ]
+    function setDefaultDirectory() {
+        directoryName = defaultDirectories[0].getAbsolutePath();
     }
-}
 
-var slideShow:Widget = Widget {
-    width: 300
-    height: 220
-    aspectRatio: 4.0/3.0
-    configuration: Configuration {
+    var durationSpinner:JSpinner;
+
+    var configUI = {
+        var directoryLabel = Text {content: "Directory:"};
+        var directoryEdit = TextBox {text: bind directoryName with inverse, columns: 40};
+        var keywordLabel = Text {content: "Filter:"};
+        var keywordEdit = TextBox {text: bind filter with inverse, columns: 40};
+        var durationLabel = Text {content: "Duration"};
+        var shuffleCheckBox = SwingCheckBox {text: "Shuffle", selected: bind shuffle with inverse};
+
+        // do this after TextBox is created to work around a JavaFX initialization bug
+        setDefaultDirectory();
+
+        // todo - replace with javafx spinner when one exists
+        durationSpinner = new JSpinner(new SpinnerNumberModel(duration, 2, 60, 1));
+        var durationSpinnerComponent = SwingComponent.wrap(durationSpinner);
+
+        Grid {
+            rows: [
+                row([directoryLabel, directoryEdit, browseButton]),
+                row([keywordLabel, Cell {content: keywordEdit, hspan: 2}]),
+                row([durationLabel, Cell {content: durationSpinnerComponent, preferredWidth: 52}]),
+                row([shuffleCheckBox])
+            ]
+        }
+    }
+
+    override var configuration = Configuration {
         properties: [
             StringProperty {
                 name: "directoryName"
@@ -277,14 +267,14 @@ var slideShow:Widget = Widget {
             }
         ]
         scene: Scene {
-            content: bind getConfigUI();
+            content: bind configUI
         }
 
         onLoad: function() {
             // make sure the spinner value is set, since this is not bound:
             durationSpinner.setValue(duration);
-            imageWidth = slideShow.width;
-            imageHeight = slideShow.height;
+            imageWidth = width;
+            imageHeight = height;
             loadDirectory();
         }
         onSave: function() {
@@ -294,41 +284,8 @@ var slideShow:Widget = Widget {
             loadDirectory();
         }
     }
-    var view:ImageView;
-    skin: Skin {
-        scene: Group {
-            content: [
-                view = ImageView {
-                    x: bind (slideShow.width - view.boundsInLocal.width) / 2
-                    y: bind (slideShow.height - view.boundsInLocal.height) / 2
-                    fitWidth: bind slideShow.width
-                    fitHeight: bind slideShow.height
-                    preserveRatio: true
-                    smooth: true
-                    image: bind currentImage
-                },
-                Group {
-                    var text:Text;
-                    content: [
-                        Rectangle {
-                            width: bind slideShow.width
-                            height: bind slideShow.height
-                            fill: Color.BLACK
-                            arcWidth: 8, arcHeight: 8
-                        },
-                        text = Text {
-                            translateY: bind slideShow.height / 2
-                            translateX: bind (slideShow.width - text.boundsInLocal.width) / 2
-                            content: bind status
-                            fill: Color.WHITE
-                        }
-                    ]
-                    opacity: bind if (status.isEmpty()) 0 else 1;
-                }
-            ]
-        }
-    }
-    onResize: function(width:Number, height:Number) {
+    
+    override var onResize = function(width:Number, height:Number) {
         if (imageWidth != width or imageHeight != height) {
             imageWidth = width;
             imageHeight = height;
@@ -337,5 +294,41 @@ var slideShow:Widget = Widget {
             }
         }
     }
+
+    init {
+        var view:ImageView;
+        skin = Skin {
+            scene: Group {
+                content: [
+                    view = ImageView {
+                        x: bind (width - view.boundsInLocal.width) / 2
+                        y: bind (height - view.boundsInLocal.height) / 2
+                        fitWidth: bind width
+                        fitHeight: bind height
+                        preserveRatio: true
+                        smooth: true
+                        image: bind currentImage
+                    },
+                    Group {
+                        var text:Text;
+                        content: [
+                            Rectangle {
+                                width: bind width
+                                height: bind height
+                                fill: Color.BLACK
+                                arcWidth: 8, arcHeight: 8
+                            },
+                            text = Text {
+                                translateY: bind height / 2
+                                translateX: bind (width - text.boundsInLocal.width) / 2
+                                content: bind status
+                                fill: Color.WHITE
+                            }
+                        ]
+                        opacity: bind if (status.isEmpty()) 0 else 1;
+                    }
+                ]
+            }
+        }
+    }
 }
-return slideShow;

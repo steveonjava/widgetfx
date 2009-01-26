@@ -121,7 +121,7 @@ public class DockSkin extends Skin {
     package var rolloverTimeline = Timeline {
         keyFrames: [
             at (0ms) {rolloverOpacity => 0.0}
-            at (500ms) {rolloverOpacity => 1.0 tween Interpolator.LINEAR}
+            at (500ms) {rolloverOpacity => 1.0 tween Interpolator.EASEIN}
         ]
     }
 
@@ -129,22 +129,21 @@ public class DockSkin extends Skin {
         // Defer the action to prevent spurious, alternating updates
         if (hoverDock != oldValue) {
             FX.deferAction(function ():Void {
-                    // Check the time to make sure we don't run over the end of the animation and reset it
-                    if ((hoverDock and rolloverTimeline.time < 500ms) or (not hoverDock and rolloverTimeline.time > 0s)) {
-                        rolloverTimeline.rate = if (hoverDock) 1 else -1;
-                        rolloverTimeline.play();
-                    }
+                // Check the time to make sure we don't run over the end of the animation and reset it
+                if ((hoverDock and rolloverTimeline.time < 500ms) or (not hoverDock and rolloverTimeline.time > 0s)) {
+                    rolloverTimeline.rate = if (hoverDock) 1 else -1;
+                    rolloverTimeline.play();
                 }
-            )
+            })
         }
     }
     
     var dragBar:Group = Group { // Drag Bar
         blocksMouse: true
         content: [
-            Line {endY: bind control.height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity * .175},
+            Line {endY: bind control.height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity * .175, translateX: bind if (dockDialog.dockLeft) 2 else 0},
             Line {endY: bind control.height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity * .7, translateX: 1},
-            Line {endY: bind control.height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity * .23, translateX: 2}
+            Line {endY: bind control.height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity * .23, translateX: bind if (dockDialog.dockLeft) 2 else 0}
         ]
         translateX: bind if (dockDialog.dockLeft) control.width - dragBar.boundsInLocal.width else 0
         cursor: Cursor.H_RESIZE

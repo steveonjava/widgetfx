@@ -20,8 +20,12 @@
  */
 package org.widgetfx.communication;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Properties;
 
 /**
  * @author Stephen Chin
@@ -43,7 +47,13 @@ public class CommunicationProtocol {
         } else if (command.equals("hover")) {
             return String.valueOf(processor.hover(Double.parseDouble(args[1]), Double.parseDouble(args[2]), Double.parseDouble(args[3])));
         } else if (command.equals("finishHover")) {
-            return String.valueOf(processor.finishHover(args[1], Double.parseDouble(args[2]), Double.parseDouble(args[3])));
+            try {
+                Properties properties = new Properties();
+                properties.load(new StringReader(URLDecoder.decode(args[4], "UTF-8")));
+                return String.valueOf(processor.finishHover(args[1], Double.parseDouble(args[2]), Double.parseDouble(args[3]), properties));
+            } catch (IOException ex) {
+                Logger.getLogger(CommunicationProtocol.class.getName()).log(Level.SEVERE, "Unable to load properties: " + args[4], ex);
+            }
         } else {
             Logger.getLogger(CommunicationReceiver.class.getName()).log(Level.WARNING, "Unknown Command: " + inputLine);
         }

@@ -26,7 +26,9 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.SwingUtilities;
 
@@ -44,7 +46,7 @@ public class WidgetEventQueue extends EventQueue {
         return instance;
     }
     
-    private Map<Component, EventInterceptor> interceptors = new HashMap<Component, EventInterceptor>();
+    private Map<Component, List<EventInterceptor>> interceptors = new HashMap<Component, List<EventInterceptor>>();
 
     private WidgetEventQueue() {
         SwingUtilities.invokeLater(new Runnable() {
@@ -59,7 +61,14 @@ public class WidgetEventQueue extends EventQueue {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                interceptors.put(parent, interceptor);
+                List<EventInterceptor> interceptorList;
+                if (interceptors.containsKey(parent)) {
+                    interceptorList = interceptors.get(parent);
+                } else {
+                    interceptorList = new ArrayList<EventInterceptor>();
+                    interceptors.put(parent, interceptorList);
+                }
+                interceptorList.add(interceptor);
             }
         });
     }
@@ -68,7 +77,13 @@ public class WidgetEventQueue extends EventQueue {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                interceptors.remove(parent);
+                List<EventInterceptor> interceptorList = interceptors.get(parent);
+                if (interceptorList != null) {
+                    interceptorList.remove(parent);
+                    if (interceptorList.isEmpty()) {
+                        interceptors.remove(parent);
+                    }
+                }
             }
         });
     }
@@ -80,10 +95,12 @@ public class WidgetEventQueue extends EventQueue {
             Object source = event.getSource();
             if (source instanceof Component) {
                 Component component = (Component) source;
-                for (Map.Entry<Component, EventInterceptor> interceptor: interceptors.entrySet()) {
-                    if (component.equals(interceptor.getKey()) || SwingUtilities.isDescendingFrom(component, interceptor.getKey())) {
-                        if (interceptor.getValue().shouldIntercept(event)) {
-                            return;
+                for (Map.Entry<Component, List<EventInterceptor>> interceptorEntry: interceptors.entrySet()) {
+                    if (component.equals(interceptorEntry.getKey()) || SwingUtilities.isDescendingFrom(component, interceptorEntry.getKey())) {
+                        for (EventInterceptor interceptor : interceptorEntry.getValue()) {
+                            if (interceptor.shouldIntercept(event)) {
+                                return;
+                            }
                         }
                     }
                 }

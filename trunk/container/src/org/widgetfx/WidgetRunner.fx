@@ -54,7 +54,7 @@ function runWidget(jnlpUrl:String) {
         docked: false
     };
     widgetCount++;
-    instance.load();
+    instance.load(null);
     instance.frame.onClose = closeHook;
     WidgetManager.getInstance().addRecentWidget(instance);
 }
