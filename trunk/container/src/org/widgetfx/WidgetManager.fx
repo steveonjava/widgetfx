@@ -134,8 +134,9 @@ public class WidgetManager {
 
     function urlUpdated(url:URL):Boolean {
         var conn = url.openConnection();
-        if (conn instanceof HttpURLConnection) {
+        if (conn instanceof HttpURLConnection) try {
             var httpConn = conn as HttpURLConnection;
+            httpConn.setConnectTimeout(3000);
             httpConn.setRequestMethod("HEAD");
             var time:Long = conn.getLastModified();
             httpConn.disconnect();
@@ -150,6 +151,8 @@ public class WidgetManager {
                 insert time into resourceTimestamps;
                 return true;
             }
+        } catch (e:java.net.SocketTimeoutException) {
+            println("Timed out connecting to server: {url}");
         }
         return false;
     }

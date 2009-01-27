@@ -15,6 +15,6 @@
         <j2se version="1.6+"/>
         <jar href="SlideShow.jar" main="true" download="eager"/>
     </resources>
-    <application-desc main-class="org.widgetfx.widget.slideshow.SlideShow">
+    <application-desc main-class="org.widgetfx.widget.slideshow.Main">
     </application-desc>
 </jnlp>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="$$codebase" href="$$name">
+    <information>
+        <title>Calendar</title>
+        <vendor>WidgetFX</vendor>
+        <description>Sample Calendar Application</description>
+        <homepage href="http://steveonjava.com/2009/01/27/widgetfx-calendar-tutorial/"/>
+    </information>
+    <resources>
+        <j2se version="1.6+"/>
+        <property name="jnlp.packEnabled" value="true"/>
+        <property name="jnlp.versionEnabled" value="true"/>
+        <extension name="JavaFX Runtime" href="http://dl.javafx.com/javafx-rt.jnlp"/>
+        <jar href="Calendar.jar" main="true"/>
+    </resources>
+    <application-desc main-class="org.widgetfx.widget.calendar.CalendarWidget"/>
+</jnlp>
