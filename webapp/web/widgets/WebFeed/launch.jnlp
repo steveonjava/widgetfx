@@ -16,6 +16,6 @@
         <jar href="lib/rome-0.9.jar" download="eager"/>
         <jar href="lib/rome-fetcher-0.9.jar" download="eager"/>
     </resources>
-    <application-desc main-class="org.widgetfx.widget.webfeed.WebFeed">
+    <application-desc main-class="org.widgetfx.widget.webfeed.Main">
     </application-desc>
 </jnlp>

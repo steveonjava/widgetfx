@@ -23,11 +23,11 @@
         <property name="jnlp.packEnabled" value="true"/>
         <property name="jnlp.versionEnabled" value="true"/>
         <extension name="JavaFX Runtime" href="http://widgetfx.org/javafx/javafx-rt.jnlp"/>
-        <jar href="WidgetFX.jar" main="true" download="eager" version="1.0.3"/>
+        <jar href="WidgetFX.jar" main="true" download="eager" version="1.0.4"/>
         <jar href="lib/jnlp.jar" download="eager" version="1.6.0_10"/>
-        <jar href="lib/widgetfx-api.jar" download="eager" version="1.0.0"/>
+        <jar href="lib/widgetfx-api.jar" download="eager" version="1.0.4"/>
         <jar href="lib/JDICplus.jar" download="eager" version="0.2.2"/>
-        <jar href="lib/JFXtras.jar" download="eager" version="0.1.1b"/>
+        <jar href="lib/JFXtras.jar" download="eager" version="0.2"/>
     </resources>
     <resources os="Windows" arch="x86">
         <nativelib href="lib/JDICplus_native.jar" version="0.2.2"/>
