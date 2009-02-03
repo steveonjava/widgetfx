@@ -20,6 +20,8 @@
  */
 package org.widgetfx.widget.clock;
 
+import java.lang.Math.*;
+import javafx.scene.shape.*;
 import org.widgetfx.*;
 
 /**
@@ -30,4 +32,7 @@ public class Clock extends Widget {
     override var height = 105;
     override var resizable = false;
     override var skin = ClockSkin {}
+    override var clip = Circle {
+        centerX: bind width / 2, centerY: bind height / 2, radius: bind min(width, height) / 2
+    }
 }

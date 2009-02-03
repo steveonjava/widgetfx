@@ -207,6 +207,10 @@ public class WebFeed extends Widget {
     }
 
     init {
+        clip = Rectangle {
+            width: bind width, height: bind height
+            arcHeight: 7, arcWidth: 7
+        }
         skin = Skin {
             scene: Group {
                 content: bind [
