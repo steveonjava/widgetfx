@@ -325,13 +325,22 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                         cache: true
                         content: Group { // Alert
                             effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
-                            content: Group { // Drop Shadow
-                                effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
-                                content: Group { // Clip Group
-                                    content: widget
-                                    clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
+                            content: bind [
+                                if (widget.clip != null) { // Clip Shadow (for performance)
+                                    CacheSafeGroup {
+                                        cache: true
+                                        effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                                        content: bind widget.clip
+                                    }
+                                } else [],
+                                Group { // Drop Shadow
+                                    effect: bind if (resizing or animating or widget.clip != null) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                                    content: Group { // Clip Group
+                                        content: widget
+                                        clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
+                                    }
                                 }
-                            }
+                            ]
                         }
                         opacity: bind (instance.opacity as Number) / 100
                     },

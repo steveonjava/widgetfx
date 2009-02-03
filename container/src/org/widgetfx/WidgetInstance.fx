@@ -45,6 +45,7 @@ import org.widgetfx.ui.*;
 import org.jfxtras.stage.*;
 import java.util.Properties;
 import java.io.StringWriter;
+import java.net.URLClassLoader;
 
 /**
  * @author Stephen Chin
@@ -114,6 +115,8 @@ public class WidgetInstance {
         return (new URL(WidgetManager.getInstance().codebase, url)).toString();
     }
 
+    var classLoader:URLClassLoader;
+
     public-init var jnlpUrl:String on replace {
         if (jnlpUrl.length() == 0) {
             mainClass = "";
@@ -133,15 +136,19 @@ public class WidgetInstance {
                 var codeBase = new URL(codeBaseString);
                 var widgetNodes = xpath.evaluate("/jnlp/resources/jar", document, XPathConstants.NODESET) as NodeList;
                 var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
+//                var urlList:URL[];
                 for (i in [0..widgetNodes.getLength()-1]) {
                     var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
                     var version = (widgetNodes.item(i).getAttributes().getNamedItem("version") as Attr).getValue();
                     if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
                         var url = new URL(codeBase, jarUrl);
                         if (javafx.util.Sequences.indexOf(loadedResources, url) == -1) {
+                            // todo - does this unloading work anymore?
+                            // todo - does version numbering work? - this is probably just url swizzling and cache magic
                             if (version == null) {
                                 WidgetManager.getInstance().maybeUnload(url);
                             }
+//                            insert url into urlList;
                             ds.loadResource(url, version, DownloadServiceListener {
                                 override function downloadFailed(url, version) {
                                     println("download failed");
@@ -158,6 +165,7 @@ public class WidgetInstance {
                         }
                     }
                 }
+//                classLoader = new URLClassLoader(urlList, getClass().getClassLoader());
                 mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
                 if (mainClass.length() == 0) {
                     throw new IllegalStateException("No main class specified");
