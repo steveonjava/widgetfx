@@ -69,6 +69,13 @@ is divided into following sections:
         <condition else="" property="codebase.arg" value="-appCodebase ${codebase.url}">
             <isset property="codebase.url"/>
         </condition>
+        <property file="${user.properties.file}/../config/preferences/org/apache/tools/ant/module.properties" prefix="ant.module"/>
+        <condition else="" property="verbose.arg" value="-v">
+            <or>
+                <equals arg1="${ant.module.verbosity}" arg2="3"/>
+                <equals arg1="${ant.module.verbosity}" arg2="4"/>
+            </or>
+        </condition>
         <condition else="" property="draggable.arg" value="-draggable">
             <istrue value="${applet.draggable}"/>
         </condition>
@@ -151,9 +158,11 @@ is divided into following sections:
             <arg value="-appclass"/>
             <arg value="${main.class}"/>
             <arg line="${codebase.arg}"/>
+            <arg value="-encoding"/>
+            <arg value="${source.encoding}"/>
             <arg value="-p"/>
             <arg value="${javafx.profile}"/>
-            <arg value="-v"/>
+            <arg value="${verbose.arg}"/>
             <arg value="${draggable.arg}"/>
             <arg value="${pack200.arg}"/>
             <arg value="${sign.arg}"/>
@@ -178,12 +187,18 @@ is divided into following sections:
                     =================
     -->
     <target depends="init,compile,jar" description="Run a main class." if="standard.execution.trigger" name="standard-run">
-        <java classname="${main.class}" classpath="${dist.dir}/${application.title}.jar" failonerror="true" fork="true" jvm="${platform.fxhome}/bin/javafx${binary.extension}" jvmargs="${run.jvmargs}"/>
+        <property name="application.args" value=""/>
+        <java classname="${main.class}" classpath="${dist.dir}/${application.title}.jar" failonerror="true" fork="true" jvm="${platform.fxhome}/bin/javafx${binary.extension}" jvmargs="${run.jvmargs}">
+            <arg line="${application.args}"/>
+        </java>
     </target>
     <target depends="jar" description="Start MIDP execution" if="midp.execution.trigger" name="midp-run">
         <property location="${dist.dir}/${application.title}.jad" name="jad.file"/>
+        <property name="mobile.device" value="DefaultFxPhone1"/>
         <exec executable="${platform.fxhome}/emulator/bin/emulator${binary.extension}" failonerror="true">
+            <arg value="${run.jvmargs}"/>
             <arg value="-Xdescriptor:${jad.file}"/>
+            <arg value="-Xdevice:${mobile.device}"/>
         </exec>
     </target>
     <target depends="init,jar" if="applet.execution.trigger" name="browser-run">
@@ -229,6 +244,7 @@ is divided into following sections:
         </nbjavafxstart>
     </target>
     <target depends="init,compile" if="standard.execution.trigger" name="-debug-start-debuggee">
+        <property name="application.args" value=""/>
         <java classname="${main.class}" classpath="${dist.dir}/${application.title}.jar" fork="true" jvm="${platform.fxhome}/bin/javafx${binary.extension}">
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${javafx.address}"/>
             <jvmarg line="${run.jvmargs}"/>
@@ -236,11 +252,13 @@ is divided into following sections:
                 <propertyref prefix="run-sys-prop."/>
                 <mapper from="run-sys-prop.*" to="*" type="glob"/>
             </syspropertyset>
+            <arg line="${application.args}"/>
         </java>
     </target>
     <target if="midp.execution.trigger" name="-debug-midp-debuggee">
         <property location="${dist.dir}/${application.title}.jad" name="jad.file"/>
         <exec executable="${platform.fxhome}/emulator/bin/emulator${binary.extension}">
+            <arg value="${run.jvmargs}"/>
             <arg value="-Xdescriptor:${jad.file}"/>
             <arg value="-Xdebug"/>
             <arg value="-Xrunjdwp:transport=dt_socket,address=${javafx.address},server=n"/>

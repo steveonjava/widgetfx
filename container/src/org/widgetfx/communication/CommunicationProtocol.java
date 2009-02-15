@@ -45,12 +45,12 @@ public class CommunicationProtocol {
             CommunicationManager.INSTANCE.connectTo(Integer.parseInt(args[1]));
             return "connected";
         } else if (command.equals("hover")) {
-            return String.valueOf(processor.hover(Double.parseDouble(args[1]), Double.parseDouble(args[2]), Double.parseDouble(args[3])));
+            return String.valueOf(processor.hover(Float.parseFloat(args[1]), Float.parseFloat(args[2]), Float.parseFloat(args[3])));
         } else if (command.equals("finishHover")) {
             try {
                 Properties properties = new Properties();
                 properties.load(new StringReader(URLDecoder.decode(args[4], "UTF-8")));
-                return String.valueOf(processor.finishHover(args[1], Double.parseDouble(args[2]), Double.parseDouble(args[3]), properties));
+                return String.valueOf(processor.finishHover(args[1], Float.parseFloat(args[2]), Float.parseFloat(args[3]), properties));
             } catch (IOException ex) {
                 Logger.getLogger(CommunicationProtocol.class.getName()).log(Level.SEVERE, "Unable to load properties: " + args[4], ex);
             }

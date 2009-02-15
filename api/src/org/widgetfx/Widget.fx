@@ -125,14 +125,14 @@ public var autoLaunch = true;
      * state between invocations of the widget container.  See the {@link Configuration}
      * class for more information.
      */
-    public-init var configuration:Configuration;
+    public-init protected var configuration:Configuration;
 
     /**
      * All widgets extend Resizable, and by default can be resized by the user,
      * but if intend the widget to be displayed at a fixed size, this variable
      * can be set to false to remove the resize controls.
      */
-    public-init var resizable:Boolean = true;
+    public-init protected var resizable:Boolean = true;
     
     /**
      * Event handler called on resize of a widget.  This method is always
@@ -144,21 +144,21 @@ public var autoLaunch = true;
      * to be called only once per resize operation regardless of the intermediate
      * values of stage.width and stage.height.
      */
-    public-init var onResize:function(width:Number, height:Number):Void;
+    public-init protected var onResize:function(width:Number, height:Number):Void;
     
     /**
      * Event handler called when a widget is docked.  This can be used to change
      * the presentation of a widget to something more suitable to a space limited
      * dock.
      */
-    public-init var onDock:function():Void;
+    public-init protected var onDock:function():Void;
 
     /**
      * Event handler called when a widget is undocked.  This can be used to change
      * the presentation of a widget to reflect the larger space available for
      * display.
      */
-    public-init var onUndock:function():Void;
+    public-init protected var onUndock:function():Void;
 
     /**
      * WARNING: NOT YET IMPLEMENTED
@@ -171,7 +171,7 @@ public var autoLaunch = true;
      * The default value is false, in which case only one instance of this widget
      * can be added to the dock.
      */
-    public-init var multiInstance = false;
+    public-init protected var multiInstance = false;
 
     /**
      * Highlights the border of the widget, indicating it needs attention.
@@ -185,7 +185,7 @@ public var autoLaunch = true;
      * the same as the jar for the main class and must be updated if you use
      * a different jnlp filename.
      */
-    public-init var launchHref:String;
+    public-init protected var launchHref:String;
     
     init {
         if (autoLaunch) {
