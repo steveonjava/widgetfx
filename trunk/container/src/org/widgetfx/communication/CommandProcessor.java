@@ -27,7 +27,7 @@ import java.util.Properties;
  * @author Stephen Chin
  */
 public interface CommandProcessor {
-    Rectangle2D hover(double dockedHeight, double x, double y);
+    Rectangle2D hover(float dockedHeight, float x, float y);
 
-    Rectangle2D finishHover(String jnlpUrl, double x, double y, Properties properties);
+    Rectangle2D finishHover(String jnlpUrl, float x, float y, Properties properties);
 }

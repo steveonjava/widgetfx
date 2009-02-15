@@ -37,7 +37,7 @@ var pressedColor = Color.rgb(54, 101, 143);
 public abstract class ToolbarButton extends Group {
     public-init var toolbar:WidgetToolbar;
 
-    public-init var name:String;
+    public-init protected var name:String;
     
     protected abstract function performAction():Void;
 

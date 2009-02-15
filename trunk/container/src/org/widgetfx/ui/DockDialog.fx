@@ -25,9 +25,7 @@ import java.awt.Point;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.image.*;
 import java.awt.GraphicsEnvironment;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -56,7 +54,9 @@ var MAX_WIDTH = 400;
 var instance:DockDialog;
 
 public function createInstance() {
-    instance = DockDialog {};
+    instance = DockDialog {
+        style: if (WidgetFXConfiguration.TRANSPARENT) StageStyle.TRANSPARENT else StageStyle.UNDECORATED
+    }
 }
 
 public function getInstance() {
@@ -70,7 +70,6 @@ public class DockDialog extends JFXDialog {
 
     override var title = "WidgetFX";
     override var visible = true;
-    override var style = if (WidgetFXConfiguration.TRANSPARENT) StageStyle.TRANSPARENT else StageStyle.UNDECORATED;
     override var width = DEFAULT_WIDTH + DockSkin.BORDER * 2;
 
     var configuration = WidgetFXConfiguration.getInstanceWithProperties([
