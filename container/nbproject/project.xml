@@ -6,6 +6,7 @@
         <data xmlns="http://www.netbeans.org/ns/javafx-project/3">
             <name>WidgetFX-Container</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
+            <explicit-platform explicit-javac-supported="true" explicit-source-supported="true"/>
             <source-roots>
                 <root id="src.dir"/>
                 <root id="src.test.dir"/>
@@ -33,14 +34,6 @@
             </reference>
             <reference>
                 <foreign-project>WebFeed</foreign-project>
-                <artifact-type>jar</artifact-type>
-                <script>build.xml</script>
-                <target>jar</target>
-                <clean-target>clean</clean-target>
-                <id>jar</id>
-            </reference>
-            <reference>
-                <foreign-project>WidgetFX-API</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
