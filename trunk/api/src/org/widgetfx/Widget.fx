@@ -1,22 +1,30 @@
 /*
  * WidgetFX - JavaFX Desktop Widget Platform
- * Copyright (C) 2008  Stephen Chin
+ * Copyright (c) 2008-2009, WidgetFX Group
+ * All rights reserved.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
-
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
-
- * This particular file is subject to the "Classpath" exception as provided
- * in the LICENSE file that accompanied this code.
-
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of WidgetFX nor the names of its contributors may be used
+ *    to endorse or promote products derived from this software without
+ *    specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 package org.widgetfx;
 
@@ -99,15 +107,15 @@ public var autoLaunch = true;
  * @author Stephen Chin
  * @author Keith Combs
  */
- public class Widget extends Control {
+public class Widget extends Control {
 
     /**
-     * The external url to the widget runner process that will be launched.
+    * The external url to the widget runner process that will be launched.
      */
     def WIDGET_RUNNER_URL = "http://widgetfx.org/dock/runner.jnlp";
     
     /**
-     * Used to give widgets a fixed aspectRatio.  The default value of 0 allows
+    * Used to give widgets a fixed aspectRatio.  The default value of 0 allows
      * widgets to be resized without constraints.
      * <p>
      * Valid values to force an aspectRatio are any decimal values greater than 0.
@@ -118,24 +126,24 @@ public var autoLaunch = true;
      * aspectRatio: 4.0/3.0</pre></blockquote>
      * In this example, the width will be 4/3 greater than the height.
      */
-    public var aspectRatio:Number = 0;
+    public var aspectRatio: Number = 0;
     
     /**
-     * Configuration object for widgets.  This must be set in order to persist
+    * Configuration object for widgets.  This must be set in order to persist
      * state between invocations of the widget container.  See the {@link Configuration}
      * class for more information.
      */
-    public-init protected var configuration:Configuration;
+    public-init protected var configuration: Configuration;
 
     /**
-     * All widgets extend Resizable, and by default can be resized by the user,
+    * All widgets extend Resizable, and by default can be resized by the user,
      * but if intend the widget to be displayed at a fixed size, this variable
      * can be set to false to remove the resize controls.
      */
-    public-init protected var resizable:Boolean = true;
+    public-init protected var resizable: Boolean = true;
     
     /**
-     * Event handler called on resize of a widget.  This method is always
+    * Event handler called on resize of a widget.  This method is always
      * called with the current value of stage.width and stage.height
      * as the parameters.
      * <p>
@@ -144,24 +152,24 @@ public var autoLaunch = true;
      * to be called only once per resize operation regardless of the intermediate
      * values of stage.width and stage.height.
      */
-    public-init protected var onResize:function(width:Number, height:Number):Void;
+    public-init protected var onResize: function(width:Number, height:Number):Void;
     
     /**
-     * Event handler called when a widget is docked.  This can be used to change
+    * Event handler called when a widget is docked.  This can be used to change
      * the presentation of a widget to something more suitable to a space limited
      * dock.
      */
-    public-init protected var onDock:function():Void;
+    public-init protected var onDock: function():Void;
 
     /**
-     * Event handler called when a widget is undocked.  This can be used to change
+    * Event handler called when a widget is undocked.  This can be used to change
      * the presentation of a widget to reflect the larger space available for
      * display.
      */
-    public-init protected var onUndock:function():Void;
+    public-init protected var onUndock: function():Void;
 
     /**
-     * WARNING: NOT YET IMPLEMENTED
+    * WARNING: NOT YET IMPLEMENTED
      * <p>
      * Allows multiple instances of this widget to be added to the same dock with
      * unique configuration options.  When launched from a url, a new instance will
@@ -174,25 +182,27 @@ public var autoLaunch = true;
     public-init protected var multiInstance = false;
 
     /**
-     * Highlights the border of the widget, indicating it needs attention.
+    * Highlights the border of the widget, indicating it needs attention.
      * <p>
      * This is a runtime property and can be enabled or disabled at any time.
      */
     public var alert = false;
     
     /**
-     * The href used to launch the Widget Runner process.  The default value is
+    * The href used to launch the Widget Runner process.  The default value is
      * the same as the jar for the main class and must be updated if you use
      * a different jnlp filename.
      */
-    public-init protected var launchHref:String;
+    public-init protected var launchHref: String;
     
     init {
         if (autoLaunch) {
             try {
-                var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
-                if (launchHref.isEmpty()) {
-                    var classLoader = getClass().getClassLoader() as java.net.URLClassLoader;
+                var basicService =
+                ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+                if (launchHref.length() > 0) {
+                    var classLoader =
+                    getClass().getClassLoader() as java.net.URLClassLoader;
                     var urls = classLoader.getURLs();
                     var jarUrl = urls[0].toString();
                     var matcher = Pattern.compile("/([^/]*)\\.jar").matcher(jarUrl);
@@ -206,6 +216,8 @@ public var autoLaunch = true;
                 FX.exit();
             } catch (e1:NoClassDefFoundError) {
                 // not running in Web Start, continue running the applet
+            
+            
             } catch (e2:Throwable) {
                 println("Unable to launch Widget Runner");
                 e2.printStackTrace();
