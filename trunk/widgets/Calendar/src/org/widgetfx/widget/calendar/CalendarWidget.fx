@@ -36,6 +36,7 @@ import javafx.scene.paint.*;
 import javafx.scene.shape.*;
 import javafx.scene.text.*;
 import javafx.scene.transform.*;
+import java.text.*;
 import java.util.*;
 import javafx.util.Sequences;
 
@@ -174,6 +175,7 @@ function createPageContents(x:Number, y: Number,
     def calendar = Calendar.getInstance();
     def fontHeight = 20;
     def offset = 5;
+    def dateSymbols = bind new DateFormatSymbols(locale);
     def date:Text = Text {
         translateX: bind (width-date.layoutBounds.width)/2
         translateY: bind (height-date.layoutBounds.height)/2
@@ -192,18 +194,16 @@ function createPageContents(x:Number, y: Number,
                          offset
         translateY: offset + fontHeight
         font: Font.font(null, fontHeight)
-        content: bind
-            calendar.getDisplayName(Calendar.MONTH,
-                                    Calendar.LONG, locale)
+        content: bind Arrays.asList(dateSymbols.getMonths())
+            .get(calendar.get(Calendar.MONTH))
     }
     def dayOfWeek:Text = Text {
         translateX:
             bind (width - dayOfWeek.layoutBounds.width) / 2
         translateY: height - offset * 1.5
         font: Font.font(null, fontHeight)
-        content: bind
-            calendar.getDisplayName(Calendar.DAY_OF_WEEK,
-                                    Calendar.LONG, locale)
+        content: bind Arrays.asList(dateSymbols.getWeekdays())
+            .get(calendar.get(Calendar.DAY_OF_WEEK))
         fill: Color.WHITESMOKE
     }
     Group {
