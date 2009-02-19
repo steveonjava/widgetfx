@@ -188,7 +188,7 @@ public class SlideShow extends Widget {
                     var url = file.toURL();
                     var uri = new java.net.URI(url.getProtocol(), url.getUserInfo(),
                         url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
-                    uri.toString().replaceAll("#", "%23");
+                    [uri.toString().replaceAll("#", "%23")];
                 } else {
                     emptyFile;
                 }
