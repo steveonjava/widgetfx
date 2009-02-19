@@ -138,7 +138,6 @@ is divided into following sections:
         <ant antfile="${project.Clock}/build.xml" inheritall="false" target="jar"/>
         <ant antfile="${project.SlideShow}/build.xml" inheritall="false" target="jar"/>
         <ant antfile="${project.WebFeed}/build.xml" inheritall="false" target="jar"/>
-        <ant antfile="${project.WidgetFX-API}/build.xml" inheritall="false" target="jar"/>
     </target>
     <target name="-pre-compile">
         <!-- Empty placeholder for easier customization.-->
