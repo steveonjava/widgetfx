@@ -30,16 +30,11 @@ package org.widgetfx;
 
 import com.sun.javafx.runtime.TypeInfo;
 import com.sun.javafx.runtime.sequence.Sequence;
-import com.sun.javafx.runtime.sequence.Sequences;
 import com.sun.javafx.runtime.Entry;
-import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.lang.*;
 import java.net.URL;
 import java.util.Arrays;
-import javafx.ext.swing.*;
-import javafx.reflect.*;
-import javafx.scene.*;
 import javafx.scene.image.*;
 import javafx.stage.*;
 import javax.jnlp.*;
