@@ -3,15 +3,18 @@
     <information>
         <title>Calendar</title>
         <vendor>WidgetFX</vendor>
-        <description>Sample Calendar Application</description>
-        <homepage href="http://steveonjava.com/2009/01/27/widgetfx-calendar-tutorial/"/>
+        <homepage href="http://widgetfx.org/"/>
+        <description>Calendar</description>
     </information>
     <resources>
-        <j2se version="1.6+"/>
+        <j2se version="1.5+"/>
         <property name="jnlp.packEnabled" value="true"/>
         <property name="jnlp.versionEnabled" value="true"/>
-        <extension name="JavaFX Runtime" href="http://dl.javafx.com/javafx-rt.jnlp"/>
-        <jar href="Calendar.jar" main="true"/>
+        <extension name="JavaFX Runtime" href="http://dl.javafx.com/1.1/javafx-rt.jnlp"/>
+        <jar href="Calendar.jar" main="true" download="eager"/>
+        <jar href="lib/widgetfx-api.jar" download="eager"/>
+        <jar href="lib/JFXtras-0.3.jar"/>
     </resources>
-    <application-desc main-class="org.widgetfx.widget.calendar.CalendarWidget"/>
+    <application-desc main-class="org.widgetfx.widget.calendar.CalendarWidget">
+    </application-desc>
 </jnlp>
