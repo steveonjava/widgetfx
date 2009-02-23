@@ -309,8 +309,8 @@ public class SlideShow extends Widget {
             scene: Group {
                 content: [
                     view = ImageView {
-                        x: bind (width - view.boundsInLocal.width) / 2
-                        y: bind (height - view.boundsInLocal.height) / 2
+                        translateX: bind (width - view.boundsInLocal.width) / 2
+                        translateY: bind (height - view.boundsInLocal.height) / 2
                         fitWidth: bind width
                         fitHeight: bind height
                         preserveRatio: true

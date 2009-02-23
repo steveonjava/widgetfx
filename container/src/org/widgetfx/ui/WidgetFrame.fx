@@ -328,7 +328,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                 var toolbar:WidgetToolbar;
                 content: [
                     dragRect,
-                    CacheSafeGroup { // Widget
+                    Group { // Widget
                         translateX: BORDER, translateY: BORDER + toolbarHeight
                         cache: true
                         content: Group { // Alert
@@ -338,7 +338,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                                     CacheSafeGroup {
                                         cache: true
                                         effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
-                                        content: bind widget.clip
+                                        content: widget.clip
                                     }
                                 } else [],
                                 Group { // Drop Shadow
