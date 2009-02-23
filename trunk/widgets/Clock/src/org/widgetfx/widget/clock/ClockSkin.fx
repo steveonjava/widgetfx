@@ -75,7 +75,7 @@ public class ClockSkin extends Skin {
         timeline.play();
         scene = Group {
             content: [
-                CacheSafeGroup { // Static Content
+                Group { // Static Content
                     cache: true
                     content: [
                         Circle { // Clock Rim
@@ -126,7 +126,7 @@ public class ClockSkin extends Skin {
                     translateX: bind control.width / 2, translateY: bind control.height / 2
 
                     content: [
-                        CacheSafeGroup { // Hour Hand
+                        Group { // Hour Hand
                             cache: true
                             effect: DropShadow {offsetY: 1, offsetX: 0, radius: 2}
                             content: Line {startX: 0, startY: bind control.width / 2 * .2, endX: 0, endY: bind -control.width / 2 * .46
@@ -134,7 +134,7 @@ public class ClockSkin extends Skin {
                                 transforms: bind Transform.rotate(hours * 30 + minutes / 2, 0, 0)
                             }
                         },
-                        CacheSafeGroup { // Minute Hand
+                        Group { // Minute Hand
                             cache: true
                             effect: DropShadow {offsetY: 2, offsetX: 0, radius: 2}
                             content: Line {startX: 0, startY: bind control.width / 2 * .2, endX: 0, endY: bind -control.width / 2 * .7
@@ -158,7 +158,7 @@ public class ClockSkin extends Skin {
                         }
                     ]
                 },
-                CacheSafeGroup { // Center Pin
+                Group { // Center Pin
                     cache: true
                     content: Circle {
                         centerX: bind control.width / 2, centerY: bind control.height / 2, radius: 3.2

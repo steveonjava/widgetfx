@@ -222,7 +222,7 @@ public class WebFeed extends Widget {
         skin = Skin {
             scene: Group {
                 content: bind [
-                    CacheSafeGroup {
+                    Group {
                         cache: true
                         content: Rectangle {
                             // todo - this is too slow, figure out something else

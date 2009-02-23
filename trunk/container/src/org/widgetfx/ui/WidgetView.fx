@@ -167,7 +167,7 @@ public class WidgetView extends CacheSafeGroup, Constrained, DragContainer {
                 width: bind maxWidth
                 fill: Color.rgb(0, 0, 0, 0.0)
             },
-            CacheSafeGroup { // Widget with DropShadow
+            Group { // Widget with DropShadow
                 translateY: TOP_BORDER
                 translateX: bind (maxWidth - widget.width * scale) / 2
                 cache: true
@@ -175,10 +175,10 @@ public class WidgetView extends CacheSafeGroup, Constrained, DragContainer {
                     effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
                     content: bind [
                         if (widget.clip != null) { // Clip Shadow (for performance)
-                            CacheSafeGroup {
+                            Group {
                                 cache: true
                                 effect: bind if (resizing or not container.drawShadows) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
-                                content: bind widget.clip
+                                content: widget.clip
                                 transforms: bind Transform.scale(scale, scale)
                             }
                         } else [],
