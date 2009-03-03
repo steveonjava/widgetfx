@@ -126,21 +126,21 @@ public class Widget extends Control {
      * aspectRatio: 4.0/3.0</pre></blockquote>
      * In this example, the width will be 4/3 greater than the height.
      */
-    public var aspectRatio: Number = 0;
+    public var aspectRatio:Number = 0;
     
     /**
     * Configuration object for widgets.  This must be set in order to persist
      * state between invocations of the widget container.  See the {@link Configuration}
      * class for more information.
      */
-    public-init protected var configuration: Configuration;
+    public-init protected var configuration:Configuration;
 
     /**
     * All widgets extend Resizable, and by default can be resized by the user,
      * but if intend the widget to be displayed at a fixed size, this variable
      * can be set to false to remove the resize controls.
      */
-    public-init protected var resizable: Boolean = true;
+    public-init protected var resizable:Boolean = true;
     
     /**
     * Event handler called on resize of a widget.  This method is always
@@ -152,21 +152,21 @@ public class Widget extends Control {
      * to be called only once per resize operation regardless of the intermediate
      * values of stage.width and stage.height.
      */
-    public-init protected var onResize: function(width:Number, height:Number):Void;
+    public-init protected var onResize:function(width:Number, height:Number):Void;
     
     /**
     * Event handler called when a widget is docked.  This can be used to change
      * the presentation of a widget to something more suitable to a space limited
      * dock.
      */
-    public-init protected var onDock: function():Void;
+    public-init protected var onDock:function():Void;
 
     /**
     * Event handler called when a widget is undocked.  This can be used to change
      * the presentation of a widget to reflect the larger space available for
      * display.
      */
-    public-init protected var onUndock: function():Void;
+    public-init protected var onUndock:function():Void;
 
     /**
     * WARNING: NOT YET IMPLEMENTED
@@ -193,14 +193,13 @@ public class Widget extends Control {
      * the same as the jar for the main class and must be updated if you use
      * a different jnlp filename.
      */
-    public-init protected var launchHref: String;
+    public-init protected var launchHref:String;
     
     init {
         if (autoLaunch) {
             try {
-                var basicService =
-                ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
-                if (launchHref.length() > 0) {
+                var basicService = ServiceManager.lookup("javax.jnlp.BasicService") as BasicService;
+                if (not isInitialized(launchHref)) {
                     var classLoader =
                     getClass().getClassLoader() as java.net.URLClassLoader;
                     var urls = classLoader.getURLs();
@@ -216,8 +215,6 @@ public class Widget extends Control {
                 FX.exit();
             } catch (e1:NoClassDefFoundError) {
                 // not running in Web Start, continue running the applet
-            
-            
             } catch (e2:Throwable) {
                 println("Unable to launch Widget Runner");
                 e2.printStackTrace();

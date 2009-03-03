@@ -335,7 +335,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                             effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
                             content: bind [
                                 if (widget.clip != null) { // Clip Shadow (for performance)
-                                    CacheSafeGroup {
+                                    Group {
                                         cache: true
                                         effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                                         content: widget.clip
