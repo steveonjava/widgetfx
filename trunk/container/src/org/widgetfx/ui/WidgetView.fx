@@ -56,7 +56,7 @@ import javax.swing.RootPaneContainer;
 public var TOP_BORDER = 13;
 public var BOTTOM_BORDER = 7;
 
-public class WidgetView extends CacheSafeGroup, Constrained, DragContainer {
+public class WidgetView extends Group, Constrained, DragContainer {
     public-init var container:WidgetContainer;
     
     var resizing = false;
