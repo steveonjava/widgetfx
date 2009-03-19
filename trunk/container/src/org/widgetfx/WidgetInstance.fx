@@ -49,6 +49,7 @@ import org.jfxtras.stage.*;
 import java.util.Properties;
 import java.io.StringWriter;
 import java.net.URLClassLoader;
+import org.widgetfx.classloader.WidgetFXClassLoader;
 
 /**
  * @author Stephen Chin
@@ -139,7 +140,7 @@ public class WidgetInstance {
                 var codeBase = new URL(codeBaseString);
                 var widgetNodes = xpath.evaluate("/jnlp/resources/jar", document, XPathConstants.NODESET) as NodeList;
                 var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
-//                var urlList:URL[];
+                var urlList:URL[];
                 for (i in [0..widgetNodes.getLength()-1]) {
                     var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
                     var version = (widgetNodes.item(i).getAttributes().getNamedItem("version") as Attr).getValue();
@@ -151,24 +152,24 @@ public class WidgetInstance {
                             if (version == null) {
                                 WidgetManager.getInstance().maybeUnload(url);
                             }
-//                            insert url into urlList;
-                            ds.loadResource(url, version, DownloadServiceListener {
-                                override function downloadFailed(url, version) {
-                                    println("download failed");
-                                }
-                                override function progress(url, version, readSoFar, total, overallPercent) {
-                                }
-                                override function upgradingArchive(url, version, patchPercent, overallPercent) {
-                                    println("upgradingArchive");
-                                }
-                                override function validating(url, version, entry, total, overallPercent) {
-                                }
-                            });
+                            insert url into urlList;
+//                            ds.loadResource(url, version, DownloadServiceListener {
+//                                override function downloadFailed(url, version) {
+//                                    println("download failed");
+//                                }
+//                                override function progress(url, version, readSoFar, total, overallPercent) {
+//                                }
+//                                override function upgradingArchive(url, version, patchPercent, overallPercent) {
+//                                    println("upgradingArchive");
+//                                }
+//                                override function validating(url, version, entry, total, overallPercent) {
+//                                }
+//                            });
                             insert url into loadedResources;
                         }
                     }
                 }
-//                classLoader = new URLClassLoader(urlList, getClass().getClassLoader());
+                classLoader = new WidgetFXClassLoader(urlList, getClass().getClassLoader());
                 mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
                 if (mainClass.length() == 0) {
                     throw new IllegalStateException("No main class specified");
@@ -184,7 +185,7 @@ public class WidgetInstance {
         if (mainClass.length() > 0) {
             try {
                 var name = Entry.entryMethodName();
-                var widgetClass:Class = Class.forName(mainClass);
+                var widgetClass:Class = Class.forName(mainClass, true, classLoader);
                 widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, TypeInfo.String.emptySequence as Object) as Widget;
             } catch (e:Throwable) {
                 createError(e);

@@ -81,15 +81,15 @@ public class WidgetManager {
         "{codebase}widgets/WebFeed/launch.jnlp"
     ];
     
-    public-read var recentWidgets:String[] = [];
+    public-read var recentWidgets:String[];
     
-    var loginTokens:String[] = [];
+    var loginTokens:String[];
     
-    var loginUsernames:String[] = [];
+    var loginUsernames:String[];
     
-    var loginPasswords:String[] = [];
+    var loginPasswords:String[];
 
-    public var stylesheets:String[] = [];
+    public var stylesheets:String[];
 
     var resourceUrls:String[];
 
@@ -237,8 +237,6 @@ public class WidgetManager {
         if (not widgetRunner and not portal) {
             sis.addSingleInstanceListener(sil);
         }
-        // todo - implement a widget security policy
-        System.setSecurityManager(null);
     }
     
     public function reload() {
