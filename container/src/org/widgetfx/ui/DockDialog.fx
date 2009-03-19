@@ -53,6 +53,7 @@ import org.jfxtras.stage.*;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
 import org.widgetfx.install.InstallUtil;
+import org.widgetfx.scene.WidgetFXScene;
 
 var menuHeight = if (WidgetFXConfiguration.IS_MAC) 22 else 0;
 var DEFAULT_WIDTH = 180;
@@ -349,7 +350,7 @@ public class DockDialog extends JFXDialog {
 
     function loadContent():Void {
         onClose = function() {WidgetManager.getInstance().exit()};
-        scene = Scene {
+        scene = WidgetFXScene {
             stylesheets: bind WidgetManager.getInstance().stylesheets
             content: [
                 Rectangle {

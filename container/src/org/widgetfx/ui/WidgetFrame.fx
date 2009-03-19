@@ -50,6 +50,7 @@ import javafx.scene.transform.*;
 import javafx.stage.*;
 import javax.swing.*;
 import javax.swing.SwingUtilities;
+import org.widgetfx.scene.WidgetFXScene;
 
 /**
  * @author Stephen Chin
@@ -322,7 +323,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
             value: bind instance.opacity with inverse
             width: bind width * 2 / 5
         }
-        scene = Scene {
+        scene = WidgetFXScene {
             stylesheets: bind WidgetManager.getInstance().stylesheets
             content: sceneContents = Group {
                 var toolbar:WidgetToolbar;
