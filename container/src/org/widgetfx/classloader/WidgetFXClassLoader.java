@@ -7,6 +7,7 @@ package org.widgetfx.classloader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
@@ -21,6 +22,9 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import org.widgetfx.ui.WidgetSecurityDialogFactory;
 
 /**
  * @author Keith Combs
@@ -28,16 +32,35 @@ import java.util.logging.Logger;
  */
 public class WidgetFXClassLoader extends URLClassLoader {
 
-    public WidgetFXClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
+    WidgetSecurityDialogFactory dialogFactory;
+
+    public WidgetFXClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory, WidgetSecurityDialogFactory dialogFactory) {
         super(urls, parent, factory);
+        this.dialogFactory = dialogFactory;
     }
 
-    public WidgetFXClassLoader(URL[] urls) {
+    public WidgetFXClassLoader(URL[] urls, WidgetSecurityDialogFactory dialogFactory) {
         super(urls);
+        this.dialogFactory = dialogFactory;
     }
 
-    public WidgetFXClassLoader(URL[] urls, ClassLoader parent) {
+    public WidgetFXClassLoader(URL[] urls, ClassLoader parent, WidgetSecurityDialogFactory dialogFactory) {
         super(urls, parent);
+        this.dialogFactory = dialogFactory;
+    }
+
+    synchronized void showDialog() throws InterruptedException, InvocationTargetException {
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            dialogFactory.securityWarning("this is a test");
+                        }
+                    };
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        runnable.run();
+                    } else {
+                        SwingUtilities.invokeAndWait(runnable);
+                    }
     }
 
     @Override
@@ -58,6 +81,8 @@ public class WidgetFXClassLoader extends URLClassLoader {
                     String alias = ks.getCertificateAlias(cert);
                     boolean trusted = alias != null && ks.isCertificateEntry(alias);
                     if (!trusted) {
+                        showDialog();
+                        showDialog();
                         alias = "deploymentusercert$tsflag-" + System.currentTimeMillis();
                         ks.setCertificateEntry(alias, cert);
                         System.out.println("storing key with alias = " + alias);
@@ -74,6 +99,10 @@ public class WidgetFXClassLoader extends URLClassLoader {
                 permissions.add(all);
                 return permissions;
             }
+        } catch (InterruptedException ex) {
+            Logger.getLogger(WidgetFXClassLoader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(WidgetFXClassLoader.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(WidgetFXClassLoader.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchAlgorithmException ex) {

@@ -180,14 +180,15 @@ public class WebFeed extends Widget {
         }
     }
 
+    var updater:Timeline;
+
     init {
-        Timeline {
+        updater = Timeline {
             repeatCount: Timeline.INDEFINITE
             keyFrames: [
-                KeyFrame {time: 0s, action: updateFeed},
-                KeyFrame {time: 15m}
+                KeyFrame {time: 15m, action: updateFeed}
             ]
-        }.play();
+        }
     }
 
     override var configuration = Configuration {
@@ -208,6 +209,9 @@ public class WebFeed extends Widget {
                     ]}
                 }
             ]
+        }
+        onLoad: function() {
+            updateFeed();
         }
         onSave: function() {
             updateFeed();

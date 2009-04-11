@@ -169,7 +169,7 @@ public class WidgetInstance {
                         }
                     }
                 }
-                classLoader = new WidgetFXClassLoader(urlList, getClass().getClassLoader());
+                classLoader = new WidgetFXClassLoader(urlList, getClass().getClassLoader(), WidgetSecurityDialogFactoryImpl{});
                 mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
                 if (mainClass.length() == 0) {
                     throw new IllegalStateException("No main class specified");
