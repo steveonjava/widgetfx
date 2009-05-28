@@ -43,15 +43,15 @@ public var UNBOUNDED = -1;
 public abstract class GapBox extends Group, Constrained {
     
     public-init var spacing:Number on replace {
-        impl_requestLayout();
+        requestLayout();
     }
     
     override var maxWidth = 300 on replace {
-        impl_requestLayout();
+        requestLayout();
     }
     
     override var maxHeight = 300 on replace {
-        impl_requestLayout();
+        requestLayout();
     }
     
     protected var gapIndex:Integer = -1;
@@ -106,8 +106,5 @@ public abstract class GapBox extends Group, Constrained {
     public abstract function setGap(screenX:Integer, screenY:Integer, size:Number, animate:Boolean):Void;
     
     public abstract function setGap(index:Integer, size:Number, animate:Boolean):Void;
-    
-    public function doLayout():Void {
-        impl_layout(this);
-    }
+
 }

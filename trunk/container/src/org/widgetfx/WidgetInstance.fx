@@ -186,7 +186,7 @@ public class WidgetInstance {
             try {
                 var name = Entry.entryMethodName();
                 var widgetClass:Class = Class.forName(mainClass, true, classLoader);
-                widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, TypeInfo.String.emptySequence as Object) as Widget;
+                widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, null as Object) as Widget;
             } catch (e:Throwable) {
                 createError(e);
             }
@@ -371,7 +371,6 @@ public class WidgetInstance {
             (widget as FlashWidget).configure();
         } else if (widget.configuration != null) {
             configDialog = JFXDialog {
-                packed: true
                 icons: Image {
                     url: "{__DIR__}ui/images/WidgetFXIcon16.png"
                 }

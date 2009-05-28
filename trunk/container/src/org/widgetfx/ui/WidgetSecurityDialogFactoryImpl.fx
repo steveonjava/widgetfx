@@ -14,7 +14,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
- * @author kcombs
+ * @author Keith Combs
+ * @author Stephen Chin
  */
 public class WidgetSecurityDialogFactoryImpl extends WidgetSecurityDialogFactory {
     public-init var owner:Stage;

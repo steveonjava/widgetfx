@@ -140,11 +140,11 @@ public class WidgetView extends Group, Constrained, DragContainer {
         updateFlashBounds();
     }
     
-    override var impl_layoutX on replace {
+    override var layoutX on replace {
         updateFlashBounds();
     }
     
-    override var impl_layoutY on replace {
+    override var layoutY on replace {
         updateFlashBounds();
     }
     
@@ -236,7 +236,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
                             }
                         }
                         updateFlashBounds();
-                        container.layout.doLayout();
+                        container.gapBox.requestLayout();
                     }
                 }
                 onMouseReleased: function(e) {
@@ -282,7 +282,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
             container.dragging = true;
             if (instance.docked) {
                 flashPanel.setVisible(false);
-                var bounds = container.layout.getScreenBounds(this);
+                var bounds = container.gapBox.getScreenBounds(this);
                 var xPos = (bounds.minX + (bounds.width - widget.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                 var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
                 var yPos = bounds.minY + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);

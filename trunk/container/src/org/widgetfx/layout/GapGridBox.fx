@@ -79,15 +79,11 @@ public class GapGridBox extends GapBox {
     override function setGap(index:Integer, size:Number, animate:Boolean):Void {
         if (gapIndex != index) {
             gapIndex = index;
-            impl_requestLayout();
+            requestLayout();
         }
     }
-    
-    init {
-        impl_layout = doGapGridLayout;
-    }
 
-    function doGapGridLayout(g:Group):Void {
+    override function doLayout():Void {
         if (timeline.running) {
             return;
         }
@@ -109,8 +105,8 @@ public class GapGridBox extends GapBox {
                 }
                 gap = 1;
             }
-            node.impl_layoutX = x;
-            node.impl_layoutY = y;
+            node.layoutX = x;
+            node.layoutY = y;
             if ((indexof node + gap) mod columns == columns - 1) {
                 x = 0;
                 y += nodeHeight + spacing;

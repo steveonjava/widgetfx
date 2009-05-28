@@ -58,7 +58,6 @@ public class WidgetEventQueue extends EventQueue {
 
     private WidgetEventQueue() {
         SwingUtilities.invokeLater(new Runnable() {
-            @Override
             public void run() {
                 Toolkit.getDefaultToolkit().getSystemEventQueue().push(WidgetEventQueue.this);
             }
@@ -67,7 +66,6 @@ public class WidgetEventQueue extends EventQueue {
     
     public void registerInterceptor(final Component parent, final EventInterceptor interceptor) {
         SwingUtilities.invokeLater(new Runnable() {
-            @Override
             public void run() {
                 List<EventInterceptor> interceptorList;
                 if (interceptors.containsKey(parent)) {
@@ -83,7 +81,6 @@ public class WidgetEventQueue extends EventQueue {
     
     public void removeInterceptor(final Component parent) {
         SwingUtilities.invokeLater(new Runnable() {
-            @Override
             public void run() {
                 List<EventInterceptor> interceptorList = interceptors.get(parent);
                 if (interceptorList != null) {
@@ -96,7 +93,6 @@ public class WidgetEventQueue extends EventQueue {
         });
     }
 
-    @Override
     protected void dispatchEvent(AWTEvent awtEvent) {
         if (awtEvent instanceof MouseEvent) {
             MouseEvent event = (MouseEvent) awtEvent;

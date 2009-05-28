@@ -52,17 +52,28 @@ public var BORDER = 5;
 public var DS_RADIUS = 5;
 
 public class DockSkin extends Skin {
+
+    override function contains( x:Float, y:Float):Boolean{
+        return true;
+    }
+    override function intersects( x:Float, y:Float, width: Float, height:Float):Boolean{
+        return true;
+    }
+
+    public var scene : Group;
+
+    
     public var logoX:Number = 12;
     public var logoY:Number = 7;
     public var logoImage:java.awt.image.BufferedImage = Image {
         url: "{__DIR__}images/WidgetFX-Logo.png"
-    }.bufferedImage;
-    public var jfxLogoImage = bind Image{}.fromBufferedImage(logoImage);
+    }.platformImage as java.awt.image.BufferedImage;
+    public var jfxLogoImage = bind Image{}.impl_fromPlatformImage(logoImage as java.awt.image.BufferedImage);
     public var backgroundStartColor = Color.color(0.0, 0.0, 0.0, 0.2);
     public var backgroundEndColor = Color.color(0.0, 0.0, 0.0, 0.5);
     public var logoIcon:java.awt.image.BufferedImage = Image {
         url: "{__DIR__}images/WidgetFXIcon16.png"
-    }.bufferedImage on replace {
+    }.platformImage as java.awt.image.BufferedImage on replace {
         dockDialog.tray.setImage(logoIcon);
     }
     public var showDeviceBar = false;
@@ -102,10 +113,10 @@ public class DockSkin extends Skin {
         drawShadows: bind not dockDialog.resizing
         translateX: BORDER
         translateY: bind headerHeight
-        widgets: bind WidgetManager.getInstance().widgets with inverse
+        widgets: WidgetManager.getInstance().widgets// was bind with inverse
         width: bind control.width - BORDER * 2
         height: bind control.height - headerHeight
-        layout: GapVBox {}
+        gapBox: GapVBox {}
         visible: bind control.visible
     }
 

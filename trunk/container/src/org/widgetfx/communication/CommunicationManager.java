@@ -73,7 +73,6 @@ public enum CommunicationManager implements Runnable {
         return result.toArray(new String[result.size()]);
     }
 
-    @Override
     public void run() {
         while (true) {
             try {
@@ -105,7 +104,6 @@ public enum CommunicationManager implements Runnable {
         public ServerStartThread() {
         }
 
-        @Override
         public void run() {
             try {
                 int port = STARTING_PORT;

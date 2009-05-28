@@ -106,16 +106,12 @@ public class GapVBox extends GapBox {
                 animateGapVBoxLayout();
             } else {
                 timeline.stop();
-                impl_requestLayout();
+                requestLayout();
             }
         }
     }
-    
-    init {
-        impl_layout = doGapVBoxLayout;
-    }
 
-    function doGapVBoxLayout(g:Group):Void {
+    override function doLayout():Void {
         if (timeline.running) {
             return;
         }
@@ -131,8 +127,8 @@ public class GapVBox extends GapBox {
                 y += gapHeight;
             }
             if (node.visible) {
-                node.impl_layoutX = x;
-                node.impl_layoutY = y;
+                node.layoutX = x;
+                node.layoutY = y;
                 y += node.boundsInLocal.height + spacing;
             }
         }
@@ -155,8 +151,8 @@ public class GapVBox extends GapBox {
                         var newX = x;
                         var newY = y;
                         var values = [
-                            node.impl_layoutX => newX tween Interpolator.EASEIN,
-                            node.impl_layoutY => newY tween Interpolator.EASEIN
+                            node.layoutX => newX tween Interpolator.EASEIN,
+                            node.layoutY => newY tween Interpolator.EASEIN
                         ];
                         y += node.boundsInLocal.height + spacing;
                         values;
@@ -165,7 +161,7 @@ public class GapVBox extends GapBox {
                     }
                 }
                 action: function() {
-                    impl_requestLayout();
+                    requestLayout();
                 }
             }
         }

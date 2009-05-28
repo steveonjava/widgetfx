@@ -57,7 +57,6 @@ public class DeviceBar extends CustomNode, WidgetDragListener {
         var progressBar = new JProgressBar();
         var dialog = JFXDialog {
             owner: owner
-            packed: true
             title: "Device Transfer"
             scene: Scene {
                 content: Grid {
