@@ -34,7 +34,7 @@ package org.widgetfx.layout;
  */
 public var UNBOUNDED:Number = -1;
 
-public abstract class Constrained {
+public mixin class Constrained {
     public var maxWidth:Number = UNBOUNDED;
     public var maxHeight:Number = UNBOUNDED;
 }

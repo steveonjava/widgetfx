@@ -60,7 +60,7 @@ var grid:Stage = Stage {
             width: bind scene.width
             height: bind scene.height
             widgets: WidgetManager.getInstance().widgets[w|w.docked];
-            layout: GapGridBox {rows: 2, columns: 3, spacing: 5}
+            gapBox: GapGridBox {rows: 2, columns: 3, spacing: 5}
         }
     }
     scene: scene

@@ -42,6 +42,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.jdic.web.BrComponent;
 import org.jdic.web.event.*;
+import org.jfxtras.scene.control.AbstractSkin;
 import org.widgetfx.*;
 import org.widgetfx.install.InstallUtil;
 import org.widgetfx.layout.*;
@@ -204,7 +205,7 @@ public class FlashWidget extends Widget, BrComponentListener {
     
     override var height = 300;
     
-    override var skin = Skin {
+    override var skin = WidgetSkin {
         scene: Rectangle {width: bind width, height: bind height, fill: Color.rgb(0xD9, 0xD9, 0xD9)}
     }
 }

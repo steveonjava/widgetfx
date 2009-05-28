@@ -67,7 +67,7 @@ public class WidgetContainer extends Container, WidgetDragListener {
                 } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_MOVED) {
                     for (view in widgetViews) {
                         var screenLoc = event.getLocationOnScreen();
-                        view.widgetHover = layout.getScreenBounds(view).contains(screenLoc.x, screenLoc.y);
+                        view.widgetHover = gapBox.getScreenBounds(view).contains(screenLoc.x, screenLoc.y);
                     }
                 }
                 return false;
@@ -79,19 +79,19 @@ public class WidgetContainer extends Container, WidgetDragListener {
     // widget back in the source container
     public-init var copyOnContainerDrop:Boolean;
     
-    public-init var layout:GapBox on replace {
-        layout.maxWidth = width;
-        layout.maxHeight = height;
-        layout.content = widgetViews;
-        content = [layout];
+    public-init var gapBox:GapBox on replace {
+        gapBox.maxWidth = width;
+        gapBox.maxHeight = height;
+        gapBox.content = widgetViews;
+        content = [gapBox];
     }
     
     override var width on replace {
-        layout.maxWidth = width;
+        gapBox.maxWidth = width;
     }
     
     override var height on replace {
-        layout.maxHeight = height;
+        gapBox.maxHeight = height;
     }
     
     public var drawShadows:Boolean;
@@ -99,7 +99,7 @@ public class WidgetContainer extends Container, WidgetDragListener {
     public var dragging:Boolean;
     
     var widgetViews:WidgetView[] = bind for (instance in dockedWidgets) createWidgetView(instance) on replace {
-        layout.content = widgetViews;
+        gapBox.content = widgetViews;
     }
     
     function createWidgetView(instance:WidgetInstance):WidgetView {
@@ -116,11 +116,11 @@ public class WidgetContainer extends Container, WidgetDragListener {
     override function hover(dockedHeight:Number, screenX:Number, screenY:Number):Rectangle2D {
         widgetDragging = true;
         def showing = visible and scene != null;
-        if (showing and layout.containsScreenXY(screenX, screenY)) {
-            layout.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, true);
-            return layout.getGapScreenBounds();
+        if (showing and gapBox.containsScreenXY(screenX, screenY)) {
+            gapBox.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, true);
+            return gapBox.getGapScreenBounds();
         } else {
-            layout.clearGap(true);
+            gapBox.clearGap(true);
             return null;
         }
     }
@@ -129,13 +129,13 @@ public class WidgetContainer extends Container, WidgetDragListener {
         widgetDragging = false;
         def showing = visible and scene != null;
         if ((showing and copyOnContainerDrop)
-            or (showing and layout.containsScreenXY(screenX, screenY))) {
-            return layout.getGapScreenBounds();
+            or (showing and gapBox.containsScreenXY(screenX, screenY))) {
+            return gapBox.getGapScreenBounds();
         } else {
             // todo - delete widget from container (and maybe add it to a list of undocked widgets)
             // delete instance from widgets;
-            layout.clearGap(false);
-            layout.doLayout();
+            gapBox.clearGap(false);
+            gapBox.requestLayout();
             return null;
         }
     }
@@ -143,15 +143,15 @@ public class WidgetContainer extends Container, WidgetDragListener {
     override function finishHover(jnlpUrl:String, screenX:Number, screenY:Number, properties:Properties):Rectangle2D {
         widgetDragging = false;
         def showing = visible and scene != null;
-        if (showing and layout.containsScreenXY(screenX, screenY) and not WidgetManager.getInstance().hasWidget(jnlpUrl, properties)) {
+        if (showing and gapBox.containsScreenXY(screenX, screenY) and not WidgetManager.getInstance().hasWidget(jnlpUrl, properties)) {
             FX.deferAction(function():Void {
                 var instance = WidgetManager.getInstance().getWidget(jnlpUrl, properties);
                 dockAfterHover(instance);
             });
-            return layout.getGapScreenBounds();
+            return gapBox.getGapScreenBounds();
         } else {
-            layout.clearGap(false);
-            layout.doLayout();
+            gapBox.clearGap(false);
+            gapBox.requestLayout();
             return null;
         }
     }
@@ -159,13 +159,13 @@ public class WidgetContainer extends Container, WidgetDragListener {
     public function dockAfterHover(instance:WidgetInstance) {
         delete instance from widgets;
         instance.dock();
-        if (layout.getGapIndex() < 0 or layout.getGapIndex() >= dockedWidgets.size()) {
+        if (gapBox.getGapIndex() < 0 or gapBox.getGapIndex() >= dockedWidgets.size()) {
             insert instance into widgets;
         } else {
-            var index = Sequences.indexOf(widgets, dockedWidgets[layout.getGapIndex()]);
+            var index = Sequences.indexOf(widgets, dockedWidgets[gapBox.getGapIndex()]);
             insert instance before widgets[index];
         }
-        layout.clearGap(false);
-        layout.doLayout();
+        gapBox.clearGap(false);
+        gapBox.requestLayout();
     }
 }

@@ -10,9 +10,9 @@ import java.lang.Object;
 import java.lang.System;
 import java.lang.RuntimeException;
 import javafx.scene.Node;
-import javafx.fxd.UiStub;
+import javafx.fxd.FXDNode;
 
-public class SecurityDialogUI extends UiStub {
+public class SecurityDialogUI extends FXDNode {
 	
 	override public var url = "{__DIR__}SecurityDialog.fxz";
 	
@@ -31,9 +31,9 @@ public class SecurityDialogUI extends UiStub {
 	public var signatureValid: Node;
 	public var warningIcon: Node;
 	public var warningText: Node;
-	
-	override protected function update() {
-		lastNodeId = null;
+
+	override protected function create():Node {
+		//var lastNodeId = null;
 		 try {
 			acceptButton=getNode("acceptButton");
 			acceptButtonHover=getNode("acceptButtonHover");
@@ -51,9 +51,10 @@ public class SecurityDialogUI extends UiStub {
 			warningIcon=getNode("warningIcon");
 			warningText=getNode("warningText");
 		} catch( e:java.lang.Exception) {
-			System.err.println("Update of the  attribute '{lastNodeId}' failed with: {e}");
+			//System.err.println("Update of the  attribute '{lastNodeId}' failed with: {e}");
 			throw e;
 		}
+        return null;
 	}
 }
 

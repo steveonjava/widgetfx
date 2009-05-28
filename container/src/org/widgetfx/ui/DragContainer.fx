@@ -37,7 +37,7 @@ import java.net.URLEncoder;
 /**
  * @author Stephen Chin
  */
-public abstract class DragContainer {
+public mixin class DragContainer {
     
     public-init var instance:WidgetInstance;
     

@@ -51,7 +51,6 @@ public class CommunicationReceiver implements Runnable {
         this.processor = processor;
     }
 
-    @Override
     public void run() {
         try {
             PrintWriter out = new PrintWriter(sender.getOutputStream(), true);

@@ -38,7 +38,7 @@ import java.util.Properties;
  */
 public var dragListeners:WidgetDragListener[];
 
-public abstract class WidgetDragListener {
+public mixin class WidgetDragListener {
 
     public abstract function hover(dockedHeight:Number, screenX:Number, screenY:Number):Rectangle2D;
 

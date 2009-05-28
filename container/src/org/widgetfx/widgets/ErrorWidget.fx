@@ -35,6 +35,7 @@ import javafx.scene.paint.*;
 import javafx.scene.shape.*;
 import javafx.scene.text.*;
 import org.widgetfx.Widget;
+import org.widgetfx.ui.WidgetSkin;
 
 /**
  * @author Stephen Chin
@@ -51,7 +52,7 @@ public class ErrorWidget extends Widget {
     
     override var height = 150;
     
-    override var skin = Skin {
+    override var skin = WidgetSkin {
         scene: Group {
             clip: Rectangle {
                 smooth: false

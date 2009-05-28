@@ -40,7 +40,7 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.jfxtras.stage.*;
 import org.jfxtras.scene.layout.*;
-import org.jfxtras.scene.layout.GridConstraints.*;
+import org.jfxtras.scene.layout.LayoutConstants.*;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
 
@@ -113,7 +113,6 @@ public class AddWidgetDialog {
         dialog = JFXDialog {
             title: "Add Widget"
             resizable: false
-            packed: true
             icons: Image {
                 url: "{__DIR__}images/WidgetFXIcon16.png"
             }
@@ -128,12 +127,12 @@ public class AddWidgetDialog {
                             border: 0
                             growRows: [1]
                             rows: [
-                                row([listLabel, Cell {content: widgetList, hspan: 2, preferredHeight: 200}]),
+                                row([listLabel, Cell {content: widgetList, hspan: 2, prefHeight: 200}]),
                                 row([jarLabel, jarField, browseButton])
                             ]
                         }]),
                         row([box = HBox {
-                            translateX: bind grid.preferredWidth - grid.border * 2 - box.boundsInLocal.width
+                            translateX: bind grid.getPrefWidth(-1) - grid.border * 2 - box.boundsInLocal.width
                             content: [
                                 SwingButton {text: "Add", action: add},
                                 SwingButton {text: "Cancel", action: cancel}
