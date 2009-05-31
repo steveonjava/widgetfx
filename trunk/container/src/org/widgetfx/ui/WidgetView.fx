@@ -286,6 +286,11 @@ public class WidgetView extends Group, Constrained, DragContainer {
                 var xPos = (bounds.minX + (bounds.width - widget.width * scale) / 2 - WidgetFrame.BORDER).intValue();
                 var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
                 var yPos = bounds.minY + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
+                // hack to get dragging working on applets where scene.x is a large negative integer
+                if (xPos < 9000) {
+                    xPos = (screenX - widget.width * scale / 2).intValue();
+                    yPos = (screenY - widget.height * scale / 2).intValue();
+                }
                 instance.frame = WidgetFrame {
                     instance: instance
                     x: xPos, y: yPos

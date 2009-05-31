@@ -30,6 +30,7 @@ package org.widgetfx;
 
 import org.widgetfx.config.*;
 import org.widgetfx.layout.*;
+import org.widgetfx.scene.*;
 import org.widgetfx.ui.*;
 import org.jfxtras.stage.*;
 import javafx.lang.FX;
@@ -44,44 +45,35 @@ import javafx.stage.*;
 WidgetManager.createPortalInstance();
 WidgetFXConfiguration.getInstance().mergeProperties = true;
 WidgetFXConfiguration.getInstance().load();
+var widgets =  [
+    WidgetInstance {
+        jnlpUrl: "http://widgetfx.org/dock/widgets/Clock/launch.jnlp"
+    }
+    WidgetInstance {
+        jnlpUrl: "http://widgetfx.org/dock/widgets/WebFeed/launch.jnlp"
+    }
+];
 var container:WidgetContainer;
 var grid:Stage = Stage {
     onClose: function() {FX.exit()}
     x: 100
     y: 200
-    title: "Portal 1"
+    title: "Portal"
     width: 500
     height: 500
     var scene:Scene = Scene {
-        fill: Color.SLATEGRAY
+        fill: LinearGradient {
+            stops: [
+                Stop {offset: 0, color: Color.STEELBLUE}
+                Stop {offset: 1, color: Color.BLACK}
+            ]
+        }
         content: container = WidgetContainer {
             width: bind scene.width
             height: bind scene.height
-            widgets: WidgetManager.getInstance().widgets[w|w.docked];
-            gapBox: GapGridBox {rows: 2, columns: 3, spacing: 5}
+            widgets: widgets;
+            layout: GapGridBox {rows: 2, columns: 3, spacing: 5}
         }
     }
     scene: scene
 }
-container.window = WindowHelper.extractWindow(grid);
-
-var list:Stage = Stage {
-    onClose: function() {FX.exit()}
-    x: 700
-    y: 200
-    title: "Portal 2"
-    width: 200
-    height: 500
-    var scene:Scene = Scene {
-        var widgetList:WidgetInstance[];
-        fill: Color.SLATEGRAY
-        content: container = WidgetContainer {
-            width: bind scene.width
-            height: bind scene.height
-            widgets: widgetList
-            gapBox: GapGridBox {rows: 4, columns: 1, spacing: 5}
-        }
-    }
-    scene: scene
-}
-container.window = WindowHelper.extractWindow(list);
