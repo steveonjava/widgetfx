@@ -29,23 +29,19 @@
 package org.widgetfx.widget.webfeed;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.jfxtras.scene.*;
 import org.jfxtras.scene.layout.*;
 import org.widgetfx.*;
+import org.widgetfx.ui.WidgetSkin;
 import org.widgetfx.config.*;
 import javafx.ext.swing.*;
 import javafx.animation.*;
-import javafx.async.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
-import javafx.scene.effect.*;
-import javafx.scene.effect.light.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
 import javafx.scene.text.*;
-import javafx.scene.transform.*;
 import java.awt.Desktop;
 import java.lang.*;
 import java.net.URI;
@@ -55,12 +51,8 @@ import java.util.Date;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.feed.synd.SyndEntryImpl;
 import com.sun.syndication.fetcher.FeedFetcher;
-import com.sun.syndication.fetcher.FetcherEvent;
-import com.sun.syndication.fetcher.FetcherListener;
-import com.sun.syndication.fetcher.impl.FeedFetcherCache;
 import com.sun.syndication.fetcher.impl.HashMapFeedInfoCache;
 import com.sun.syndication.fetcher.impl.HttpURLFeedFetcher;
-import com.sun.javafx.runtime.sequence.Sequences;
 
 /**
  * @author Stephen Chin
@@ -223,7 +215,7 @@ public class WebFeed extends Widget {
             width: bind width, height: bind height
             arcHeight: 7, arcWidth: 7
         }
-        skin = Skin {
+        skin = WidgetSkin {
             scene: Group {
                 content: bind [
                     Group {

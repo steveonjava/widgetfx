@@ -30,7 +30,6 @@ package org.widgetfx;
 
 import org.widgetfx.config.*;
 import org.widgetfx.layout.*;
-import org.widgetfx.scene.*;
 import org.widgetfx.ui.*;
 import org.jfxtras.stage.*;
 import javafx.lang.FX;
@@ -72,7 +71,7 @@ var grid:Stage = Stage {
             width: bind scene.width
             height: bind scene.height
             widgets: widgets;
-            layout: GapGridBox {rows: 2, columns: 3, spacing: 5}
+            gapBox: GapGridBox {rows: 2, columns: 3, spacing: 5}
         }
     }
     scene: scene

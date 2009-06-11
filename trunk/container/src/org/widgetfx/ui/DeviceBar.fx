@@ -130,9 +130,9 @@ public class DeviceBar extends CustomNode, WidgetDragListener {
     override function hover(dockedHeight:Number, screenX:Number, screenY:Number):Rectangle2D {
         var sceneX = screenX - scene.stage.x;
         var sceneY = screenY - scene.stage.y;
-        phoneHover = phoneView.boundsInScene.contains(sceneX, sceneY);
-        laptopHover = laptopView.boundsInScene.contains(sceneX, sceneY);
-        tvHover = tvView.boundsInScene.contains(sceneX, sceneY);
+        phoneHover = phoneView.localToScene(phoneView.boundsInLocal).contains(sceneX, sceneY);
+        laptopHover = laptopView.localToScene(phoneView.boundsInLocal).contains(sceneX, sceneY);
+        tvHover = tvView.localToScene(phoneView.boundsInLocal).contains(sceneX, sceneY);
         return null;
     }
 

@@ -177,15 +177,15 @@ public class WidgetView extends Group, Constrained, DragContainer {
                         if (widget.clip != null) { // Clip Shadow (for performance)
                             Group {
                                 cache: true
-                                effect: bind if (resizing or not container.drawShadows) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
-                                content: widget.clip
+                                effect: bind if (resizing or not container.drawShadows) null else DropShadow {offsetX: 2, offsetY: 2, radius: DockDialog.DS_RADIUS}
+                                content: bind widget.clip
                                 transforms: bind Transform.scale(scale, scale)
                             }
                         } else [],
                         Group { // Drop Shadow
-                            effect: bind if (resizing or not container.drawShadows or widget.clip != null) null else DropShadow {offsetX: 2, offsetY: 2, radius: Dock.DS_RADIUS}
+                            effect: bind if (resizing or not container.drawShadows or widget.clip != null) null else DropShadow {offsetX: 2, offsetY: 2, radius: DockDialog.DS_RADIUS}
                             content: Group { // Clip Group
-                                content: widget
+                                content: bind widget
                                 clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
                                 transforms: bind Transform.scale(scale, scale)
                             }
@@ -328,7 +328,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
     }
     
     var flashPanel:JPanel;
-    
+
     function addFlash() {
         if (widget instanceof FlashWidget) {
             var flash = widget as FlashWidget;

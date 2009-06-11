@@ -30,10 +30,8 @@ package org.widgetfx.ui;
 
 import org.widgetfx.*;
 import org.widgetfx.config.*;
-import org.widgetfx.layout.*;
 import org.widgetfx.toolbar.*;
 import org.widgetfx.widgets.*;
-import org.jfxtras.scene.*;
 import org.jfxtras.stage.*;
 import java.awt.event.*;
 import javafx.animation.*;
@@ -46,10 +44,11 @@ import javafx.scene.input.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
-import javafx.scene.transform.*;
 import javafx.stage.*;
 import javax.swing.*;
-import javax.swing.SwingUtilities;
+
+import java.awt.AWTEvent;
+import java.awt.Toolkit;
 
 /**
  * @author Stephen Chin
@@ -194,12 +193,22 @@ public class WidgetFrame extends JFXDialog, DragContainer {
             }
         )
     }
+
+    var awtListener = AWTEventListener {
+        override function eventDispatched(event:AWTEvent):Void {
+            if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
+                widgetHover = true;
+            } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
+                widgetHover = false;
+            }
+        }
+    }
     
     init {
         var dragRect:Group = Group {
             var backgroundColor = Color.rgb(0xF5, 0xF5, 0xF5, 0.6);
             translateY: toolbarHeight,
-            content: [
+            content: bind [
                 Rectangle { // background
                     translateX: BORDER, translateY: BORDER
                     width: bind width - BORDER * 2, height: bind boxHeight - BORDER * 2
@@ -338,13 +347,13 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                                     Group {
                                         cache: true
                                         effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
-                                        content: widget.clip
+                                        content: bind widget.clip
                                     }
                                 } else [],
                                 Group { // Drop Shadow
                                     effect: bind if (resizing or animating or widget.clip != null) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                                     content: Group { // Clip Group
-                                        content: widget
+                                        content: bind widget
                                         clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
                                     }
                                 }
@@ -391,24 +400,15 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                         onClose: function() {
                             WidgetManager.getInstance().removeWidget(instance);
                             close();
-        		            WidgetEventQueue.getInstance().removeInterceptor(dialog);
+        		            Toolkit.getDefaultToolkit().removeAWTEventListener(awtListener);
                         }
                     }
                 ]
             }
             fill: null;
         }
-        
-        WidgetEventQueue.getInstance().registerInterceptor(dialog, EventInterceptor {
-            override function shouldIntercept(event):Boolean {
-                if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
-                    widgetHover = true;
-                } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
-                    widgetHover = false;
-                }
-                return false;
-            }
-        });
+
+        Toolkit.getDefaultToolkit().addAWTEventListener(awtListener, AWTEvent.MOUSE_EVENT_MASK);
         slider.getJSlider().addMouseListener(MouseAdapter {
             override function mousePressed(e) {
                 changingOpacity = true;

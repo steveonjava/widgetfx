@@ -29,21 +29,17 @@
 package org.widgetfx.ui;
 
 import org.widgetfx.*;
-import org.widgetfx.config.*;
 import org.widgetfx.layout.*;
 import javafx.animation.*;
 import javafx.lang.*;
 import javafx.scene.*;
 import javafx.scene.effect.*;
-import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
-import javafx.scene.text.*;
-import javafx.stage.*;
-import javafx.ext.swing.*;
+import javafx.ext.swing.SwingUtils;
 
 /**
  * @author Stephen Chin
@@ -51,7 +47,10 @@ import javafx.ext.swing.*;
 public var BORDER = 5;
 public var DS_RADIUS = 5;
 
-public class DockSkin extends Skin {
+public class DockSkin extends CustomNode, Resizable {
+
+    override function getPrefHeight(width) {-1}
+    override function getPrefWidth(height) {-1}
 
     override function contains( x:Float, y:Float):Boolean{
         return true;
@@ -59,16 +58,13 @@ public class DockSkin extends Skin {
     override function intersects( x:Float, y:Float, width: Float, height:Float):Boolean{
         return true;
     }
-
-    public var scene : Group;
-
     
     public var logoX:Number = 12;
     public var logoY:Number = 7;
     public var logoImage:java.awt.image.BufferedImage = Image {
         url: "{__DIR__}images/WidgetFX-Logo.png"
     }.platformImage as java.awt.image.BufferedImage;
-    public var jfxLogoImage = bind Image{}.impl_fromPlatformImage(logoImage as java.awt.image.BufferedImage);
+    public var jfxLogoImage = bind SwingUtils.toFXImage(logoImage);
     public var backgroundStartColor = Color.color(0.0, 0.0, 0.0, 0.2);
     public var backgroundEndColor = Color.color(0.0, 0.0, 0.0, 0.5);
     public var logoIcon:java.awt.image.BufferedImage = Image {
@@ -81,7 +77,7 @@ public class DockSkin extends Skin {
     package public-init var dockDialog:DockDialog;
 
     var logo:Node = Group {
-        translateX: bind if (logoX < 0) control.width + logoX else logoX
+        translateX: bind if (logoX < 0) width + logoX else logoX
         translateY: bind logoY
         effect: bind if (logo.hover) Glow {level: 0.7} else null
         var imageView = ImageView {
@@ -102,8 +98,8 @@ public class DockSkin extends Skin {
     var headerHeight:Integer = bind BORDER * 2 + logo.boundsInLocal.height.intValue();
     var deviceBar:DeviceBar = DeviceBar {
         owner: dockDialog
-        translateX: bind (control.width - deviceBar.layoutBounds.width) / 2
-        translateY: bind control.height - 87
+        translateX: bind (width - deviceBar.layoutBounds.width) / 2
+        translateY: bind height - 87
         opacity: bind rolloverOpacity
     }
     
@@ -113,11 +109,11 @@ public class DockSkin extends Skin {
         drawShadows: bind not dockDialog.resizing
         translateX: BORDER
         translateY: bind headerHeight
-        widgets: WidgetManager.getInstance().widgets// was bind with inverse
-        width: bind control.width - BORDER * 2
-        height: bind control.height - headerHeight
+        widgets: bind WidgetManager.getInstance().widgets with inverse
+        width: bind width - BORDER * 2
+        height: bind height - headerHeight
         gapBox: GapVBox {}
-        visible: bind control.visible
+        visible: bind visible
     }
 
     var leftBG = bind LinearGradient {
@@ -160,11 +156,11 @@ public class DockSkin extends Skin {
     var dragBar:Group = Group { // Drag Bar
         blocksMouse: true
         content: [
-            Line {endY: bind control.height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity * .175, translateX: bind if (dockDialog.dockLeft) 2 else 0},
-            Line {endY: bind control.height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity * .7, translateX: 1},
-            Line {endY: bind control.height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity * .23, translateX: bind if (dockDialog.dockLeft) 2 else 0}
+            Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity * .175, translateX: bind if (dockDialog.dockLeft) 2 else 0},
+            Line {endY: bind height, stroke: Color.BLACK, strokeWidth: 1, opacity: bind rolloverOpacity * .7, translateX: 1},
+            Line {endY: bind height, stroke: Color.WHITE, strokeWidth: 1, opacity: bind rolloverOpacity * .23, translateX: bind if (dockDialog.dockLeft) 2 else 0}
         ]
-        translateX: bind if (dockDialog.dockLeft) control.width - dragBar.boundsInLocal.width else 0
+        translateX: bind if (dockDialog.dockLeft) width - dragBar.boundsInLocal.width else 0
         cursor: Cursor.H_RESIZE
         onMouseDragged: dockDialog.resizeDragged
         onMouseReleased: function(e) {
@@ -180,8 +176,8 @@ public class DockSkin extends Skin {
         }
     }
 
-    init {
-        scene = Group {
+    override function create() {
+        Group {
             content: bind [
                 logo,
                 if (showDeviceBar) deviceBar else [],

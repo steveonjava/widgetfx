@@ -81,8 +81,7 @@ public class WidgetFXClassLoader extends URLClassLoader {
                     String alias = ks.getCertificateAlias(cert);
                     boolean trusted = alias != null && ks.isCertificateEntry(alias);
                     if (!trusted) {
-                        showDialog();
-                        showDialog();
+//                        showDialog();
                         alias = "deploymentusercert$tsflag-" + System.currentTimeMillis();
                         ks.setCertificateEntry(alias, cert);
                         System.out.println("storing key with alias = " + alias);
@@ -99,10 +98,11 @@ public class WidgetFXClassLoader extends URLClassLoader {
                 permissions.add(all);
                 return permissions;
             }
-        } catch (InterruptedException ex) {
+/*        } catch (InterruptedException ex) {
             Logger.getLogger(WidgetFXClassLoader.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InvocationTargetException ex) {
             Logger.getLogger(WidgetFXClassLoader.class.getName()).log(Level.SEVERE, null, ex);
+  */
         } catch (IOException ex) {
             Logger.getLogger(WidgetFXClassLoader.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchAlgorithmException ex) {

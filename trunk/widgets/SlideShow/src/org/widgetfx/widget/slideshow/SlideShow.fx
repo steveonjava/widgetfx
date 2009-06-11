@@ -29,10 +29,11 @@
 package org.widgetfx.widget.slideshow;
 
 import org.widgetfx.*;
+import org.widgetfx.ui.WidgetSkin;
 import org.widgetfx.config.*;
 import org.jfxtras.async.*;
 import org.jfxtras.scene.layout.*;
-import org.jfxtras.scene.layout.GridConstraints.*;
+import org.jfxtras.scene.layout.LayoutConstants.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
@@ -48,7 +49,6 @@ import java.io.*;
 import java.util.*;
 import java.lang.*;
 import javax.swing.*;
-import javax.swing.event.ChangeListener;
 
 /**
  * @author Stephen Chin
@@ -241,7 +241,7 @@ public class SlideShow extends Widget {
             rows: [
                 row([directoryLabel, directoryEdit, browseButton]),
                 row([keywordLabel, Cell {content: keywordEdit, hspan: 2}]),
-                row([durationLabel, Cell {content: durationSpinnerComponent, preferredWidth: 52}]),
+                row([durationLabel, Cell {content: durationSpinnerComponent, prefWidth: 52}]),
                 row([shuffleCheckBox])
             ]
         }
@@ -305,7 +305,7 @@ public class SlideShow extends Widget {
 
     init {
         var view:ImageView;
-        skin = Skin {
+        skin = WidgetSkin {
             scene: Group {
                 content: [
                     view = ImageView {
