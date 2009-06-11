@@ -28,12 +28,9 @@
  */
 package org.widgetfx.widget.clock;
 
-import org.jfxtras.scene.*;
-import javafx.ext.swing.*;
+import org.widgetfx.ui.WidgetSkin;
 import javafx.animation.*;
-import javafx.async.*;
 import javafx.scene.*;
-import javafx.scene.control.*;
 import javafx.scene.effect.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
@@ -44,7 +41,7 @@ import java.lang.*;
 /**
  * @author Stephen Chin
  */
-public class ClockSkin extends Skin {
+public class ClockSkin extends WidgetSkin {
     public var rimStartColor = Color.WHITE;
     public var rimEndColor = Color.BLACK;
     public var faceStartColor = Color.WHITE;

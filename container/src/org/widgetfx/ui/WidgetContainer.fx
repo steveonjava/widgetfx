@@ -30,18 +30,18 @@ package org.widgetfx.ui;
 
 import java.awt.Window;
 import java.lang.*;
-import java.net.URL;
-import javafx.animation.*;
 import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.layout.*;
 import javafx.util.*;
-import javax.jnlp.*;
-import javax.swing.JPanel;
 import org.widgetfx.*;
-import org.widgetfx.communication.*;
 import org.widgetfx.layout.*;
 import java.util.Properties;
+
+import java.awt.AWTEvent;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
+import java.lang.Void;
 
 /**
  * @author Stephen Chin
@@ -58,21 +58,20 @@ public class WidgetContainer extends Container, WidgetDragListener {
     public-read var widgetDragging = false;
     
     public var window:Window on replace {
-        WidgetEventQueue.getInstance().registerInterceptor(window, EventInterceptor {
-            override function shouldIntercept(event):Boolean {
+        Toolkit.getDefaultToolkit().addAWTEventListener(AWTEventListener {
+            override function eventDispatched(event:AWTEvent):Void {
                 if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
                     for (view in widgetViews) {
                         view.widgetHover = false;
                     }
                 } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_MOVED) {
                     for (view in widgetViews) {
-                        var screenLoc = event.getLocationOnScreen();
+                        var screenLoc = (event as java.awt.event.MouseEvent).getLocationOnScreen();
                         view.widgetHover = gapBox.getScreenBounds(view).contains(screenLoc.x, screenLoc.y);
                     }
                 }
-                return false;
             }
-        });
+        }, AWTEvent.MOUSE_EVENT_MASK + AWTEvent.MOUSE_MOTION_EVENT_MASK);
     }
     
     // if this is set, copy widget when dropped on a new container, but place the original
@@ -117,7 +116,7 @@ public class WidgetContainer extends Container, WidgetDragListener {
         widgetDragging = true;
         def showing = visible and scene != null;
         if (showing and gapBox.containsScreenXY(screenX, screenY)) {
-            gapBox.setGap(screenX, screenY, dockedHeight + Dock.DS_RADIUS * 2 + 2, true);
+            gapBox.setGap(screenX, screenY, dockedHeight + DockDialog.DS_RADIUS * 2 + 2, true);
             return gapBox.getGapScreenBounds();
         } else {
             gapBox.clearGap(true);

@@ -28,7 +28,6 @@
  */
 package org.widgetfx;
 
-import com.sun.javafx.runtime.TypeInfo;
 import com.sun.javafx.runtime.sequence.Sequence;
 import com.sun.javafx.runtime.Entry;
 import java.io.File;
@@ -51,6 +50,15 @@ import java.io.StringWriter;
 import java.net.URLClassLoader;
 import org.widgetfx.classloader.WidgetFXClassLoader;
 
+import javafx.io.http.HttpRequest;
+import java.io.InputStreamReader;
+
+import java.io.InputStream;
+
+import java.io.StringBufferInputStream;
+
+import java.io.BufferedReader;
+
 /**
  * @author Stephen Chin
  * @author Keith Combs
@@ -58,7 +66,7 @@ import org.widgetfx.classloader.WidgetFXClassLoader;
 public var MIN_WIDTH = 100;
 public var MIN_HEIGHT = 50;
 
-var JARS_TO_SKIP = ["widgetfx-api", "jfxtras"];
+var JARS_TO_SKIP = ["widgetfx-api", "jfxtras", "swing-worker"];
     
 var loadedResources:URL[] = [];
 
@@ -126,33 +134,52 @@ public class WidgetInstance {
             mainClass = "";
         } else if (jnlpUrl.toLowerCase().endsWith(".swf") or jnlpUrl.toLowerCase().endsWith(".swfi")) {
             widget = FlashWidget {
-                url: jnlpUrl
+                url: resolve(jnlpUrl)
             }
         } else {
-            try {
-                var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                var document = builder.parse(resolve(jnlpUrl));
-                var xpath = XPathFactory.newInstance().newXPath();
-                var codeBaseString = xpath.evaluate("/jnlp/@codebase", document, XPathConstants.STRING) as String;
-                if (not codeBaseString.endsWith("/")) {
-                    codeBaseString += '/';
+            HttpRequest {
+                location: resolve(jnlpUrl)
+                onInput: parseJNLP
+            }.start();
+        }
+    }
+
+    function parseJNLP(is:InputStream) {
+        try {
+            var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            var reader = new BufferedReader(new InputStreamReader(is));
+            var line;
+            var sb = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("<update check=\"background\">")) {
+                    sb.append("<update check=\"background\"/>");
+                } else {
+                    sb.append(line);
                 }
-                var codeBase = new URL(codeBaseString);
-                var widgetNodes = xpath.evaluate("/jnlp/resources/jar", document, XPathConstants.NODESET) as NodeList;
-                var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
-                var urlList:URL[];
-                for (i in [0..widgetNodes.getLength()-1]) {
-                    var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
-                    var version = (widgetNodes.item(i).getAttributes().getNamedItem("version") as Attr).getValue();
-                    if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
-                        var url = new URL(codeBase, jarUrl);
-                        if (javafx.util.Sequences.indexOf(loadedResources, url) == -1) {
-                            // todo - does this unloading work anymore?
-                            // todo - does version numbering work? - this is probably just url swizzling and cache magic
-                            if (version == null) {
-                                WidgetManager.getInstance().maybeUnload(url);
-                            }
-                            insert url into urlList;
+                sb.append('\n');
+            }
+            var document = builder.parse(new StringBufferInputStream(sb.toString()));
+            var xpath = XPathFactory.newInstance().newXPath();
+            var codeBaseString = xpath.evaluate("/jnlp/@codebase", document, XPathConstants.STRING) as String;
+            if (not codeBaseString.endsWith("/")) {
+                codeBaseString += '/';
+            }
+            var codeBase = new URL(codeBaseString);
+            var widgetNodes = xpath.evaluate("/jnlp/resources/jar", document, XPathConstants.NODESET) as NodeList;
+            var ds = ServiceManager.lookup("javax.jnlp.DownloadService") as DownloadService;
+            var urlList:URL[];
+            for (i in [0..widgetNodes.getLength()-1]) {
+                var jarUrl = (widgetNodes.item(i).getAttributes().getNamedItem("href") as Attr).getValue();
+                var version = (widgetNodes.item(i).getAttributes().getNamedItem("version") as Attr).getValue();
+                if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
+                    var url = new URL(codeBase, jarUrl);
+                    if (javafx.util.Sequences.indexOf(loadedResources, url) == -1) {
+                        // todo - does this unloading work anymore?
+                        // todo - does version numbering work? - this is probably just url swizzling and cache magic
+                        if (version == null) {
+                            WidgetManager.getInstance().maybeUnload(url);
+                        }
+                        insert url into urlList;
 //                            ds.loadResource(url, version, DownloadServiceListener {
 //                                override function downloadFailed(url, version) {
 //                                    println("download failed");
@@ -165,28 +192,38 @@ public class WidgetInstance {
 //                                override function validating(url, version, entry, total, overallPercent) {
 //                                }
 //                            });
-                            insert url into loadedResources;
-                        }
+                        insert url into loadedResources;
                     }
                 }
-                classLoader = new WidgetFXClassLoader(urlList, getClass().getClassLoader(), WidgetSecurityDialogFactoryImpl{});
-                mainClass = xpath.evaluate("/jnlp/application-desc/@main-class", document, XPathConstants.STRING) as String;
-                if (mainClass.length() == 0) {
-                    throw new IllegalStateException("No main class specified");
-                }
-                title = xpath.evaluate("/jnlp/information/title", document, XPathConstants.STRING) as String;
-            } catch (e:Throwable) {
-                createError(e);
             }
+            classLoader = new WidgetFXClassLoader(urlList, getClass().getClassLoader(), WidgetSecurityDialogFactoryImpl{});
+            var arguments = xpath.evaluate("/jnlp/application-desc/argument", document, XPathConstants.NODESET) as NodeList;
+            for (i in [0..arguments.getLength() -1]) {
+                var argument = xpath.evaluate(".", arguments.item(i), XPathConstants.STRING) as String;
+                var index = argument.indexOf("=");
+                var name = argument.substring(0, index);
+                if (name == "MainJavaFXScript") {
+                    mainClass = argument.substring(index + 1);
+                }
+            }
+
+            if (mainClass.length() == 0) {
+                throw new IllegalStateException("No main class specified");
+            }
+            title = xpath.evaluate("/jnlp/information/title", document, XPathConstants.STRING) as String;
+        } catch (e:Throwable) {
+            createError(e);
         }
     }
+
     
     public-init var mainClass:String on replace {
         if (mainClass.length() > 0) {
             try {
                 var name = Entry.entryMethodName();
                 var widgetClass:Class = Class.forName(mainClass, true, classLoader);
-                widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, null as Object) as Widget;
+                var emptySeq:Sequence = [];
+                widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, emptySeq as Object) as Widget;
             } catch (e:Throwable) {
                 createError(e);
             }

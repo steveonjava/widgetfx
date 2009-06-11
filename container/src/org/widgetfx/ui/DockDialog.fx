@@ -33,31 +33,29 @@ import java.awt.Point;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.GraphicsEnvironment;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.io.*;
-import java.lang.*;
-import java.net.*;
 import java.util.*;
-import javafx.animation.*;
 import javafx.scene.*;
 import javafx.scene.input.*;
 import javafx.scene.paint.*;
-import javafx.scene.shape.*;
 import javafx.stage.*;
-import javax.swing.*;
+import javafx.scene.shape.Rectangle;
 import org.jfxtras.menu.*;
 import org.jfxtras.stage.*;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
 import org.widgetfx.install.InstallUtil;
+import java.awt.AWTEvent;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
 
 var menuHeight = if (WidgetFXConfiguration.IS_MAC) 22 else 0;
 var DEFAULT_WIDTH = 180;
 var MIN_WIDTH = 120;
 var MAX_WIDTH = 400;
+public def DS_RADIUS = 5;
 
 var instance:DockDialog;
 
@@ -168,13 +166,11 @@ public class DockDialog extends JFXDialog {
 
     var mainMenu:NativePopupMenu;
 
-    var dock = Dock {
+    var dockSkin = DockSkin {
         dockDialog: this
         width: bind width
         height: bind height
     }
-
-    var dockSkin = bind dock.skin as DockSkin;
 
     package var mouseOver:Boolean;
 
@@ -241,7 +237,6 @@ public class DockDialog extends JFXDialog {
 
     public function addWidget():Void {
         AddWidgetDialog {
-            owner: this
             addHandler: function(jnlpUrl:String):Void {
                 WidgetManager.getInstance().addWidget(jnlpUrl);
             }
@@ -350,7 +345,7 @@ public class DockDialog extends JFXDialog {
     function loadContent():Void {
         onClose = function() {WidgetManager.getInstance().exit()};
         scene = Scene {
-            stylesheets: bind WidgetManager.getInstance().stylesheets
+//            stylesheets: bind WidgetManager.getInstance().stylesheets
             content: [
                 Rectangle {
                     width: bind width
@@ -358,12 +353,13 @@ public class DockDialog extends JFXDialog {
                     fill: bind transparentBG
                     opacity: bind dockSkin.rolloverOpacity
                 },
-                dock
+                dockSkin
             ]
-            fill: null
-        };
-        WidgetEventQueue.getInstance().registerInterceptor(dialog, EventInterceptor {
-            override function shouldIntercept(event):Boolean {
+            fill: Color.TRANSPARENT
+        }
+
+        Toolkit.getDefaultToolkit().addAWTEventListener(AWTEventListener {
+            override function eventDispatched(event:AWTEvent):Void {
                 if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
                     mouseOver = true;
                 } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
@@ -372,10 +368,9 @@ public class DockDialog extends JFXDialog {
                     draggingDock = false;
                 } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_DRAGGED) {
                     draggingDock = true;
-                    getGraphicsConfiguration(event.getLocationOnScreen());
+                    getGraphicsConfiguration((event as java.awt.event.MouseEvent).getLocationOnScreen());
                 }
-                return false;
             }
-        });
+        }, AWTEvent.MOUSE_EVENT_MASK + AWTEvent.MOUSE_MOTION_EVENT_MASK);
     }
 }

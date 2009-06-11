@@ -296,7 +296,7 @@ public class WidgetManager {
     }
 
     public function getWidget(url:String, properties:Properties):WidgetInstance {
-        println("adding widget: {url}");
+        println("get widget: {url}");
         if (hasWidget(url, properties)) {
             return null;
         }
@@ -308,6 +308,7 @@ public class WidgetManager {
     }
 
     public function addWidget(url:String):WidgetInstance {
+        println("adding widget: {url}");
         var instance = getWidget(url);
         insert instance into widgets;
         return instance;
