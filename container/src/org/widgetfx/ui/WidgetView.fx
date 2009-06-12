@@ -149,18 +149,24 @@ public class WidgetView extends Group, Constrained, DragContainer {
     }
     
     override var maxWidth on replace oldMaxWidth {
-        resize(oldMaxWidth as Number, maxHeight);
-        updateFlashBounds();
+        if (isInitialized(maxHeight)) {
+            resize(oldMaxWidth as Number, maxHeight);
+            updateFlashBounds();
+        }
     }
     
     override var maxHeight on replace oldMaxHeight {
-        resize(maxWidth, oldMaxHeight as Number);
-        updateFlashBounds();
+        if (isInitialized(maxWidth)) {
+            resize(maxWidth, oldMaxHeight as Number);
+            updateFlashBounds();
+        }
     }
     
     override var cache = true;
     
     init {
+        var clip = widget.clip;
+        widget.clip = null;
         content = [
             Rectangle { // Invisible Spacer
                 height: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER
@@ -173,19 +179,19 @@ public class WidgetView extends Group, Constrained, DragContainer {
                 cache: true
                 content: Group { // Alert
                     effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
-                    content: bind [
-                        if (widget.clip != null) { // Clip Shadow (for performance)
+                    content: [
+                        if (clip != null) { // Clip Shadow (for performance)
                             Group {
                                 cache: true
                                 effect: bind if (resizing or not container.drawShadows) null else DropShadow {offsetX: 2, offsetY: 2, radius: DockDialog.DS_RADIUS}
-                                content: bind widget.clip
+                                content: clip
                                 transforms: bind Transform.scale(scale, scale)
                             }
                         } else [],
                         Group { // Drop Shadow
                             effect: bind if (resizing or not container.drawShadows or widget.clip != null) null else DropShadow {offsetX: 2, offsetY: 2, radius: DockDialog.DS_RADIUS}
                             content: Group { // Clip Group
-                                content: bind widget
+                                content: widget
                                 clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
                                 transforms: bind Transform.scale(scale, scale)
                             }

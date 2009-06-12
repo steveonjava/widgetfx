@@ -187,6 +187,8 @@ public class WidgetManager {
 
     var updating:Boolean;
 
+    var maxId = 0;
+
     var widgetIds:Integer[] on replace [i..j]=newWidgetIds {
         if (not widgetRunner and not updating) {
             try {
@@ -267,7 +269,9 @@ public class WidgetManager {
     
     function loadWidget(id:Integer):WidgetInstance {
         var instance = WidgetInstance{id: id};
-        instance.load(null);
+        if (id > maxId) {
+            maxId = id;
+        }
         return instance;
     }
     
@@ -290,26 +294,25 @@ public class WidgetManager {
         }
         return false;
     }
-    
-    public function getWidget(url:String):WidgetInstance {
-        getWidget(url, null);
-    }
 
-    public function getWidget(url:String, properties:Properties):WidgetInstance {
+    public function getWidget(url:String, properties:Properties, onLoad:function(instance:WidgetInstance)):WidgetInstance {
         println("get widget: {url}");
         if (hasWidget(url, properties)) {
             return null;
         }
-        var maxId = if (widgetIds.isEmpty()) 0 else (Sequences.max(widgetIds) as Integer).intValue();
-        var instance = WidgetInstance{jnlpUrl: url, id: maxId + 1};
-        instance.load(properties);
+        var instance = WidgetInstance{
+            jnlpUrl: url
+            id: ++maxId
+            widgetProperties: properties
+            onLoad: onLoad
+        }
         addRecentWidget(instance);
         return instance;
     }
 
     public function addWidget(url:String):WidgetInstance {
         println("adding widget: {url}");
-        var instance = getWidget(url);
+        var instance = getWidget(url, null, null);
         insert instance into widgets;
         return instance;
     }
