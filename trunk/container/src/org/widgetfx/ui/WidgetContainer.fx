@@ -43,6 +43,9 @@ import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.lang.Void;
 
+import java.awt.Component;
+import javax.swing.SwingUtilities;
+
 /**
  * @author Stephen Chin
  * @author Keith Combs
@@ -51,8 +54,8 @@ public class WidgetContainer extends Container, WidgetDragListener {
     
     public var widgets:WidgetInstance[];
     
-    public-read var dockedWidgets = bind widgets[w|w.docked];
-    
+    public-read var dockedWidgets = bind widgets[w|w.docked and w.initialized];
+
     public var rolloverOpacity:Number;
 
     public-read var widgetDragging = false;
@@ -60,6 +63,9 @@ public class WidgetContainer extends Container, WidgetDragListener {
     public var window:Window on replace {
         Toolkit.getDefaultToolkit().addAWTEventListener(AWTEventListener {
             override function eventDispatched(event:AWTEvent):Void {
+                if (not SwingUtilities.isDescendingFrom(event.getSource() as Component, window)) {
+                    return;
+                }
                 if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
                     for (view in widgetViews) {
                         view.widgetHover = false;
@@ -144,8 +150,9 @@ public class WidgetContainer extends Container, WidgetDragListener {
         def showing = visible and scene != null;
         if (showing and gapBox.containsScreenXY(screenX, screenY) and not WidgetManager.getInstance().hasWidget(jnlpUrl, properties)) {
             FX.deferAction(function():Void {
-                var instance = WidgetManager.getInstance().getWidget(jnlpUrl, properties);
-                dockAfterHover(instance);
+                var instance = WidgetManager.getInstance().getWidget(jnlpUrl, properties, function(instance:WidgetInstance) {
+                    dockAfterHover(instance);
+                });
             });
             return gapBox.getGapScreenBounds();
         } else {

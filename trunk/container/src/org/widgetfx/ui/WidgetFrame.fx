@@ -50,6 +50,8 @@ import javax.swing.*;
 import java.awt.AWTEvent;
 import java.awt.Toolkit;
 
+import java.awt.Component;
+
 /**
  * @author Stephen Chin
  */
@@ -196,6 +198,9 @@ public class WidgetFrame extends JFXDialog, DragContainer {
 
     var awtListener = AWTEventListener {
         override function eventDispatched(event:AWTEvent):Void {
+            if (not SwingUtilities.isDescendingFrom(event.getSource() as Component, dialog)) {
+                return;
+            }
             if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
                 widgetHover = true;
             } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
@@ -208,7 +213,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
         var dragRect:Group = Group {
             var backgroundColor = Color.rgb(0xF5, 0xF5, 0xF5, 0.6);
             translateY: toolbarHeight,
-            content: bind [
+            content: [
                 Rectangle { // background
                     translateX: BORDER, translateY: BORDER
                     width: bind width - BORDER * 2, height: bind boxHeight - BORDER * 2
@@ -347,13 +352,13 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                                     Group {
                                         cache: true
                                         effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
-                                        content: bind widget.clip
+                                        content: widget.clip
                                     }
                                 } else [],
                                 Group { // Drop Shadow
                                     effect: bind if (resizing or animating or widget.clip != null) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
                                     content: Group { // Clip Group
-                                        content: bind widget
+                                        content: widget
                                         clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
                                     }
                                 }

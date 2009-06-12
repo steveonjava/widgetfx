@@ -60,11 +60,12 @@ function runWidget(jnlpUrl:String) {
     var instance = WidgetInstance {
         jnlpUrl: jnlpUrl
         docked: false
+        onLoad: function(instance:WidgetInstance) {
+            instance.frame.onClose = closeHook;
+        }
     };
-    widgetCount++;
-    instance.load(null);
-    instance.frame.onClose = closeHook;
     WidgetManager.getInstance().addRecentWidget(instance);
+    widgetCount++;
 }
 
 WidgetManager.createWidgetRunnerInstance();

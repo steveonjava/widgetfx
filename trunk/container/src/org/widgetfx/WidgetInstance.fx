@@ -74,6 +74,12 @@ public class WidgetInstance {
 
     public-init var id:Integer;
 
+    public-init var widgetProperties:java.util.Properties;
+
+    public-init var onLoad:function(instance:WidgetInstance):Void;
+
+    public-read var initialized = false;
+
     bound function getPropertyFile():File {
         var filename = if (id == 0) jnlpUrl.replaceAll("[^a-zA-Z0-9]", "_") else id;
         return new File(WidgetFXConfiguration.getInstance().configFolder, "widgets/{filename}.config");
@@ -152,7 +158,7 @@ public class WidgetInstance {
             var sb = new StringBuilder();
             while ((line = reader.readLine()) != null) {
                 if (line.contains("<update check=\"background\">")) {
-                    sb.append("<update check=\"background\"/>");
+                    sb.append("<update />");
                 } else {
                     sb.append(line);
                 }
@@ -265,6 +271,18 @@ public class WidgetInstance {
         if (widget != null) {
             dockedWidth = undockedWidth = widget.width;
             dockedHeight = undockedHeight = widget.height;
+            initializeDimensions();
+            validateConfig();
+            if (widget.configuration.onLoad != null) {
+                try {
+                    widget.configuration.onLoad();
+                } catch (e:Throwable) {
+                    e.printStackTrace();
+                }
+            }
+            onLoad(this);
+            persister.save(); // initial save for loaded widget
+            initialized = true;
         }
     }
     public var title:String;
@@ -356,25 +374,16 @@ public class WidgetInstance {
             }
         }
     }
-    
-    public function load(properties:Properties) {
-        if (properties != null) {
-            persister.load(properties);
-            persister.save(); // initial save
-        } else if (not persister.load()) {
-            persister.save(); // initial save
+
+    init {
+        if (widgetProperties != null) {
+            persister.load(widgetProperties);
+        } else {
+            persister.load();
         }
+
         if (jnlpUrl.isEmpty()) {
             createError(new java.lang.IllegalStateException("Widget URL is empty"));
-        }
-        initializeDimensions();
-        validateConfig();
-        if (widget.configuration.onLoad != null) {
-            try {
-                widget.configuration.onLoad();
-            } catch (e:Throwable) {
-                e.printStackTrace();
-            }
         }
     }
     

@@ -51,6 +51,10 @@ import java.awt.AWTEvent;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 
+import javax.swing.SwingUtilities;
+
+import java.awt.Component;
+
 var menuHeight = if (WidgetFXConfiguration.IS_MAC) 22 else 0;
 var DEFAULT_WIDTH = 180;
 var MIN_WIDTH = 120;
@@ -360,6 +364,9 @@ public class DockDialog extends JFXDialog {
 
         Toolkit.getDefaultToolkit().addAWTEventListener(AWTEventListener {
             override function eventDispatched(event:AWTEvent):Void {
+                if (not SwingUtilities.isDescendingFrom(event.getSource() as Component, dialog)) {
+                    return;
+                }
                 if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
                     mouseOver = true;
                 } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {

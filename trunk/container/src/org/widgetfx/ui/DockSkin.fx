@@ -109,7 +109,7 @@ public class DockSkin extends CustomNode, Resizable {
         drawShadows: bind not dockDialog.resizing
         translateX: BORDER
         translateY: bind headerHeight
-        widgets: bind WidgetManager.getInstance().widgets with inverse
+        widgets: bind WidgetManager.getInstance().widgets
         width: bind width - BORDER * 2
         height: bind height - headerHeight
         gapBox: GapVBox {}

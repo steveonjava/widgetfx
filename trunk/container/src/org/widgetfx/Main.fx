@@ -50,6 +50,8 @@ for (arg in FX.getArguments()) {
     }
 }
 
+println("test1");
+
 DockDialog.createInstance();
 
 FX.deferAction(

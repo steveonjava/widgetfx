@@ -194,6 +194,9 @@ public class Widget extends Control {
      * a different jnlp filename.
      */
     public-init protected var launchHref:String;
+
+    // todo - remove this once it is no longer a control
+    override var blocksMouse = false;
     
     init {
         if (autoLaunch) {
