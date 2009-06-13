@@ -167,6 +167,9 @@ public class WidgetView extends Group, Constrained, DragContainer {
     init {
         var clip = widget.clip;
         widget.clip = null;
+        if (widget.parent instanceof Group) {
+            delete widget from (widget.parent as Group).content;
+        }
         content = [
             Rectangle { // Invisible Spacer
                 height: bind widget.height * scale + TOP_BORDER + BOTTOM_BORDER
@@ -260,21 +263,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
     };
     
     override var onMousePressed = function(e:MouseEvent):Void {
-        if (e.button == MouseButton.PRIMARY) {
-            prepareDrag(e.x, e.y, e.screenX, e.screenY);
-        }
-    }
-
-    override var onMouseDragged = function(e:MouseEvent):Void {
-        if (not docking) {
-        	doDrag(e.screenX, e.screenY);
-		}
-    };
-    
-    override var onMouseReleased = function(e:MouseEvent):Void {
-        if (e.button == MouseButton.PRIMARY) {
-            finishDrag(e.screenX, e.screenY);
-        }
+        container.startDrag(this, e);
     }
 
     override var hoverContainer on replace {

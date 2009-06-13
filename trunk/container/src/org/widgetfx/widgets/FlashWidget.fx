@@ -28,24 +28,16 @@
  */
 package org.widgetfx.widgets;
 
-import java.awt.EventQueue;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
 import java.io.*;
 import java.lang.*;
-import javafx.ext.swing.*;
 import javafx.scene.*;
-import javafx.scene.control.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import org.jdic.web.BrComponent;
 import org.jdic.web.event.*;
-import org.jfxtras.scene.control.AbstractSkin;
 import org.widgetfx.*;
 import org.widgetfx.install.InstallUtil;
-import org.widgetfx.layout.*;
 import org.widgetfx.ui.*;
 
 /**
@@ -205,7 +197,5 @@ public class FlashWidget extends Widget, BrComponentListener {
     
     override var height = 300;
     
-    override var skin = WidgetSkin {
-        scene: Rectangle {width: bind width, height: bind height, fill: Color.rgb(0xD9, 0xD9, 0xD9)}
-    }
+    override var content =  Rectangle {width: bind width, height: bind height, fill: Color.rgb(0xD9, 0xD9, 0xD9)}
 }
