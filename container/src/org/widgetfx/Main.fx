@@ -36,6 +36,8 @@ import org.widgetfx.ui.*;
 /**
  * @author Stephen Chin
  */
+java.lang.System.setProperty("javafx.toolkit", "org.widgetfx.toolkit.WidgetToolkit");
+
 java.lang.System.setProperty("apple.awt.UIElement", "true");
 
 try { // try nimbus look and feel first
@@ -49,8 +51,6 @@ for (arg in FX.getArguments()) {
         WidgetFXConfiguration.TRANSPARENT = false;
     }
 }
-
-println("test1");
 
 DockDialog.createInstance();
 

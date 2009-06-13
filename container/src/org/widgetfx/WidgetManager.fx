@@ -29,7 +29,6 @@
 package org.widgetfx;
 
 import java.lang.Long;
-import java.lang.System;
 import java.util.Arrays;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -72,9 +71,9 @@ public class WidgetManager {
     public-read var codebase = WidgetFXConfiguration.getInstance().codebase;
     
     var initialWidgets = if (WidgetFXConfiguration.getInstance().devMode) [
-        "../../widgets/Clock/dist/Clock.jnlp",
-        "../../widgets/SlideShow/dist/SlideShow.jnlp",
-        "../../widgets/WebFeed/dist/WebFeed.jnlp"
+        "../widgets/Clock/dist/Clock.jnlp",
+        "../widgets/SlideShow/dist/SlideShow.jnlp",
+        "../widgets/WebFeed/dist/WebFeed.jnlp"
     ] else [
         "{codebase}widgets/Clock/launch.jnlp",
         "{codebase}widgets/SlideShow/launch.jnlp",

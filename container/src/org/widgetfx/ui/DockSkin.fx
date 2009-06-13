@@ -104,12 +104,13 @@ public class DockSkin extends CustomNode, Resizable {
     }
     
     package var container:WidgetContainer = WidgetContainer {
+        def widgetManager =WidgetManager.getInstance();
         window: bind dockDialog.dialog
         rolloverOpacity: bind rolloverOpacity
         drawShadows: bind not dockDialog.resizing
         translateX: BORDER
         translateY: bind headerHeight
-        widgets: bind WidgetManager.getInstance().widgets
+        widgets: bind widgetManager.widgets with inverse
         width: bind width - BORDER * 2
         height: bind height - headerHeight
         gapBox: GapVBox {}

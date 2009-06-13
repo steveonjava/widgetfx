@@ -198,7 +198,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
 
     var awtListener = AWTEventListener {
         override function eventDispatched(event:AWTEvent):Void {
-            if (not SwingUtilities.isDescendingFrom(event.getSource() as Component, dialog)) {
+            if (event.getSource() instanceof Component and not SwingUtilities.isDescendingFrom(event.getSource() as Component, dialog)) {
                 return;
             }
             if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
@@ -331,10 +331,16 @@ public class WidgetFrame extends JFXDialog, DragContainer {
             }
         }
         var slider = SwingSlider {
+            def widgetInstance = instance;
             minimum: 20
             maximum: 100
-            value: bind instance.opacity with inverse
+            value: bind widgetInstance.opacity with inverse
             width: bind width * 2 / 5
+        }
+        var clip = widget.clip;
+        widget.clip = null;
+        if (widget.parent instanceof Group) {
+            delete widget from (widget.parent as Group).content;
         }
         scene = Scene {
             stylesheets: bind WidgetManager.getInstance().stylesheets
@@ -348,11 +354,11 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                         content: Group { // Alert
                             effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
                             content: bind [
-                                if (widget.clip != null) { // Clip Shadow (for performance)
+                                if (clip != null) { // Clip Shadow (for performance)
                                     Group {
                                         cache: true
                                         effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
-                                        content: widget.clip
+                                        content: clip
                                     }
                                 } else [],
                                 Group { // Drop Shadow

@@ -46,6 +46,10 @@ import java.lang.Void;
 import java.awt.Component;
 import javax.swing.SwingUtilities;
 
+import javafx.scene.input.MouseEvent;
+
+import javafx.scene.input.MouseButton;
+
 /**
  * @author Stephen Chin
  * @author Keith Combs
@@ -63,7 +67,7 @@ public class WidgetContainer extends Container, WidgetDragListener {
     public var window:Window on replace {
         Toolkit.getDefaultToolkit().addAWTEventListener(AWTEventListener {
             override function eventDispatched(event:AWTEvent):Void {
-                if (not SwingUtilities.isDescendingFrom(event.getSource() as Component, window)) {
+                if (event.getSource() instanceof Component and not SwingUtilities.isDescendingFrom(event.getSource() as Component, window)) {
                     return;
                 }
                 if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
@@ -102,9 +106,28 @@ public class WidgetContainer extends Container, WidgetDragListener {
     public var drawShadows:Boolean;
     
     public var dragging:Boolean;
+
+    public var draggingView:WidgetView;
     
     var widgetViews:WidgetView[] = bind for (instance in dockedWidgets) createWidgetView(instance) on replace {
         gapBox.content = widgetViews;
+    }
+
+    public function startDrag(view:WidgetView, e:MouseEvent):Void {
+        if (e.button == MouseButton.PRIMARY) {
+            view.prepareDrag(e.x, e.y, e.screenX, e.screenY);
+            draggingView = view;
+        }
+    }
+
+    override var onMouseDragged = function(e:MouseEvent):Void {
+        draggingView.doDrag(e.screenX, e.screenY);
+    };
+
+    override var onMouseReleased = function(e:MouseEvent):Void {
+        if (e.button == MouseButton.PRIMARY) {
+            draggingView.finishDrag(e.screenX, e.screenY);
+        }
     }
     
     function createWidgetView(instance:WidgetInstance):WidgetView {

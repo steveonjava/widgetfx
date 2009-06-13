@@ -29,13 +29,11 @@
 package org.widgetfx.widgets;
 
 import javafx.scene.*;
-import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
 import javafx.scene.text.*;
 import org.widgetfx.Widget;
-import org.widgetfx.ui.WidgetSkin;
 
 /**
  * @author Stephen Chin
@@ -52,47 +50,36 @@ public class ErrorWidget extends Widget {
     
     override var height = 150;
     
-    override var skin = WidgetSkin {
-        scene: Group {
-            clip: Rectangle {
-                smooth: false
-                width: bind width
-                height: bind height
-                arcWidth: 16
-                arcHeight: 16
-            }
-            content: [
-                Rectangle {
-                    width: bind width
-                    height: bind height
-                    fill: Color.BLACK
-                },
-                Line {
-                    endX: bind width
-                    endY: bind height
-                    stroke: X_COLOR
-                    strokeWidth: 40
-                },
-                Line {
-                    startX: bind width
-                    endY: bind height
-                    stroke: X_COLOR
-                    strokeWidth: 40
-                },
-                Group {
-                    translateX: bind width / 2
-                    translateY: bind height / 2 - LINE_HEIGHT * (errorLines.size().doubleValue() / 2 - 0.5)
-                    content: bind for (error in errorLines) {
-                        var text:Text;
-                        text = Text {
-                            translateX: - text.boundsInLocal.width / 2
-                            translateY: indexof error * LINE_HEIGHT
-                            content: error
-                            fill: Color.WHITE
-                        }
-                    }
+    override var content = [
+        Rectangle {
+            width: bind width
+            height: bind height
+            fill: Color.BLACK
+        },
+        Line {
+            endX: bind width
+            endY: bind height
+            stroke: X_COLOR
+            strokeWidth: 40
+        },
+        Line {
+            startX: bind width
+            endY: bind height
+            stroke: X_COLOR
+            strokeWidth: 40
+        },
+        Group {
+            translateX: bind width / 2
+            translateY: bind height / 2 - LINE_HEIGHT * (errorLines.size().doubleValue() / 2 - 0.5)
+            content: bind for (error in errorLines) {
+                var text:Text;
+                text = Text {
+                    translateX: - text.boundsInLocal.width / 2
+                    translateY: indexof error * LINE_HEIGHT
+                    content: error
+                    fill: Color.WHITE
                 }
-            ]
+            }
         }
-    }
+    ];
 }

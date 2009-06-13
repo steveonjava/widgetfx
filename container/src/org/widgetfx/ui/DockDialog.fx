@@ -364,7 +364,7 @@ public class DockDialog extends JFXDialog {
 
         Toolkit.getDefaultToolkit().addAWTEventListener(AWTEventListener {
             override function eventDispatched(event:AWTEvent):Void {
-                if (not SwingUtilities.isDescendingFrom(event.getSource() as Component, dialog)) {
+                if (event.getSource() instanceof Component and not SwingUtilities.isDescendingFrom(event.getSource() as Component, dialog)) {
                     return;
                 }
                 if (event.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED) {
