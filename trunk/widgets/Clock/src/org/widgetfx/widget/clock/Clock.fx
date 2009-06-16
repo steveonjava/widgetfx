@@ -32,6 +32,20 @@ import java.lang.Math.*;
 import javafx.scene.shape.*;
 import org.widgetfx.*;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.scene.Group;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.RadialGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextOrigin;
+import javafx.scene.transform.Transform;
+import javafx.util.Math;
+
 /**
  * @author Stephen Chin
  */
@@ -39,8 +53,139 @@ public class Clock extends Widget {
     override var width = 105;
     override var height = 105;
     override var resizable = false;
-    override var skin = ClockSkin {}
     override var clip = Circle {
         centerX: bind width / 2, centerY: bind height / 2, radius: bind min(width, height) / 2
+    }
+
+    public var rimStartColor = Color.WHITE;
+    public var rimEndColor = Color.BLACK;
+    public var faceStartColor = Color.WHITE;
+    public var faceEndColor = Color.BLACK;
+    public var shadowColor = Color.BLACK;
+    public var digitColor = Color.WHITE;
+    public var hourHandColor = Color.WHITE;
+    public var minuteHandColor = Color.WHITE;
+    public var secondHandColor = Color.DODGERBLUE;
+
+    var date = java.util.Date {};
+    var bounce : Boolean; // Provides a little analog "jerk"
+    var seconds = bind date.getSeconds();
+    var minutes = bind date.getMinutes();
+    var hours = bind date.getHours();
+
+    var timeline = Timeline {
+        repeatCount: Timeline.INDEFINITE
+        keyFrames: [
+            KeyFrame {time: 0.96s, values: bounce => true, action: function():Void {
+                    date = java.util.Date {}
+                }
+            },
+            KeyFrame {time: 1s, values: bounce => false}]
+    }
+
+    init {
+        timeline.play();
+        content = [
+            Group { // Static Content
+                cache: true
+                content: [
+                    Circle { // Clock Rim
+                        centerX: bind width / 2, centerY: bind height / 2, radius: bind Math.min(width, height) / 2
+                        fill: bind RadialGradient {
+                            centerX: 0.6, centerY: -0.6, radius: 2.0
+                            stops: [
+                                Stop {offset: 0.0, color: rimStartColor},
+                                Stop {offset: 0.35, color: rimStartColor},
+                                Stop {offset: 0.5, color: rimEndColor},
+                                Stop {offset: 0.7, color: rimStartColor},
+                                Stop {offset: 0.85, color: rimEndColor}
+                            ]
+                        }
+                    },
+                    Circle { // Clock Shadow
+                        centerX: bind width / 2, centerY: bind height / 2, radius: bind Math.min(width, height) / 2 - 2.5
+                        fill: bind shadowColor
+                    },
+                    Circle { // Clock Face
+                        // workaround to prevent the InnerShadow from affecting the size of the clock
+                        centerX: bind width / 2, centerY: bind height / 2 - 0.5, radius: bind Math.min(width, height) / 2 - 5.5
+                        fill: bind RadialGradient {
+                            centerX: 0.6, centerY: -0.75, radius: 1.5
+                            stops: [
+                                Stop {offset: 0.0, color: faceStartColor},
+                                Stop {offset: 1.0, color: faceEndColor}
+                            ]
+                        }
+                    },
+                    Group { // Clock Digits
+                        translateX: bind width / 2 - 3, translateY: bind height / 2 + 4
+                        content: for( i in [1..12] )
+                            Text {
+                                var radians = Math.toRadians(30 * i - 90)
+                                translateX: bind (width / 2 * .8) * Math.cos(radians)
+                                translateY: bind (height / 2 * .8) * Math.sin(radians)
+                                content: "{i}"
+                                font: Font {name: "SansSerif", size: 9}
+                                textOrigin: TextOrigin.BASELINE
+                                textAlignment: TextAlignment.CENTER
+                                fill: bind digitColor
+                            }
+                    },
+                ]
+            },
+            Group { // Clock Hands
+                translateX: bind width / 2, translateY: bind height / 2
+
+                content: [
+                    Group { // Hour Hand
+                        cache: true
+                        effect: DropShadow {offsetY: 1, offsetX: 0, radius: 2}
+                        content: Line {startX: 0, startY: bind width / 2 * .2, endX: 0, endY: bind -width / 2 * .46
+                            strokeWidth: 4, stroke: bind hourHandColor
+                            transforms: bind Transform.rotate(hours * 30 + minutes / 2, 0, 0)
+                        }
+                    },
+                    Group { // Minute Hand
+                        cache: true
+                        effect: DropShadow {offsetY: 2, offsetX: 0, radius: 2}
+                        content: Line {startX: 0, startY: bind width / 2 * .2, endX: 0, endY: bind -width / 2 * .7
+                            strokeWidth: 4, stroke: bind minuteHandColor
+                            transforms: bind Transform.rotate(minutes * 6 + seconds / 10, 0, 0)
+                        }
+                    },
+                    Group { // Second Hand
+                        effect: DropShadow {offsetY: 3, offsetX: 0, radius: 2}
+                        content: Group {
+                            content: [
+                                Line {startX: 0, startY: bind width / 2 * .45, endX: 0, endY: bind -width / 2 * .75
+                                    strokeWidth: 1, stroke: bind secondHandColor
+                                },
+                                Line {startX: 0, startY: bind width / 2 * .45, endX: 0, endY: bind width / 2 * .25
+                                    strokeWidth: 3, stroke: bind secondHandColor
+                                }
+                            ]
+                            transforms: bind Transform.rotate(seconds * 6 + (if (bounce) 2 else 0), 0, 0)
+                        }
+                    }
+                ]
+            },
+            Group { // Center Pin
+                cache: true
+                content: Circle {
+                    centerX: bind width / 2, centerY: bind height / 2, radius: 3.2
+                    stroke: Color.DARKSLATEGRAY
+                    effect: DropShadow {offsetY: 1, radius: 2}
+                    fill: RadialGradient {
+                        centerX: .5
+                        centerY: .5
+                        stops: [
+                            Stop {offset: 0.1, color: Color.DARKSLATEGRAY},
+                            Stop {offset: 0.3, color: Color.GRAY},
+                            Stop {offset: 0.6, color: Color.LIGHTGRAY}
+                        ]
+                    }
+                }
+            }
+        ];
     }
 }

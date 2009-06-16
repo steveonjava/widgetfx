@@ -35,9 +35,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.regex.Pattern;
 import javafx.lang.FX;
-import javafx.scene.control.*;
 import javax.jnlp.BasicService;
 import javax.jnlp.ServiceManager;
+
+import javafx.scene.layout.Panel;
 
 /**
  * Enables or disabled auto launch facility for testing widgets.  The default value
@@ -75,14 +76,12 @@ public var autoLaunch = true;
  * widget = Widget {
  *     width = 100;
  *     height = 100;
- *     skin: Skin {
- *         scene: Ellipse {
- *             centerX: bind widget.width / 2
- *             centerY: bind widget.height / 2
- *             radiusX: bind widget.width / 2
- *             radiusY: bind widget.height / 2
- *             fill: Color.RED
- *         }
+ *     content: Ellipse {
+ *         centerX: bind widget.width / 2
+ *         centerY: bind widget.height / 2
+ *         radiusX: bind widget.width / 2
+ *         radiusY: bind widget.height / 2
+ *         fill: Color.RED
  *     }
  * }
  * </pre></blockquote>
@@ -107,7 +106,7 @@ public var autoLaunch = true;
  * @author Stephen Chin
  * @author Keith Combs
  */
-public class Widget extends Control {
+public class Widget extends Panel {
 
     /**
     * The external url to the widget runner process that will be launched.
@@ -194,9 +193,6 @@ public class Widget extends Control {
      * a different jnlp filename.
      */
     public-init protected var launchHref:String;
-
-    // todo - remove this once it is no longer a control
-    override var blocksMouse = false;
     
     init {
         if (autoLaunch) {

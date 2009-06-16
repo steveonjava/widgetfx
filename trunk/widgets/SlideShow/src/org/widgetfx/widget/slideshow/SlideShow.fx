@@ -29,7 +29,6 @@
 package org.widgetfx.widget.slideshow;
 
 import org.widgetfx.*;
-import org.widgetfx.ui.WidgetSkin;
 import org.widgetfx.config.*;
 import org.jfxtras.async.*;
 import org.jfxtras.scene.layout.*;
@@ -305,38 +304,34 @@ public class SlideShow extends Widget {
 
     init {
         var view:ImageView;
-        skin = WidgetSkin {
-            scene: Group {
+        content = [
+            view = ImageView {
+                translateX: bind (width - view.boundsInLocal.width) / 2
+                translateY: bind (height - view.boundsInLocal.height) / 2
+                fitWidth: bind width
+                fitHeight: bind height
+                preserveRatio: true
+                smooth: true
+                image: bind currentImage
+            },
+            Group {
+                var text:Text;
                 content: [
-                    view = ImageView {
-                        translateX: bind (width - view.boundsInLocal.width) / 2
-                        translateY: bind (height - view.boundsInLocal.height) / 2
-                        fitWidth: bind width
-                        fitHeight: bind height
-                        preserveRatio: true
-                        smooth: true
-                        image: bind currentImage
+                    Rectangle {
+                        width: bind width
+                        height: bind height
+                        fill: Color.BLACK
+                        arcWidth: 8, arcHeight: 8
                     },
-                    Group {
-                        var text:Text;
-                        content: [
-                            Rectangle {
-                                width: bind width
-                                height: bind height
-                                fill: Color.BLACK
-                                arcWidth: 8, arcHeight: 8
-                            },
-                            text = Text {
-                                translateY: bind height / 2
-                                translateX: bind (width - text.boundsInLocal.width) / 2
-                                content: bind status
-                                fill: Color.WHITE
-                            }
-                        ]
-                        opacity: bind if (status.isEmpty()) 0 else 1;
+                    text = Text {
+                        translateY: bind height / 2
+                        translateX: bind (width - text.boundsInLocal.width) / 2
+                        content: bind status
+                        fill: Color.WHITE
                     }
                 ]
+                opacity: bind if (status.isEmpty()) 0 else 1;
             }
-        }
+        ];
     }
 }
