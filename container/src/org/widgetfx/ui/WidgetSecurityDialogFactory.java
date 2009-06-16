@@ -10,5 +10,5 @@ package org.widgetfx.ui;
  * @author kcombs
  */
 public interface WidgetSecurityDialogFactory {
-    boolean securityWarning(String message);
+    boolean securityWarning(String companyName, String publisherName, String certificateUrl, boolean trusted);
 }

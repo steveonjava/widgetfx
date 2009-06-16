@@ -31,12 +31,10 @@ package org.widgetfx.widget.webfeed;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.jfxtras.scene.layout.*;
 import org.widgetfx.*;
-import org.widgetfx.ui.WidgetSkin;
 import org.widgetfx.config.*;
 import javafx.ext.swing.*;
 import javafx.animation.*;
 import javafx.scene.*;
-import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
@@ -215,51 +213,46 @@ public class WebFeed extends Widget {
             width: bind width, height: bind height
             arcHeight: 7, arcWidth: 7
         }
-        skin = WidgetSkin {
-            scene: Group {
-                content: bind [
-                    Group {
-                        cache: true
-                        content: Rectangle {
-                            // todo - this is too slow, figure out something else
-    //                      effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
-                            width: bind width, height: bind height
-                            fill: Color.BLACK
-                            arcHeight: 7, arcWidth: 7
-                        }
+        content = [
+            Group {
+                cache: true
+                content: Rectangle {
+                    // todo - this is too slow, figure out something else
+//                      effect: Lighting {light: PointLight {x: 10, y: 10, z: 10}}
+                    width: bind width, height: bind height
+                    fill: Color.BLACK
+                    arcHeight: 7, arcWidth: 7
+                }
+            },
+            VBox {
+                visible: bind not error.isEmpty()
+                translateY: bind height / 2
+                var errorText:Text;
+                var feedText:Text;
+                content: [
+                    errorText = Text {
+                        translateX: bind Math.max(0, (width - errorText.boundsInLocal.width) / 2)
+                        content: bind error
+                        fill: Color.WHITE
+                        wrappingWidth: bind width
                     },
-                    VBox {
-                        visible: bind not error.isEmpty()
-                        translateY: bind height / 2
-                        var errorText:Text;
-                        var feedText:Text;
-                        content: [
-                            errorText = Text {
-                                translateX: bind Math.max(0, (width - errorText.boundsInLocal.width) / 2)
-                                content: bind error
-                                fill: Color.WHITE
-                                wrappingWidth: bind width
-                            },
-                            feedText = Text {
-                                translateX: bind Math.max(0, (width - feedText.boundsInLocal.width) / 2)
-                                content: bind feedUrl
-                                font: Font {size: 11}
-                                fill: Color.LIGHTSTEELBLUE
-                                wrappingWidth: bind width
-                            }
-                        ]
-                    }
-                    if (entrySequence.size() == 0) then [] else {
-                        VBox {
-                            translateX: border, translateY: border
-                            clip: Rectangle {width: bind entryWidth, height: bind height - border * 2, smooth: false}
-                            content: bind for (entry in entrySequence) {
-                                createEntryDisplay(entry);
-                            }
-                        }
+                    feedText = Text {
+                        translateX: bind Math.max(0, (width - feedText.boundsInLocal.width) / 2)
+                        content: bind feedUrl
+                        font: Font {size: 11}
+                        fill: Color.LIGHTSTEELBLUE
+                        wrappingWidth: bind width
                     }
                 ]
             }
-        }
+            VBox {
+                visible: bind entrySequence.size() > 0
+                translateX: border, translateY: border
+                clip: Rectangle {width: bind entryWidth, height: bind height - border * 2, smooth: false}
+                content: bind for (entry in entrySequence) {
+                    createEntryDisplay(entry);
+                }
+            }
+        ];
     }
 }
