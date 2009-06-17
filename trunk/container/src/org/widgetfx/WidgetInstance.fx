@@ -202,7 +202,8 @@ public class WidgetInstance {
                     }
                 }
             }
-            classLoader = new WidgetFXClassLoader(urlList, getClass().getClassLoader(), WidgetSecurityDialogFactoryImpl{});
+            title = xpath.evaluate("/jnlp/information/title", document, XPathConstants.STRING) as String;
+            classLoader = new WidgetFXClassLoader(title, urlList, getClass().getClassLoader(), WidgetSecurityDialogFactoryImpl{});
             var arguments = xpath.evaluate("/jnlp/application-desc/argument", document, XPathConstants.NODESET) as NodeList;
             for (i in [0..arguments.getLength() -1]) {
                 var argument = xpath.evaluate(".", arguments.item(i), XPathConstants.STRING) as String;
@@ -216,7 +217,6 @@ public class WidgetInstance {
             if (mainClass.length() == 0) {
                 throw new IllegalStateException("No main class specified");
             }
-            title = xpath.evaluate("/jnlp/information/title", document, XPathConstants.STRING) as String;
         } catch (e:Throwable) {
             createError(e);
         }

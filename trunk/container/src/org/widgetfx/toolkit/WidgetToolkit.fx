@@ -14,6 +14,6 @@ import java.lang.Exception;
 
 public class WidgetToolkit extends com.sun.javafx.tk.swing.SwingToolkit {
     init {
-        println("loaded our toolkit, woohoo!2");
+        println("Loaded the WidgetToolkit");
     }
 }
