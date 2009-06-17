@@ -10,9 +10,10 @@
     <resources>
         <property name="jnlp.packEnabled" value="true"/>
         <j2se version="1.6+"/>
-        <extension name="JavaFX Runtime" href="http://dl.javafx.com/1.1/javafx-rt.jnlp"/>
+        <extension name="JavaFX Runtime" href="http://dl.javafx.com/1.2/javafx-rt.jnlp"/>
         <jar href="Clock.jar" main="true" download="eager"/>
     </resources>
-    <application-desc main-class="org.widgetfx.widget.clock.Main">
+    <application-desc main-class="com.sun.javafx.runtime.main.Main">
+        <argument>MainJavaFXScript=org.widgetfx.widget.clock.Main</argument>
     </application-desc>
 </jnlp>
