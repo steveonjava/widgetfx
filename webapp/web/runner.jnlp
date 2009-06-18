@@ -27,7 +27,7 @@
         <nativelib href="lib/JDICplus_native.jar" version="0.2.2"/>
     </resources>
     <application-desc main-class="com.sun.javafx.runtime.main.Main">
-        <argument>MainJavaFXScript=org.widgetfx.Main</argument>
+        <argument>MainJavaFXScript=org.widgetfx.WidgetRunner</argument>
         $$args
     </application-desc>
 </jnlp>
