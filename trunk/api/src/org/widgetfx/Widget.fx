@@ -111,7 +111,7 @@ public class Widget extends Panel {
     /**
     * The external url to the widget runner process that will be launched.
      */
-    def WIDGET_RUNNER_URL = "http://widgetfx.org/dock/runner.jnlp";
+    def WIDGET_RUNNER_URL = "http://widgetfx.org/beta/runner.jnlp";
     
     /**
     * Used to give widgets a fixed aspectRatio.  The default value of 0 allows

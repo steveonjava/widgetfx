@@ -33,13 +33,8 @@ package org.widgetfx.widget.calendar;
  * @author Stephen Chin
  * @author Keith Combs
  */
-import org.widgetfx.*;
-import org.widgetfx.config.*;
-import org.jfxtras.scene.layout.*;
-import org.jfxtras.scene.layout.GridConstraints.*;
 import javafx.ext.swing.*;
 import javafx.scene.*;
-import javafx.scene.control.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
 import javafx.scene.text.*;
@@ -47,6 +42,11 @@ import javafx.scene.transform.*;
 import java.text.*;
 import java.util.*;
 import javafx.util.Sequences;
+import org.jfxtras.scene.layout.*;
+import org.jfxtras.scene.layout.LayoutConstants.*;
+import org.widgetfx.Widget;
+import org.widgetfx.config.Configuration;
+import org.widgetfx.config.StringProperty;
 
 var language:String = Locale.getDefault().getLanguage();
 var country:String = Locale.getDefault().getCountry();
@@ -56,7 +56,7 @@ var locale = bind new Locale(language, country, variant);
 def defaultWidth = 180.0;
 def defaultHeight = 200.0;
 
-def scene:Group = Group {
+def group:Group = Group {
     def arcHeight = defaultHeight / 20;
     def offset = defaultWidth / 25;
     transforms: bind Transform.scale(
@@ -95,7 +95,7 @@ def config = Configuration {
     ]
     var locales = Locale.getAvailableLocales();
     var localePicker = SwingComboBox {
-        items: for (l in Arrays.asList(locales)) {
+        items: for (l in locales) {
             SwingComboBoxItem {
                 selected: l == locale
                 text: l.getDisplayName()
@@ -128,9 +128,7 @@ def widget:Widget = Widget {
     height: defaultHeight
     aspectRatio: defaultWidth / defaultHeight
     configuration: config
-    skin: Skin {
-        scene: scene
-    }
+    content: group
 }
 
 function createPage(x:Number, y:Number,
