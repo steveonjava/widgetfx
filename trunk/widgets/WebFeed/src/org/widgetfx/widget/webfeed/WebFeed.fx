@@ -32,7 +32,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.jfxtras.scene.layout.*;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
-import javafx.ext.swing.*;
 import javafx.animation.*;
 import javafx.scene.*;
 import javafx.scene.input.*;
@@ -51,6 +50,9 @@ import com.sun.syndication.feed.synd.SyndEntryImpl;
 import com.sun.syndication.fetcher.FeedFetcher;
 import com.sun.syndication.fetcher.impl.HashMapFeedInfoCache;
 import com.sun.syndication.fetcher.impl.HttpURLFeedFetcher;
+
+import javafx.scene.control.Label;
+import javafx.scene.control.TextBox;
 
 /**
  * @author Stephen Chin
@@ -189,8 +191,8 @@ public class WebFeed extends Widget {
             }
         ]
         scene: Scene {
-            var label = SwingLabel {text: "RSS Feed:"};
-            var textField = SwingTextField {text: bind feedUrl with inverse, columns: 40};
+            var label = Label {text: "RSS Feed:"};
+            var textField = TextBox {text: bind feedUrl with inverse, columns: 40};
             content: [
                 Grid {
                     rows: Row {cells: [
