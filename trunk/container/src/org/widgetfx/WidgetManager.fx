@@ -135,8 +135,13 @@ public class WidgetManager {
             if (urlUpdated(url)) {
                 println("Resource updated: {url}");
                 ds.removeResource(url, null);
+            } else {
+                println("Resource not updated");
             }
+        } else {
+            println("Resource not cached");
         }
+
     }
 
     function urlUpdated(url:URL):Boolean {

@@ -180,24 +180,11 @@ public class WidgetInstance {
                 if (JARS_TO_SKIP[j|jarUrl.toLowerCase().contains(j.toLowerCase())].isEmpty()) {
                     var url = new URL(codeBase, jarUrl);
                     if (javafx.util.Sequences.indexOf(loadedResources, url) == -1) {
-                        // todo - does this unloading work anymore?
                         // todo - does version numbering work? - this is probably just url swizzling and cache magic
                         if (version == null) {
                             WidgetManager.getInstance().maybeUnload(url);
                         }
                         insert url into urlList;
-//                            ds.loadResource(url, version, DownloadServiceListener {
-//                                override function downloadFailed(url, version) {
-//                                    println("download failed");
-//                                }
-//                                override function progress(url, version, readSoFar, total, overallPercent) {
-//                                }
-//                                override function upgradingArchive(url, version, patchPercent, overallPercent) {
-//                                    println("upgradingArchive");
-//                                }
-//                                override function validating(url, version, entry, total, overallPercent) {
-//                                }
-//                            });
                         insert url into loadedResources;
                     }
                 }
@@ -221,12 +208,13 @@ public class WidgetInstance {
             createError(e);
         }
     }
-
     
     public-init var mainClass:String on replace {
         if (mainClass.length() > 0) {
             try {
                 var name = Entry.entryMethodName();
+                // hack to turn on caching
+               (new URL("http://localhost/")).openConnection().setDefaultUseCaches(true);
                 var widgetClass:Class = Class.forName(mainClass, true, classLoader);
                 var emptySeq:Sequence = [];
                 widget = widgetClass.getMethod(name, Sequence.<<class>>).invoke(null, emptySeq as Object) as Widget;
@@ -273,6 +261,11 @@ public class WidgetInstance {
             dockedHeight = undockedHeight = widget.height;
             initializeDimensions();
             validateConfig();
+            if (widgetProperties != null) {
+                persister.load(widgetProperties);
+            } else {
+                persister.load();
+            }
             if (widget.configuration.onLoad != null) {
                 try {
                     widget.configuration.onLoad();
@@ -381,7 +374,6 @@ public class WidgetInstance {
         } else {
             persister.load();
         }
-
         if (jnlpUrl.isEmpty()) {
             createError(new java.lang.IllegalStateException("Widget URL is empty"));
         }
