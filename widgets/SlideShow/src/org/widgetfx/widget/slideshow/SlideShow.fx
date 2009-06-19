@@ -98,11 +98,6 @@ public class SlideShow extends Widget {
     }
 
     function updateImage():Void {
-    //    if (not (new File(currentFile)).exists()) {
-    //        currentImage = null;
-    //        status = "Missing File: {currentFile}";
-    //        return;
-    //    }
         if (worker != null) {
             worker.cancel();
         }
@@ -203,17 +198,7 @@ public class SlideShow extends Widget {
         }
     }
 
-    var browseButton:SwingButton = SwingButton {
-        text: "Browse...";
-        action: function() {
-            var chooser:JFileChooser = new JFileChooser(directoryName);
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            var returnVal = chooser.showOpenDialog(browseButton.getJButton());
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                directoryName = chooser.getSelectedFile().getAbsolutePath();
-            }
-        }
-    }
+    var browseButton:SwingButton;
 
     function setDefaultDirectory() {
         directoryName = defaultDirectories[0].getAbsolutePath();
@@ -221,13 +206,13 @@ public class SlideShow extends Widget {
 
     var durationSpinner:JSpinner;
 
-    var configUI = {
+    function getConfigUI() {
         var directoryLabel = Text {content: "Directory:"};
         var directoryEdit = TextBox {text: bind directoryName with inverse, columns: 40};
         var keywordLabel = Text {content: "Filter:"};
         var keywordEdit = TextBox {text: bind filter with inverse, columns: 40};
         var durationLabel = Text {content: "Duration"};
-        var shuffleCheckBox = SwingCheckBox {text: "Shuffle", selected: bind shuffle with inverse};
+        var shuffleCheckBox = CheckBox {text: "Shuffle", selected: bind shuffle with inverse};
 
         // do this after TextBox is created to work around a JavaFX initialization bug
         setDefaultDirectory();
@@ -236,62 +221,28 @@ public class SlideShow extends Widget {
         durationSpinner = new JSpinner(new SpinnerNumberModel(duration, 2, 60, 1));
         var durationSpinnerComponent = SwingComponent.wrap(durationSpinner);
 
+        browseButton = SwingButton {
+            text: "Browse...";
+            action: function() {
+                var chooser:JFileChooser = new JFileChooser(directoryName);
+                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                var returnVal = chooser.showOpenDialog(browseButton.getJButton());
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    directoryName = chooser.getSelectedFile().getAbsolutePath();
+                }
+            }
+        }
+
         Grid {
             rows: [
                 row([directoryLabel, directoryEdit, browseButton]),
                 row([keywordLabel, Cell {content: keywordEdit, hspan: 2}]),
-                row([durationLabel, Cell {content: durationSpinnerComponent, prefWidth: 52}]),
+                row([durationLabel, Cell {content: durationSpinnerComponent, prefWidth: 52, hpos: LEFT}]),
                 row([shuffleCheckBox])
             ]
         }
     }
 
-    override var configuration = Configuration {
-        properties: [
-            StringProperty {
-                name: "directoryName"
-                value: bind directoryName with inverse
-            },
-            BooleanProperty {
-                name: "shuffle"
-                value: bind shuffle with inverse
-            },
-            IntegerProperty {
-                name: "duration"
-                value: bind duration with inverse
-            },
-            StringProperty {
-                name : "keywords"
-                value : bind filter with inverse
-            },
-            IntegerProperty {
-                name: "maxFiles"
-                value: bind maxFiles with inverse
-            },
-            IntegerProperty {
-                name: "maxFolders"
-                value: bind maxFolders with inverse
-            }
-        ]
-        scene: Scene {
-            content: bind configUI
-        }
-
-        onLoad: function() {
-            // make sure the spinner value is set, since this is not bound:
-            durationSpinner.setValue(duration);
-            imageWidth = width;
-            imageHeight = height;
-            loadDirectory();
-        }
-        onSave: function() {
-            // make sure the duration value is set, since this is not bound:
-            durationSpinner.commitEdit();
-            duration = durationSpinner.getValue() as Integer;
-            loadDirectory();
-        }
-    }
-    
     override var onResize = function(width:Number, height:Number) {
         if (imageWidth != width or imageHeight != height) {
             imageWidth = width;
@@ -333,5 +284,51 @@ public class SlideShow extends Widget {
                 opacity: bind if (status.isEmpty()) 0 else 1;
             }
         ];
+
+        configuration = Configuration {
+            properties: [
+                StringProperty {
+                    name: "directoryName"
+                    value: bind directoryName with inverse
+                },
+                BooleanProperty {
+                    name: "shuffle"
+                    value: bind shuffle with inverse
+                },
+                IntegerProperty {
+                    name: "duration"
+                    value: bind duration with inverse
+                },
+                StringProperty {
+                    name : "keywords"
+                    value : bind filter with inverse
+                },
+                IntegerProperty {
+                    name: "maxFiles"
+                    value: bind maxFiles with inverse
+                },
+                IntegerProperty {
+                    name: "maxFolders"
+                    value: bind maxFolders with inverse
+                }
+            ]
+            scene: Scene {
+                content: getConfigUI()
+            }
+
+            onLoad: function() {
+                // make sure the spinner value is set, since this is not bound:
+                durationSpinner.setValue(duration);
+                imageWidth = width;
+                imageHeight = height;
+                loadDirectory();
+            }
+            onSave: function() {
+                // make sure the duration value is set, since this is not bound:
+                durationSpinner.commitEdit();
+                duration = durationSpinner.getValue() as Integer;
+                loadDirectory();
+            }
+        }
     }
 }
