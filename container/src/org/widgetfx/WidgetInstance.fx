@@ -92,7 +92,7 @@ public class WidgetInstance {
             value: bind jnlpUrl with inverse
             autoSave: true
         },
-        IntegerProperty {
+        NumberProperty {
             name: "widget.opacity"
             value: bind opacity with inverse
         },
@@ -238,7 +238,7 @@ public class WidgetInstance {
         e.printStackTrace();
     }
 
-    public var opacity:Integer = 80;
+    public var opacity:Number = 80;
     public var docked:Boolean = true;
     public var dockedWidth:Number;
     public var dockedHeight:Number;

@@ -35,7 +35,6 @@ import org.widgetfx.widgets.*;
 import org.jfxtras.stage.*;
 import java.awt.event.*;
 import javafx.animation.*;
-import javafx.ext.swing.*;
 import javafx.geometry.*;
 import javafx.lang.*;
 import javafx.scene.*;
@@ -51,6 +50,8 @@ import java.awt.AWTEvent;
 import java.awt.Toolkit;
 
 import java.awt.Component;
+
+import javafx.scene.control.Slider;
 
 /**
  * @author Stephen Chin
@@ -330,12 +331,27 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                 }
             }
         }
-        var slider = SwingSlider {
+        var slider = Slider {
             def widgetInstance = instance;
-            minimum: 20
-            maximum: 100
-            value: bind widgetInstance.opacity with inverse
+            min : 20
+            max : 100
+            value : bind widgetInstance.opacity with inverse
+            snapToTicks : false
+            showTickLabels: false
+            showTickMarks: false
+            majorTickUnit : 1
+            minorTickCount: 1
             width: bind width * 2 / 5
+
+            onMousePressed : function(e:MouseEvent) {
+              changingOpacity = true;
+            }
+            onMouseReleased : function(e:MouseEvent){
+                changingOpacity = false;
+                //println("value={widgetInstance.opacity}");
+                instance.saveWithoutNotification();
+                //println("after save value={widgetInstance.opacity}");
+            }
         }
         var clip = widget.clip;
         widget.clip = null;
@@ -395,7 +411,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                                 },
                                 Group { // Slider
                                     translateX: 1
-                                    translateY: -2
+                                    translateY: 1
                                     content: slider
                                 }
                             ]
@@ -417,18 +433,8 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                 ]
             }
             fill: null;
-        }
-
+        };
         Toolkit.getDefaultToolkit().addAWTEventListener(awtListener, AWTEvent.MOUSE_EVENT_MASK);
-        slider.getJSlider().addMouseListener(MouseAdapter {
-            override function mousePressed(e) {
-                changingOpacity = true;
-            }
-            override function mouseReleased(e) {
-                changingOpacity = false;
-                instance.saveWithoutNotification();
-            }
-        });
         addFlash();
     }
 

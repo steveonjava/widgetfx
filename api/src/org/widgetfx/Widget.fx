@@ -168,6 +168,18 @@ public class Widget extends Panel {
     public-init protected var onUndock:function():Void;
 
     /**
+     * Event handler called when a widget is first displayed or restored.
+     * onShow is useful for restarting processing when a Widget is onscreen
+     */
+    public-init protected var onShow:function():Void;
+
+    /**
+     * Event handler called when a widget is hidden.
+     * onHide is useful for stopping processing when a Widget is not onscreen.
+     */
+    public-init protected var onHide:function():Void;
+
+    /**
     * WARNING: NOT YET IMPLEMENTED
      * <p>
      * Allows multiple instances of this widget to be added to the same dock with

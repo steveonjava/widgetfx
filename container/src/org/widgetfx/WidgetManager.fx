@@ -264,7 +264,23 @@ public class WidgetManager {
             instance.dockIfOffscreen();
         }
     }
-    
+
+    public function notifyWidgetsShow(){
+        for (instance in widgets) {
+          if (instance.docked and instance.widget.onShow != null){
+              instance.widget.onShow();
+          }
+        }
+    }
+
+    public function notifyWidgetsHide(){
+        for (instance in widgets) {
+          if (instance.docked and instance.widget.onHide != null){
+              instance.widget.onHide();
+          }
+        }
+    }
+
     public function loadInitialWidgets() {
         for (url in initialWidgets) {
             addWidget(url);
