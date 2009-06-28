@@ -99,6 +99,25 @@ public class WidgetFrame extends JFXDialog, DragContainer {
     
     var initialWidth:Number;
     var initialHeight:Number;
+
+    var updating = false;
+
+    var originalOpacity = bind instance.opacity on replace {
+        if (not updating) {
+            updating = true;
+            offsetOpacity = originalOpacity - 20;
+            updating = false;
+        }
+    }
+
+    // hack to work around  RT-4905: Slider value not correct when min != 0
+    var offsetOpacity:Number on replace {
+        if (not updating) {
+            updating = true;
+            instance.opacity = offsetOpacity + 20;
+            updating = false;
+        }
+    }
         
     var saveInitialPos = function(e:MouseEvent):Void {
         initialX = x;
@@ -184,8 +203,10 @@ public class WidgetFrame extends JFXDialog, DragContainer {
     var widgetHover = false;
 	
     var flashHover = bind if (isFlash) then (widget as FlashWidget).widgetHovering else false;
+
+    var draggingFrame = false;
     
-    var hovering = bind widgetHover or flashHover or dragging or resizing or changingOpacity on replace {
+    var hovering = bind widgetHover or flashHover or dragging or draggingFrame on replace {
         FX.deferAction(
             function():Void {
                 var newRate = if (hovering) 1 else -1;
@@ -206,6 +227,10 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                 widgetHover = true;
             } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_EXITED) {
                 widgetHover = false;
+            } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_PRESSED) {
+                draggingFrame = true;
+            } else if (event.getID() == java.awt.event.MouseEvent.MOUSE_RELEASED) {
+                draggingFrame = false;
             }
         }
     }
@@ -332,25 +357,18 @@ public class WidgetFrame extends JFXDialog, DragContainer {
             }
         }
         var slider = Slider {
-            def widgetInstance = instance;
-            min : 20
-            max : 100
-            value : bind widgetInstance.opacity with inverse
-            snapToTicks : false
-            showTickLabels: false
-            showTickMarks: false
-            majorTickUnit : 1
-            minorTickCount: 1
+            min : 0
+            max : 80
+            value : bind offsetOpacity with inverse
+            clickToPosition: true
             width: bind width * 2 / 5
-
             onMousePressed : function(e:MouseEvent) {
               changingOpacity = true;
             }
             onMouseReleased : function(e:MouseEvent){
+                // todo - this doesn't complete work due to RT-4906: Slider's thumb: no calls of onMouse-functions.
                 changingOpacity = false;
-                //println("value={widgetInstance.opacity}");
                 instance.saveWithoutNotification();
-                //println("after save value={widgetInstance.opacity}");
             }
         }
         var clip = widget.clip;
@@ -368,17 +386,17 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                         translateX: BORDER, translateY: BORDER + toolbarHeight
                         cache: true
                         content: Group { // Alert
-                            effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
+                            effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12, blurType: BlurType.ONE_PASS_BOX} else null
                             content: bind [
                                 if (clip != null) { // Clip Shadow (for performance)
                                     Group {
                                         cache: true
-                                        effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                                        effect: bind if (resizing or animating) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS, blurType: BlurType.ONE_PASS_BOX}
                                         content: clip
                                     }
                                 } else [],
                                 Group { // Drop Shadow
-                                    effect: bind if (resizing or animating or widget.clip != null) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS}
+                                    effect: bind if (resizing or animating or widget.clip != null) null else DropShadow {offsetX: 2, offsetY: 2, radius: DS_RADIUS, blurType: BlurType.ONE_PASS_BOX}
                                     content: Group { // Clip Group
                                         content: widget
                                         clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
@@ -392,7 +410,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                         Group { // Transparency Slider
                             content: [
                                 Rectangle { // Border
-                                    width: bind width * 2 / 5 + 2
+                                    width: bind width * 2 / 5 + 10
                                     height: 16
                                     arcWidth: 16
                                     arcHeight: 16
@@ -401,7 +419,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                                 Rectangle { // Background
                                     translateX: 1
                                     translateY: 1
-                                    width: bind width * 2 / 5
+                                    width: bind width * 2 / 5 + 8
                                     height: 14
                                     arcWidth: 14
                                     arcHeight: 14
@@ -410,8 +428,8 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                                     opacity: 0.7
                                 },
                                 Group { // Slider
-                                    translateX: 1
-                                    translateY: 1
+                                    translateX: 5
+                                    translateY: 2
                                     content: slider
                                 }
                             ]

@@ -76,7 +76,7 @@ public abstract class ToolbarButton extends Group {
     }
     
     init {
-        effect = DropShadow {color: bind dsColor};
+        effect = DropShadow {color: bind dsColor, blurType: BlurType.ONE_PASS_BOX};
         content = [
             Rectangle { // Bounding Rect (for rollover)
                 x: -WidgetToolbar.BUTTON_SIZE / 2, y: -WidgetToolbar.BUTTON_SIZE / 2

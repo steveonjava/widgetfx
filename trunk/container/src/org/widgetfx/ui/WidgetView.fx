@@ -181,18 +181,18 @@ public class WidgetView extends Group, Constrained, DragContainer {
                 translateX: bind (maxWidth - widget.width * scale) / 2
                 cache: true
                 content: Group { // Alert
-                    effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12} else null
+                    effect: bind if (widget.alert) DropShadow {color: Color.RED, radius: 12, blurType: BlurType.ONE_PASS_BOX} else null
                     content: [
                         if (clip != null) { // Clip Shadow (for performance)
                             Group {
                                 cache: true
-                                effect: bind if (resizing or not container.drawShadows) null else DropShadow {offsetX: 2, offsetY: 2, radius: DockDialog.DS_RADIUS}
+                                effect: bind if (resizing or not container.drawShadows) null else DropShadow {offsetX: 2, offsetY: 2, radius: DockDialog.DS_RADIUS, blurType: BlurType.ONE_PASS_BOX}
                                 content: clip
                                 transforms: bind Transform.scale(scale, scale)
                             }
                         } else [],
                         Group { // Drop Shadow
-                            effect: bind if (resizing or not container.drawShadows or widget.clip != null) null else DropShadow {offsetX: 2, offsetY: 2, radius: DockDialog.DS_RADIUS}
+                            effect: bind if (resizing or not container.drawShadows or widget.clip != null) null else DropShadow {offsetX: 2, offsetY: 2, radius: DockDialog.DS_RADIUS, blurType: BlurType.ONE_PASS_BOX}
                             content: Group { // Clip Group
                                 content: widget
                                 clip: Rectangle {width: bind widget.width, height: bind widget.height, smooth: false}
