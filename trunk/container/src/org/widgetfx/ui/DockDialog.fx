@@ -205,10 +205,13 @@ public class DockDialog extends JFXDialog {
 
     function hideDock() {
         visible = false;
+        println("Hiding dock.");
+        WidgetManager.getInstance().notifyWidgetsHide();
     }
 
     public function showDock() {
         visible = true;
+        WidgetManager.getInstance().notifyWidgetsShow();
         FX.deferAction(function() {updateDockLocation(true)});
         toFront();
         WidgetManager.getInstance().dockOffscreenWidgets();
