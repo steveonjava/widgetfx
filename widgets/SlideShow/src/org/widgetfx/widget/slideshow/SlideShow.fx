@@ -45,9 +45,12 @@ import javafx.animation.*;
 import javafx.lang.*;
 import javax.imageio.*;
 import java.io.*;
-import java.util.*;
 import java.lang.*;
 import javax.swing.*;
+
+import org.jfxtras.scene.control.Shelf;
+
+import javafx.scene.layout.Stack;
 
 /**
  * @author Stephen Chin
@@ -68,10 +71,8 @@ public class SlideShow extends Widget {
     var duration:Integer = 10;
     var filter : String;
     var imageIndex:Integer;
-    var imageWidth:Number;
-    var imageHeight:Number;
     var currentFile:String;
-    var currentImage:Image;
+    var index:Integer;
     var nextImage:Image;
     var worker:JFXWorker;
     var timeline:Timeline;
@@ -86,46 +87,17 @@ public class SlideShow extends Widget {
         timeline = Timeline {
             repeatCount: Timeline.INDEFINITE
             keyFrames: [
-                KeyFrame {time: 0s,
+                KeyFrame {time: 1s * duration,
                     action: function() {
-                        currentFile = imageFiles[imageIndex++ mod imageFiles.size()];
-                        updateImage();
+                        index++;
                     }
-                },
-                KeyFrame {time: 1s * duration}
-            ]
-        }
-    }
-
-    function updateImage():Void {
-        if (worker != null) {
-            worker.cancel();
-        }
-        worker = JFXWorker {
-            inBackground: function() {
-
-                var image = Image {url: currentFile, width: imageWidth, height: imageHeight, preserveRatio: true};
-                if (image.error) {
-                    throw new RuntimeException("Error loading image: {currentFile}");
                 }
-                return image;
-            }
-            onDone: function(result) {
-                currentImage = result as Image;
-                status = "";
-                System.runFinalization();
-                System.gc();
-            }
-            onFailure: function(e) {
-                currentImage = null;
-                status = "Error Loading Image: {currentFile}";
-            }
+            ]
         }
     }
 
     function loadDirectory() {
         var directory = new File(directoryName);
-        currentImage = null;
         timeline.stop();
         if (worker != null) {
             worker.cancel();
@@ -151,6 +123,14 @@ public class SlideShow extends Widget {
                 }
                 initTimeline();
                 timeline.play();
+                println("imageFiles.size = {sizeof imageFiles}");
+                println("first image = {imageFiles[0]}");
+                shelf = Shelf {
+                    index: bind index with inverse
+                    blocksMouse: false
+                    imageUrls: bind imageFiles
+                }
+                status = "";
             } else {
                 status = "No Images Found"
             }
@@ -175,7 +155,7 @@ public class SlideShow extends Widget {
         if (fileArray == null) {
             return emptyFile;
         }
-        var files = Arrays.asList(fileArray);
+        var files = java.util.Arrays.asList(fileArray);
         return for (file in files) {
             var name = file.getName();
             if (excludesFile(name)) {
@@ -243,28 +223,26 @@ public class SlideShow extends Widget {
         }
     }
 
-    override var onResize = function(width:Number, height:Number) {
-        if (imageWidth != width or imageHeight != height) {
-            imageWidth = width;
-            imageHeight = height;
-            if (status.isEmpty()) {
-                updateImage();
-            }
-        }
-    }
+    var shelf:Shelf;
 
     init {
         var view:ImageView;
         content = [
-            view = ImageView {
-                translateX: bind (width - view.boundsInLocal.width) / 2
-                translateY: bind (height - view.boundsInLocal.height) / 2
-                fitWidth: bind width
-                fitHeight: bind height
-                preserveRatio: true
-                smooth: true
-                image: bind currentImage
-            },
+            Deck {
+                width: bind width
+                height: bind height
+                content: bind shelf
+            }
+
+//            view = ImageView {
+//                translateX: bind (width - view.boundsInLocal.width) / 2
+//                translateY: bind (height - view.boundsInLocal.height) / 2
+//                fitWidth: bind width
+//                fitHeight: bind height
+//                preserveRatio: true
+//                smooth: true
+//                image: bind currentImage
+//            },
             Group {
                 var text:Text;
                 content: [
@@ -319,8 +297,6 @@ public class SlideShow extends Widget {
             onLoad: function() {
                 // make sure the spinner value is set, since this is not bound:
                 durationSpinner.setValue(duration);
-                imageWidth = width;
-                imageHeight = height;
                 loadDirectory();
             }
             onSave: function() {

@@ -145,7 +145,7 @@ public class WidgetContainer extends Container, WidgetDragListener {
         widgetDragging = true;
         def showing = visible and scene != null;
         if (showing and gapBox.containsScreenXY(screenX, screenY)) {
-            gapBox.setGap(screenX, screenY, dockedHeight + DockDialog.DS_RADIUS * 2 + 2, true);
+            gapBox.setGap(screenX, screenY, WidgetView.TOP_BORDER + WidgetView.BOTTOM_BORDER + dockedHeight, true);
             return gapBox.getGapScreenBounds();
         } else {
             gapBox.clearGap(true);

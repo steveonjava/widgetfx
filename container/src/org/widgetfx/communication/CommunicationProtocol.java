@@ -40,6 +40,9 @@ import java.util.Properties;
  * @author Keith Combs
  */
 public class CommunicationProtocol {
+    public static final String PORT = "port";
+    public static final String CONNECTED = "connected";
+
     private CommandProcessor processor;
 
     public CommunicationProtocol(CommandProcessor commandProcessor) {
@@ -49,9 +52,9 @@ public class CommunicationProtocol {
     String processInput(String inputLine) {
         String[] args = inputLine.split("\\|");
         String command = args[0];
-        if (command.equals("port")) {
+        if (command.equals(PORT)) {
             CommunicationManager.INSTANCE.connectTo(Integer.parseInt(args[1]));
-            return "connected";
+            return CONNECTED;
         } else if (command.equals("hover")) {
             return String.valueOf(processor.hover(Float.parseFloat(args[1]), Float.parseFloat(args[2]), Float.parseFloat(args[3])));
         } else if (command.equals("finishHover")) {

@@ -205,7 +205,6 @@ public class DockDialog extends JFXDialog {
 
     function hideDock() {
         visible = false;
-        println("Hiding dock.");
         WidgetManager.getInstance().notifyWidgetsHide();
     }
 

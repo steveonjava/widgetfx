@@ -217,7 +217,6 @@ public mixin class DragContainer {
                 instance.setHeight(saveHeight);
                 instance.frame.x = initialX;
                 instance.frame.y = initialY;
-
             } else {
                 if (animateHover != null and animateDocked) {
                     animateDocked = false;

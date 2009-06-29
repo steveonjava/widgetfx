@@ -237,19 +237,18 @@ public class WidgetFrame extends JFXDialog, DragContainer {
     
     init {
         var dragRect:Group = Group {
-            var backgroundColor = Color.rgb(0xF5, 0xF5, 0xF5, 0.6);
+            def backgroundColor = bind Color.rgb(0x00, 0x00, 0x00, instance.opacity / 100 * 0.6);
             translateY: toolbarHeight,
             content: [
                 Rectangle { // background
                     translateX: BORDER, translateY: BORDER
                     width: bind width - BORDER * 2, height: bind boxHeight - BORDER * 2
-                    fill: backgroundColor
-                    opacity: bind (instance.opacity as Number) / 100
+                    fill: bind backgroundColor
                 },
                 if (instance.widget.resizable) then [
                     Rectangle { // NW resize corner
                         width: BORDER, height: BORDER
-                        stroke: null, fill: backgroundColor
+                        stroke: null, fill: bind backgroundColor
                         cursor: Cursor.NW_RESIZE
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
@@ -259,7 +258,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                     },
                     Rectangle { // N resize corner
                         translateX: BORDER, width: bind width - BORDER * 2, height: BORDER
-                        stroke: null, fill: backgroundColor
+                        stroke: null, fill: bind backgroundColor
                         cursor: Cursor.N_RESIZE
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
@@ -269,7 +268,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                     },
                     Rectangle { // NE resize corner
                         translateX: bind width - BORDER, width: BORDER, height: BORDER
-                        stroke: null, fill: backgroundColor
+                        stroke: null, fill: bind backgroundColor
                         cursor: Cursor.NE_RESIZE
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
@@ -280,7 +279,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                     Rectangle { // E resize corner
                         translateX: bind width - BORDER, translateY: BORDER
                         width: BORDER, height: bind boxHeight - BORDER * 2
-                        stroke: null, fill: backgroundColor
+                        stroke: null, fill: bind backgroundColor
                         cursor: Cursor.E_RESIZE
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
@@ -291,7 +290,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                     Rectangle { // SE resize corner
                         translateX: bind width - BORDER, translateY: bind boxHeight - BORDER
                         width: BORDER, height: BORDER
-                        stroke: null, fill: backgroundColor
+                        stroke: null, fill: bind backgroundColor
                         cursor: Cursor.SE_RESIZE
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
@@ -302,7 +301,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                     Rectangle { // S resize corner
                         translateX: BORDER, translateY: bind boxHeight - BORDER
                         width: bind width - BORDER * 2, height: BORDER
-                        stroke: null, fill: backgroundColor
+                        stroke: null, fill: bind backgroundColor
                         cursor: Cursor.S_RESIZE
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
@@ -312,7 +311,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                     },
                     Rectangle { // SW resize corner
                         translateY: bind boxHeight - BORDER, width: BORDER, height: BORDER
-                        stroke: null, fill: backgroundColor
+                        stroke: null, fill: bind backgroundColor
                         cursor: Cursor.SW_RESIZE
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
@@ -322,7 +321,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                     },
                     Rectangle { // W resize corner
                         translateY: BORDER, width: BORDER, height: bind boxHeight - BORDER * 2
-                        stroke: null, fill: backgroundColor
+                        stroke: null, fill: bind backgroundColor
                         cursor: Cursor.W_RESIZE
                         onMousePressed: startResizing
                         onMouseDragged: mouseDelta(function(xDelta:Integer, yDelta:Integer):Void {
@@ -334,11 +333,13 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                 Rectangle { // outer border
                     width: bind width - 1, height: bind boxHeight - 1
                     stroke: Color.BLACK
+                    fill: null
                 },
                 Rectangle { // inner border
                     translateX: 1, translateY: 1
                     width: bind width - 3, height: bind boxHeight - 3
                     stroke: Color.WHITESMOKE
+                    fill: null
                 }
             ]
             opacity: bind if (widget.resizable) rolloverOpacity * 0.8 else 0.0;
@@ -404,7 +405,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                                 }
                             ]
                         }
-                        opacity: bind (instance.opacity as Number) / 100
+                        opacity: bind instance.opacity / 100
                     },
                     if (sliderEnabled) {
                         Group { // Transparency Slider
@@ -450,8 +451,8 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                     }
                 ]
             }
-            fill: null;
-        };
+            fill: null
+        }
         Toolkit.getDefaultToolkit().addAWTEventListener(awtListener, AWTEvent.MOUSE_EVENT_MASK);
         addFlash();
     }
