@@ -40,12 +40,6 @@ java.lang.System.setProperty("javafx.toolkit", "org.widgetfx.toolkit.WidgetToolk
 
 java.lang.System.setProperty("apple.awt.UIElement", "true");
 
-try { // try nimbus look and feel first
-    UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-} catch (e) { // fall back on system look and feel
-    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-}
-
 for (arg in FX.getArguments()) {
     if (arg.equals("no-transparency")) {
         WidgetFXConfiguration.TRANSPARENT = false;

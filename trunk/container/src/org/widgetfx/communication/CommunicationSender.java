@@ -53,8 +53,8 @@ public class CommunicationSender {
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
-    public void sendPort(int port) {
-        send("port", new String[] {String.valueOf(port)});
+    public boolean sendPort(int port) {
+        return CommunicationProtocol.CONNECTED.equals(send(CommunicationProtocol.PORT, new String[] {String.valueOf(port)}));
     }
 
     public String send(String command, String args[]) {

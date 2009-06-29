@@ -112,7 +112,13 @@ public enum CommunicationManager implements Runnable {
                 while (misses < SEARCH_DEPTH) {
                     try {
                         Socket socket = new Socket((String) null, port);
-                        newSenders.add(new CommunicationSender(socket));
+                        CommunicationSender sender = new CommunicationSender(socket);
+                        newSenders.add(sender);
+                        if (serverSocket != null) {
+                            if (!sender.sendPort(serverPort)) {
+                                misses++;
+                            }
+                        }
                     } catch (UnknownHostException ex) {
                         Logger.getLogger(CommunicationManager.class.getName()).log(Level.SEVERE, "Communication Server can't start up due to UnknownHostException", ex);
                     } catch (ConnectException ex) {
@@ -136,6 +142,7 @@ public enum CommunicationManager implements Runnable {
         private void startCommunicationServer(int port) throws IOException {
             serverPort = port;
             serverSocket = new ServerSocket(port);
+            System.out.println("Starting WidgetFX server on port " + port);
             Thread connectionListener = new Thread(CommunicationManager.this, "Communication Server");
             connectionListener.setDaemon(true);
             connectionListener.start();

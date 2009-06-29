@@ -282,7 +282,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
                 var toolbarHeight = if (instance.widget.configuration == null) WidgetFrame.NONRESIZABLE_TOOLBAR_HEIGHT else WidgetFrame.RESIZABLE_TOOLBAR_HEIGHT;
                 var yPos = bounds.minY + TOP_BORDER - (WidgetFrame.BORDER + toolbarHeight);
                 // hack to get dragging working on applets where scene.x is a large negative integer
-                if (xPos < 9000) {
+                if (xPos < -9000) {
                     xPos = (screenX - widget.width * scale / 2).intValue();
                     yPos = (screenY - widget.height * scale / 2).intValue();
                 }
@@ -306,7 +306,7 @@ public class WidgetView extends Group, Constrained, DragContainer {
         removeFlash();
         if (targetBounds != null) {
             docking = true;
-            instance.frame.dock(dragListener as WidgetContainer, targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY);
+            instance.frame.dock(dragListener as WidgetContainer, targetBounds.minX + (targetBounds.width - widget.width) / 2, targetBounds.minY + TOP_BORDER);
         } else {
             // todo - don't call this block multiple times
             if (instance.widget.onResize != null) {

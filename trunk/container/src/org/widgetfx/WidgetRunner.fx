@@ -37,11 +37,6 @@ import org.widgetfx.ui.AddWidgetDialog;
  * @author Stephen Chin
  * @author Keith Combs
  */
-try { // try nimbus look and feel first
-    UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-} catch (e) { // fall back on system look and feel
-    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-}
 
 for (arg in FX.getArguments() where arg.equals("no-transparency")) {
     WidgetFXConfiguration.TRANSPARENT = false;
