@@ -226,7 +226,7 @@ public class DockDialog extends JFXDialog {
     package var tray:TrayIcon;
 
     function createTrayIcon() {
-        tray = new TrayIcon(dockSkin.logoIcon);
+        tray = new TrayIcon(dockSkin.logoIcon.platformImage as java.awt.Image);
         tray.setPopupMenu(createNativeMainMenu(null).getPopupMenu());
         tray.setToolTip("WidgetFX v{WidgetFXConfiguration.VERSION}");
         tray.addActionListener(ActionListener {
@@ -351,7 +351,7 @@ public class DockDialog extends JFXDialog {
     function loadContent():Void {
         onClose = function() {WidgetManager.getInstance().exit()};
         scene = Scene {
-//            stylesheets: bind WidgetManager.getInstance().stylesheets
+            stylesheets: bind WidgetManager.getInstance().stylesheets
             content: [
                 Rectangle {
                     width: bind width

@@ -3,7 +3,7 @@
     faceEndColor: darkred;
     secondHandColor: red;
 }
-"org.widgetfx.ui.Dock" {
+"org.widgetfx.ui.DockSkin" {
     backgroundStartColor: #00000033;
     backgroundEndColor: #00000033;
     showDeviceBar: true;

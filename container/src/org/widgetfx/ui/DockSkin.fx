@@ -28,8 +28,6 @@
  */
 package org.widgetfx.ui;
 
-import org.widgetfx.*;
-import org.widgetfx.layout.*;
 import javafx.animation.*;
 import javafx.lang.*;
 import javafx.scene.*;
@@ -39,7 +37,9 @@ import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
-import javafx.ext.swing.SwingUtils;
+import org.widgetfx.*;
+import org.widgetfx.config.*;
+import org.widgetfx.layout.*;
 
 /**
  * @author Stephen Chin
@@ -58,19 +58,30 @@ public class DockSkin extends CustomNode, Resizable {
     override function intersects( x:Float, y:Float, width: Float, height:Float):Boolean{
         return true;
     }
+
+    var configuration = WidgetFXConfiguration.getInstanceWithProperties([
+        StringProperty {
+            name: "logoImageUrl"
+            value: bind logoImageUrl with inverse;
+        },
+        BooleanProperty {
+            name: "showDeviceBar"
+            value: bind showDeviceBar with inverse;
+        }
+    ]);
     
     public var logoX:Number = 12;
     public var logoY:Number = 7;
-    public var logoImage:java.awt.image.BufferedImage = Image {
-        url: "{__DIR__}images/WidgetFX-Logo.png"
-    }.platformImage as java.awt.image.BufferedImage;
-    public var jfxLogoImage = bind SwingUtils.toFXImage(logoImage);
+    public var logoImageUrl:String;
+    public var logoImage = bind Image {
+        url: if (logoImageUrl == "") "{__DIR__}images/WidgetFX-Logo.png" else logoImageUrl
+    }
     public var backgroundStartColor = Color.color(0.0, 0.0, 0.0, 0.2);
     public var backgroundEndColor = Color.color(0.0, 0.0, 0.0, 0.5);
-    public var logoIcon:java.awt.image.BufferedImage = Image {
+    public var logoIcon = Image {
         url: "{__DIR__}images/WidgetFXIcon16.png"
-    }.platformImage as java.awt.image.BufferedImage on replace {
-        dockDialog.tray.setImage(logoIcon);
+    } on replace {
+        dockDialog.tray.setImage(logoIcon.platformImage as java.awt.Image);
     }
     public var showDeviceBar = false;
 
@@ -81,7 +92,7 @@ public class DockSkin extends CustomNode, Resizable {
         translateY: bind logoY
         effect: bind if (logo.hover) Glow {level: 0.7} else null
         var imageView = ImageView {
-            image: bind jfxLogoImage
+            image: bind logoImage
         }
         content: [
             Rectangle {

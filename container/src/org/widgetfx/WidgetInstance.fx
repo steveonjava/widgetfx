@@ -259,13 +259,13 @@ public class WidgetInstance {
         if (widget != null) {
             dockedWidth = undockedWidth = widget.width;
             dockedHeight = undockedHeight = widget.height;
-            initializeDimensions();
-            validateConfig();
             if (widgetProperties != null) {
                 persister.load(widgetProperties);
             } else {
                 persister.load();
             }
+            initializeDimensions();
+            validateConfig();
             if (widget.configuration.onLoad != null) {
                 try {
                     widget.configuration.onLoad();
