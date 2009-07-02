@@ -50,6 +50,9 @@ import javax.swing.*;
 
 import org.jfxtras.scene.control.Shelf;
 
+
+import javafx.scene.layout.LayoutInfo;
+
 import javafx.scene.layout.Stack;
 
 /**
@@ -81,6 +84,24 @@ public class SlideShow extends Widget {
     var maxFolders = 1000;
     var folderCount = 0;
     var fileCount = 0;
+    var scale:Number = 1;
+    var zoomTimeline = Timeline {
+        keyFrames: [
+            at (0s) {scale => 1}
+            at (1s) {scale => .6 tween Interpolator.SPLINE(.05, .5, .5, .95)}
+        ]
+    }
+    var shelfLayoutInfo = LayoutInfo {
+        height: bind height * scale
+    }
+    override var onMouseEntered = function(e) {
+        zoomTimeline.rate = 1;
+        zoomTimeline.play();
+    }
+    override var onMouseExited = function(e) {
+        zoomTimeline.rate = -1;
+        zoomTimeline.play();
+    }
 
     function initTimeline() {
         imageIndex = 0;
@@ -123,9 +144,8 @@ public class SlideShow extends Widget {
                 }
                 initTimeline();
                 timeline.play();
-                println("imageFiles.size = {sizeof imageFiles}");
-                println("first image = {imageFiles[0]}");
                 shelf = Shelf {
+                    layoutInfo: shelfLayoutInfo
                     index: bind index with inverse
                     blocksMouse: false
                     imageUrls: bind imageFiles
@@ -228,21 +248,11 @@ public class SlideShow extends Widget {
     init {
         var view:ImageView;
         content = [
-            Deck {
+            Stack {
                 width: bind width
                 height: bind height
                 content: bind shelf
             }
-
-//            view = ImageView {
-//                translateX: bind (width - view.boundsInLocal.width) / 2
-//                translateY: bind (height - view.boundsInLocal.height) / 2
-//                fitWidth: bind width
-//                fitHeight: bind height
-//                preserveRatio: true
-//                smooth: true
-//                image: bind currentImage
-//            },
             Group {
                 var text:Text;
                 content: [
