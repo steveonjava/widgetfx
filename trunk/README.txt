@@ -1,7 +1,7 @@
-WidgetFX SDK 0.1
+WidgetFX SDK 1.2
 The JavaFX Desktop Widget Platform
 
-WidgetFX is a desktop widget platform written in the new JavaFX Script language. It can run widgets written in JavaFX Script and Java and takes advantage of the latest features in the Java Consumer JRE (Java SE 6 update 10).
+WidgetFX is a desktop widget platform written in the new JavaFX Script language. It can run widgets written in JavaFX Script and Java and takes advantage of the latest features in the Java Consumer JRE (Java SE 6 update 14).
 
 This release is targeted at developers who are interested in authoring new widgets.  To learn how to create your own widget:
 * Give the Hello World tutorial a try.  It introduces the basics of widget development in JavaFX Script.
