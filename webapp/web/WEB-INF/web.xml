@@ -10,11 +10,11 @@
         <servlet-class>jnlp.sample.servlet.JnlpDownloadServlet</servlet-class>
         <init-param>
             <param-name>logLevel</param-name>
-            <param-value>DEBUG</param-value>
+            <param-value>INFO</param-value>
         </init-param>
         <init-param>
             <param-name>logPath</param-name>
-            <param-value>/var/www/vhosts/widgetfx.org/tmp/jnlpdownloadservlet.log</param-value>
+            <param-value>/home/widgetfx/tmp/jnlpdownloadservlet.log</param-value>
         </init-param>
         </servlet>
     <servlet-mapping>
