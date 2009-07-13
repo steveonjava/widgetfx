@@ -7,5 +7,5 @@ Hopefully you can find an answer here. If not please ask in the user or develope
 
 = Details =
 
-*Q: My JAR file XYZ.jar is not found by WidgetFX even though I can enter it's url and download the file*
+*Q: My JAR file XYZ.jar is not found by WidgetFX (MalformedURLException) even though I can enter it's url and download the file.*
   * A: Do you have a version enabled jar file with for example [http://java.sun.com/j2se/1.5.0/docs/guide/javaws/developersguide/downloadservletguide.html Java Web Start JnlpDownloadServlet]? I.e accessing the jar with ".../XYZ.jar?version-id=1.0". WidgetFX's method of getting your jar file is not version aware yet, therefore you need to supply a default jar that can be downloaded with no version information specified.
