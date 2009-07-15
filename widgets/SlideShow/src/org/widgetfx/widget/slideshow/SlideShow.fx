@@ -86,6 +86,7 @@ public class SlideShow extends Widget {
     var folderCount = 0;
     var fileCount = 0;
     var scale:Number = 1;
+    var showReflections = false;
     var zoomTimeline = Timeline {
         keyFrames: [
             at (0s) {scale => 1}
@@ -96,10 +97,12 @@ public class SlideShow extends Widget {
         height: bind height * scale
     }
     override var onMouseEntered = function(e) {
+        showReflections = true;
         zoomTimeline.rate = 1;
         zoomTimeline.play();
     }
     override var onMouseExited = function(e) {
+        showReflections = false;
         zoomTimeline.rate = -1;
         zoomTimeline.play();
     }
@@ -157,6 +160,7 @@ public class SlideShow extends Widget {
                     centerGap: 0.5
                     showText: false
                     aspectRatio: aspectRatio
+                    reflection:bind showReflections
                 }
                 status = "";
             } else {
