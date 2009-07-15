@@ -281,7 +281,7 @@ public class SlideShow extends Widget {
                         fill: Color.WHITE
                     }
                 ]
-                opacity: bind if (status.isEmpty()) 0 else 1;
+                opacity: bind if (status.length() == 0) 0 else 1;
             }
         ];
 

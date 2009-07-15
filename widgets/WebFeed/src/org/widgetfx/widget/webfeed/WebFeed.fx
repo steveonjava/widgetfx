@@ -227,7 +227,7 @@ public class WebFeed extends Widget {
                 }
             },
             VBox {
-                visible: bind not error.isEmpty()
+                visible: bind error.length() == 0
                 translateY: bind height / 2
                 var errorText:Text;
                 var feedText:Text;
