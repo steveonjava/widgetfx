@@ -11,7 +11,8 @@ import javafx.animation.KeyFrame;
 import java.lang.Math;
 
 /**
- * @author kcombs
+ * @author Stephen Chin
+ * @author Keith Combs
  */
 def initialSize = 400;
 def numBalls = 10;
