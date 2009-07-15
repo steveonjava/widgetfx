@@ -14,7 +14,7 @@
         <all-permissions/>
     </security>
     <resources>
-        <j2se version="1.5+"/>
+        <j2se version="1.6+" java-vm-args="-Xmx512m"/>
         <property name="jnlp.packEnabled" value="true"/>
         <property name="jnlp.versionEnabled" value="true"/>
         <property name="javafx.toolkit" value="org.widgetfx.toolkit.WidgetToolkit"/>
