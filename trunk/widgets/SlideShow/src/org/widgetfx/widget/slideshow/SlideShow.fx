@@ -33,6 +33,7 @@ import org.widgetfx.config.*;
 import org.jfxtras.async.*;
 import org.jfxtras.scene.layout.*;
 import org.jfxtras.scene.layout.LayoutConstants.*;
+import org.jfxtras.scene.control.Shelf;
 import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
@@ -48,7 +49,7 @@ import java.io.*;
 import java.lang.*;
 import javax.swing.*;
 
-import org.jfxtras.scene.control.Shelf;
+
 
 
 import javafx.scene.layout.LayoutInfo;
@@ -149,6 +150,13 @@ public class SlideShow extends Widget {
                     index: bind index with inverse
                     blocksMouse: false
                     imageUrls: bind imageFiles
+                    placeholder:Image{url:"{__DIR__}placeholder.png", preserveRatio: true}
+                    thumbnailHeight: bind height
+                    thumbnailWidth: bind width
+                    showScrollBar: false
+                    centerGap: 0.5
+                    showText: false
+                    aspectRatio: aspectRatio
                 }
                 status = "";
             } else {
