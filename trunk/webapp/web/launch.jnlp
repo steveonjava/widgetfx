@@ -27,7 +27,7 @@
         <jar href="lib/jnlp.jar" download="eager" version="1.6.0_10"/>
         <jar href="lib/widgetfx-api.jar" download="eager" version="1.2.1"/>
         <jar href="lib/JDICplus.jar" download="eager" version="0.2.2"/>
-        <jar href="lib/JFXtras.jar" download="eager" version="0.5"/>
+        <jar href="lib/JFXtras.jar" download="eager" version="0.5.1"/>
         <jar href="lib/swing-worker.jar" download="eager" version="1.2"/>        
     </resources>
     <resources os="Windows" arch="x86">
