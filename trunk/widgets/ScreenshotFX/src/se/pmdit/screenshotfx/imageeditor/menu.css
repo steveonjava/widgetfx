@@ -1,0 +1,16 @@
+/* 
+    Document   : menu
+    Created on : 2009-jul-23, 18:28:40
+    Author     : pmd
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+"se.pmdit.screenshotfx.imageeditor".menuBackground {
+    fill:red;
+}
