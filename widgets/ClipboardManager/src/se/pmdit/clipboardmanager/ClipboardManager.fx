@@ -35,7 +35,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import org.jfxtras.scene.border.LineBorder;
 
-import org.jfxtras.scene.util.BoundsPainter;
+
+import javafx.scene.control.OverrunStyle;
 
 /**
  * @author pmd
@@ -58,8 +59,9 @@ public mixin class ClipboardManager {
           else {
             if(clipboard.isUpdated()) {
               var ci = ClipboardItem {
-                value: clipboard.getCurrentValue()
-                mimeType: clipboard.getCurrentMimeType()
+                data: clipboard.getData()
+                //value: clipboard.getCurrentValue()
+                //mimeType: clipboard.getCurrentMimeType()
               };
               addItem(ci);
 //                          clipboardMimeType = clipboard.getCurrentMimeType();
@@ -112,10 +114,12 @@ var refreshRate: Duration = 750ms;
               }
             },
             Label {
+              textOverrun: OverrunStyle.ELLIPSES
+              textWrap: false
               graphic: ImageView {
                 image: ci.image
               }
-              text: ci.text
+              text: ci.text.replaceAll("\n", " | ")
               layoutInfo: LayoutInfo {
                 width: bind itemListView.width - 50
               }
