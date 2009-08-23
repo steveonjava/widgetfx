@@ -25,11 +25,11 @@ public def IMAGE = 2;
 public def FILE = 3;
 public def FILE_LIST = 4;
 
-public class ClipboardItem extends ClipboardItemBridge {
+public class ClipboardItem {
 
   public-read var type: Integer = TEXT;
-  public var value: Object on replace { println("value={value}"); };
-  public var mimeType: String on replace {
+  public var value: Object = bind data.getValue();
+  public var mimeType: String = bind data.getMimeType() on replace { // TODO: redundant, moved to CD
     println("mimeType={mimeType}");
     if(mimeType.startsWith("text/")) {
       type = TEXT;
@@ -43,18 +43,7 @@ public class ClipboardItem extends ClipboardItemBridge {
     image = images[type];
   };
   public var image: Image = images[REFRESH];
-  public var text: String = bind if(type == TEXT) value as String else "<binary>";
+  public var text: String = bind if(type == TEXT) data.getValue() as String else "<binary>";
   public var stored: Boolean = false;
-
-  override public function getText(): String {
-    return text;
-  }
-
-  override public function setText(t: String): Void {
-    println("t={t}");
-    //value = t;
-  }
-
-
-
+  public var data: ClipboardData;
 }

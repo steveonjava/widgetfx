@@ -16,7 +16,7 @@ package se.pmdit.clipboardmanager;
  */
 public class TextEditor extends javax.swing.JFrame {
 
-  private ClipboardItemBridge ci = null;
+  private ClipboardData ci = null;
 
   /** Creates new form TextEditor */
   public TextEditor() {
@@ -83,7 +83,7 @@ public class TextEditor extends javax.swing.JFrame {
 
     private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
       synchronized(ci) {
-        ci.setText(getText());
+        //ci.setText(getText());
       }
       this.setVisible(false);
       this.dispose();
@@ -102,9 +102,9 @@ public class TextEditor extends javax.swing.JFrame {
     return textEditor.getText();
   }
 
-  public void setClipboardItem(ClipboardItemBridge ci) {
+  public void setClipboardItem(ClipboardData ci) {
     this.ci = ci;
-    setText(ci.getText());
+    //setText(ci.getText());
   }
 
   /**
