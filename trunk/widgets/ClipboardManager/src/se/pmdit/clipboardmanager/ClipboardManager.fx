@@ -10,7 +10,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.lang.Duration;
 import javafx.scene.image.Image;
-import javafx.scene.layout.HBox;
 
 import javafx.scene.Node;
 import se.pmdit.clipboardmanager.control.*;
@@ -37,6 +36,12 @@ import org.jfxtras.scene.border.LineBorder;
 
 
 import javafx.scene.control.OverrunStyle;
+import se.pmdit.imageeditor.ImageEditor;
+
+import java.awt.image.BufferedImage;
+
+import org.jfxtras.scene.util.BoundsPainter;
+import javafx.scene.control.Button;
 
 /**
  * @author pmd
@@ -60,15 +65,8 @@ public mixin class ClipboardManager {
             if(clipboard.isUpdated()) {
               var ci = ClipboardItem {
                 data: clipboard.getData()
-                //value: clipboard.getCurrentValue()
-                //mimeType: clipboard.getCurrentMimeType()
               };
               addItem(ci);
-//                          clipboardMimeType = clipboard.getCurrentMimeType();
-//                          clipboardContent = clipboard.getCurrentValue();
-            }
-            else if(clipboard.isMimeTypeUpdated()) {
-              //clipboardMimeType = clipboard.getCurrentMimeType();
             }
           }
         }
@@ -76,29 +74,10 @@ public mixin class ClipboardManager {
     ]
   };
 
-var historySizeLimit = 3;
-var refreshRate: Duration = 750ms;
-//var clipboardContent: String on replace {
-//    insert clipboardContent before textHistory[0];
-//    addItem(clipboardContent);
-//    if(sizeof textHistory > historySizeLimit) {
-//      delete textHistory[historySizeLimit];
-//
-//    }
-//    for(str in textHistory) {
-//        java.lang.System.out.println("{str}");
-//    }
-//    java.lang.System.out.println("");
-//};
-
+  var historySizeLimit = 10;
+  var refreshRate: Duration = 750ms;
   var history: ClipboardItem[] = [];
   var textHistory: String[];
-//var items: ClipboardItem[] = [
-//    ClipboardItem {
-//        text: "test";
-//        image: images[REFRESH];
-//    }
-//];
 
   function addItem(ci: ClipboardItem): Void {
     var item: ListItem = ListItem {
@@ -124,12 +103,16 @@ var refreshRate: Duration = 750ms;
                 width: bind itemListView.width - 50
               }
             },
-            ImageView {  // TODO: add background to make "real" button = whole button area
-              image: Image { url: "{__DIR__}icons/preferences-system.png" };
-              onMouseClicked: function(e: MouseEvent) {
-                showMenu(item, e.sceneX, e.sceneY);
+            Button {
+              graphic: ImageView {  // TODO: add background to make "real" button = whole button area
+                image: Image { url: "{__DIR__}icons/preferences-system.png" };
+              }
+              text: ""
+              action: function() {
+                showMenu(item, 0, 0);
               }
             }
+            
           ]
         }
       }
@@ -142,6 +125,17 @@ var refreshRate: Duration = 750ms;
 
     if(sizeof history > historySizeLimit) {
       removeItem(historySizeLimit, false);
+    }
+  }
+
+  public function removeItem(clipboardItem: ClipboardItem, force: Boolean): Void {
+    var index = -1;
+    for(ci in history where ci.equals(clipboardItem)) {
+      index = indexof ci;
+    }
+
+    if(index >= 0) {
+      removeItem(index, force);
     }
   }
 
@@ -161,7 +155,17 @@ var refreshRate: Duration = 750ms;
     }
   }
 
-  var popupMenu: Group = Group {};
+  var popupMenu: Group = Group {
+    translateX: -10
+    translateY: -10
+content: Rectangle {
+    x: 0, y: 0
+    width: 140, height: 90
+    fill: Color.BLACK
+  }
+
+
+  };
   function showMenu(item: ListItem, x: Number, y: Number) {
     var vbox: VBox;
     popupMenu.content = Group {
@@ -183,10 +187,19 @@ var refreshRate: Duration = 750ms;
                 spacing: 5
                 content: [
                   Hyperlink {
+                    text: "close menu"
+                    action: function() {
+                      popupMenu.visible = false;
+                      //delete popupMenu from mainContent;
+                    }
+                  }
+                  Hyperlink {
                     text: "set in clipboard"
                     action: function() {
                       popupMenu.visible = false;
-                      clipboard.setContent((item.data as ClipboardItem).text);
+                      var ci = item.data as ClipboardItem;
+                      removeItem(ci, true);
+                      clipboard.setContent(ci.data);
                       //delete popupMenu from mainContent;
                     }
                   }
@@ -199,10 +212,11 @@ var refreshRate: Duration = 750ms;
                     }
                   }
                   Hyperlink {
-                    text: "close menu"
+                    text: "delete"
                     action: function() {
                       popupMenu.visible = false;
                       //delete popupMenu from mainContent;
+                      removeItem(item.data as ClipboardItem, true);
                     }
                   }
                 ]
@@ -223,31 +237,38 @@ var refreshRate: Duration = 750ms;
     popupMenu.translateY = ty;
     popupMenu.visible = true;
 
-    println("pop: {popupMenu.boundsInParent.minX}, {popupMenu.boundsInParent.minY}");
+    //println("pop: {popupMenu.boundsInParent.minX}, {popupMenu.boundsInParent.minY}");
     popupMenu.toFront();
   }
 
   function editItem(item: ListItem): Void {
     var ci: ClipboardItem = item.data as ClipboardItem;
+
     if(ci.type == ClipboardItem.TEXT) {
       var editor = TextEditor {}
       editor.setText(ci.text);
       editor.show();
     }
+    else if(ci.type == ClipboardItem.IMAGE) {
+      ImageEditor {
+        bf: (ci.value as BufferedImage)
+      }
+    }
   }
 
   var itemListView: NodeListView = NodeListView {
+    layoutY: 20
     width: bind widgetWidth - 10
-    height: bind widgetHeight
+    height: bind widgetHeight - 20
   };
 
   public var mainContent: Node[] = bind [
-      HBox {
-        content: [
-          itemListView,
-        ]
-      }
-      popupMenu
+    Group {
+      content: [
+        itemListView,
+        BoundsPainter { targetNode: popupMenu }
+      ]
+    }
   ];
 
   postinit {

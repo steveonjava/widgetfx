@@ -29,7 +29,7 @@ public class ClipboardHandler implements FlavorListener, ClipboardOwner {
   private Clipboard clipboard;
   private ClipboardData currentData = null;
   //private String currentMimeType = "";
-  private boolean mimeTypeUpdated = false;
+  private boolean clipboardUpdated = false;
   private boolean retryLater = false;
 
   public ClipboardHandler() {
@@ -38,31 +38,56 @@ public class ClipboardHandler implements FlavorListener, ClipboardOwner {
     //this.updateMimeType();
   }
 
+  private ClipboardData getClipboardData(Transferable contents) throws UnsupportedFlavorException, IOException {
+    ClipboardData newData = null;
+
+    if(contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+      newData = new ClipboardData(contents, DataFlavor.stringFlavor);
+    }
+    else if(contents.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+      newData = new ClipboardData(contents, DataFlavor.imageFlavor);
+    }
+    else if(contents.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+      newData = new ClipboardData(contents, DataFlavor.javaFileListFlavor);
+    }
+
+    return newData;
+  }
+
   public boolean isUpdated() {
     boolean changed = false;
     ClipboardData newData = null;
-    Transferable contents = clipboard.getContents(null);
 
     try {
-      if(contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-        newData = new ClipboardData(contents, DataFlavor.stringFlavor);
-      }
-      // TODO: out of memory?
-//      else if(contents.isDataFlavorSupported(DataFlavor.imageFlavor)) {
-//        newData = new ClipboardData(contents, DataFlavor.imageFlavor);
-//      }
-      else if(contents.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-        newData = new ClipboardData(contents, DataFlavor.javaFileListFlavor);
-      }
-    } catch (UnsupportedFlavorException ex) {
-      Logger.getLogger(ClipboardHandler.class.getName()).log(Level.SEVERE, null, ex);
-    } catch (IOException ex) {
-      Logger.getLogger(ClipboardHandler.class.getName()).log(Level.SEVERE, null, ex);
+      Transferable contents = clipboard.getContents(null);
+      newData = getClipboardData(contents);
+    }
+    catch (UnsupportedFlavorException e) {
+      retryLater = true;
+      Logger.getLogger(ClipboardHandler.class.getName()).log(Level.SEVERE, null, e);
+    }
+    catch (IOException e) {
+      retryLater = true;
+      Logger.getLogger(ClipboardHandler.class.getName()).log(Level.SEVERE, null, e);
+    }
+    catch(IllegalStateException e) {
+      retryLater = true;
+      Logger.getLogger(ClipboardHandler.class.getName()).log(Level.SEVERE, null, e);
     }
 
-    if(currentData != null) {
-      changed = !currentData.equals(newData);
-    } else if (newData != null) {
+    if(clipboardUpdated) {
+      clipboardUpdated = false;
+      changed = true;
+    }
+    else if(currentData != null) {
+      if(currentData.getType() == Type.IMAGE && newData.getType() == Type.IMAGE) {
+        changed = false;
+      }
+      else {
+        changed = !currentData.equals(newData);
+      }
+    }
+    else if (newData != null) {
       changed = true;
     }
 
@@ -109,9 +134,9 @@ public class ClipboardHandler implements FlavorListener, ClipboardOwner {
 ////        }
 //    }
 
-  public void setContent(String text) {
-    StringSelection ss = new StringSelection(text);
-    clipboard.setContents(ss, this);
+  public void setContent(ClipboardData clipboardData) {
+    //StringSelection ss = new StringSelection(text);
+    clipboard.setContents(clipboardData, this);
 
 
 //        try {
@@ -130,15 +155,16 @@ public class ClipboardHandler implements FlavorListener, ClipboardOwner {
 //        }
     }
 
-  public boolean isMimeTypeUpdated() {
-    boolean changed = this.mimeTypeUpdated;
-    mimeTypeUpdated = false;
-    return changed;
-  }
+//  public boolean isMimeTypeUpdated() {
+//    boolean changed = this.mimeTypeUpdated;
+//    mimeTypeUpdated = false;
+//    return changed;
+//  }
 
   @Override
   public void flavorsChanged(FlavorEvent e) {
-    System.out.println("--------------------------> flavorsChanged!!");
+    System.out.println("----------> flavors changed");
+    this.clipboardUpdated = true;
   }
 
   @Override
@@ -158,10 +184,32 @@ public class ClipboardHandler implements FlavorListener, ClipboardOwner {
 //  }
 
   /**
-   * @return the currentValue
+   * @return the current clipboard contents
    */
   public ClipboardData getData() {
     return this.currentData;
+//    ClipboardData cd = null;
+//    Transferable contents = clipboard.getContents(null);
+//
+//    try {
+//      if(contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+//        cd = new ClipboardData(contents, DataFlavor.stringFlavor);
+//      }
+//      else if(contents.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+//        cd = new ClipboardData(contents, DataFlavor.imageFlavor);
+//      }
+//      else if(contents.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+//        cd = new ClipboardData(contents, DataFlavor.javaFileListFlavor);
+//      }
+//
+//
+//    } catch (UnsupportedFlavorException ex) {
+//      Logger.getLogger(ClipboardHandler.class.getName()).log(Level.SEVERE, null, ex);
+//    } catch (IOException ex) {
+//      Logger.getLogger(ClipboardHandler.class.getName()).log(Level.SEVERE, null, ex);
+//    }
+//
+//    return cd;
   }
 
   /**

@@ -5,10 +5,13 @@
 
 package se.pmdit.clipboardmanager;
 
+import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Date;
 import se.pmdit.clipboardmanager.ClipboardHandler.Type;
 
 /**
@@ -21,7 +24,7 @@ public class ClipboardData implements Transferable {
   private Type type;
   private DataFlavor flavor;
   private String mimeType;
-
+  private Date timestamp = new Date();
 
   public ClipboardData(Transferable data, DataFlavor flavor) throws UnsupportedFlavorException, IOException {
     this.data = data;
@@ -69,6 +72,13 @@ public class ClipboardData implements Transferable {
     return null;
   }
 
+  public Image getImage() {
+    if(type == Type.IMAGE) {
+      return (Image)getValue();
+    }
+    return null;
+  }
+
   public Transferable getDataTransferable() {
     return data;
   }
@@ -79,6 +89,27 @@ public class ClipboardData implements Transferable {
 
   public String getMimeType() {
     return this.mimeType;
+  }
+
+  public String getDescription() {
+    switch(type) {
+      case TEXT:
+        return (String)this.getValue();
+
+      case IMAGE:
+        Image img = (Image)getValue();
+        if(img instanceof BufferedImage) {
+          BufferedImage bi = (BufferedImage)img;
+          return bi.getWidth() + "x" + bi.getHeight();
+        }
+        break;
+    }
+
+    return "<binary>";
+  }
+
+  public Date getTimestamp() {
+    return this.timestamp;
   }
 
   @Override
@@ -99,6 +130,7 @@ public class ClipboardData implements Transferable {
   @Override
   public boolean equals(Object other) {
     if(other instanceof ClipboardData) {
+
       return this.getValue().equals( ((ClipboardData)other).getValue() );
     }
 

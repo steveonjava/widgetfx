@@ -30,7 +30,7 @@ public class ClipboardItem {
   public-read var type: Integer = TEXT;
   public var value: Object = bind data.getValue();
   public var mimeType: String = bind data.getMimeType() on replace { // TODO: redundant, moved to CD
-    println("mimeType={mimeType}");
+    //println("mimeType={mimeType}");
     if(mimeType.startsWith("text/")) {
       type = TEXT;
     }
@@ -43,7 +43,7 @@ public class ClipboardItem {
     image = images[type];
   };
   public var image: Image = images[REFRESH];
-  public var text: String = bind if(type == TEXT) data.getValue() as String else "<binary>";
+  public var text: String = bind "{data.getDescription()} [{%tX data.getTimestamp()}]";
   public var stored: Boolean = false;
   public var data: ClipboardData;
 }
