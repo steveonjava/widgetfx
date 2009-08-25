@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="$$codebase" href="$$name">
+    <information>
+        <title>ClipboardManager</title>
+        <vendor>pmd it</vendor>
+        <homepage href="$$context"/>
+        <description>Keep a history of the clipboard contents and set previous entry as the active one</description>
+        <offline-allowed/>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <j2se version="1.5+"/>
+        <property name="jnlp.packEnabled" value="true"/>
+        <property name="jnlp.versionEnabled" value="true"/>
+        <extension name="JavaFX Runtime" href="http://dl.javafx.com/1.2/javafx-rt.jnlp"/>
+        <jar href="ClipboardManager.jar" main="true"/>
+        <jar href="lib/jnlp.jar"/>
+        <jar href="lib/WidgetFX-API.jar"/>
+        <jar href="lib/JFXtras-0.5.jar"/>
+        <jar href="lib/ImageEditor.jar"/>
+    </resources>
+    <application-desc main-class="com.sun.javafx.runtime.main.Main">
+        <argument>MainJavaFXScript=se.pmdit.clipboardmanager.WidgetMain</argument>
+    </application-desc>
+    <update check="background"/>
+</jnlp>

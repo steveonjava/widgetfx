@@ -252,7 +252,7 @@ public mixin class ClipboardManager {
   }
 
   var itemListView: NodeListView = NodeListView {
-    layoutY: 20
+    //layoutY: 20
     width: bind widgetWidth - 10
     height: bind widgetHeight - 20
   };
