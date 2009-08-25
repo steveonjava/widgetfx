@@ -42,6 +42,7 @@ import java.awt.image.BufferedImage;
 
 import org.jfxtras.scene.util.BoundsPainter;
 import javafx.scene.control.Button;
+import javafx.scene.effect.DropShadow;
 
 /**
  * @author pmd
@@ -80,6 +81,7 @@ public mixin class ClipboardManager {
   var textHistory: String[];
 
   function addItem(ci: ClipboardItem): Void {
+    var btn: Button;
     var item: ListItem = ListItem {
       data: ci
       content: Grid {
@@ -103,15 +105,20 @@ public mixin class ClipboardManager {
                 width: bind itemListView.width - 50
               }
             },
-            Button {
-              graphic: ImageView {  // TODO: add background to make "real" button = whole button area
-                image: Image { url: "{__DIR__}icons/preferences-system.png" };
-              }
-              text: ""
-              action: function() {
-                showMenu(item, 0, 0);
+            ImageView {  // TODO: add background to make "real" button = whole button area
+              image: Image { url: "{__DIR__}icons/preferences-system.png" };
+              onMouseClicked: function(e: MouseEvent) {
+                showMenu(item, e.sceneX, e.sceneY);
               }
             }
+//            btn = Button {
+//              //graphic:
+//              text: "aa"
+//              //onMouseClicked:
+//              onMouseClicked: function(e: MouseEvent) {
+//                showMenu(item, e.sceneX, e.sceneY);
+//              }
+//            }
             
           ]
         }
@@ -155,90 +162,78 @@ public mixin class ClipboardManager {
     }
   }
 
+  var popupMenuItem: ListItem;
   var popupMenu: Group = Group {
-    translateX: -10
-    translateY: -10
-content: Rectangle {
-    x: 0, y: 0
-    width: 140, height: 90
-    fill: Color.BLACK
-  }
-
-
-  };
-  function showMenu(item: ListItem, x: Number, y: Number) {
     var vbox: VBox;
-    popupMenu.content = Group {
+    content: Group {
       opacity: 0.9
+      blocksMouse: true
+      //visible: false
       content: [
-        LineBorder {
-          thickness: 1
-          lineColor: Color.LIGHTGRAY
-          node: Group {
-            content: [
-              Rectangle {
-                width: 140
-                height: bind vbox.layoutBounds.height + 10
-                fill: Color.WHITE
-              }
-              vbox = VBox {
-                layoutX: 5
-                layoutY: 5
-                spacing: 5
-                content: [
-                  Hyperlink {
-                    text: "close menu"
-                    action: function() {
-                      popupMenu.visible = false;
-                      //delete popupMenu from mainContent;
-                    }
-                  }
-                  Hyperlink {
-                    text: "set in clipboard"
-                    action: function() {
-                      popupMenu.visible = false;
-                      var ci = item.data as ClipboardItem;
-                      removeItem(ci, true);
-                      clipboard.setContent(ci.data);
-                      //delete popupMenu from mainContent;
-                    }
-                  }
-                  Hyperlink {
-                    text: "edit"
-                    action: function() {
-                      popupMenu.visible = false;
-                      //delete popupMenu from mainContent;
-                      editItem(item);
-                    }
-                  }
-                  Hyperlink {
-                    text: "delete"
-                    action: function() {
-                      popupMenu.visible = false;
-                      //delete popupMenu from mainContent;
-                      removeItem(item.data as ClipboardItem, true);
-                    }
-                  }
-                ]
-              }
-            ]
+        Rectangle {
+          arcHeight: 15
+          arcWidth: 15
+          width: 100 //bind vbox.layoutBounds.width + 10
+          height: 100 //bind vbox.layoutBounds.height + 10
+          fill: Color.WHITE
+          effect: DropShadow {
+            offsetX: 3
+            offsetY: 3
+            color: Color.BLACK
+            radius: 3
           }
         }
+        vbox = VBox {
+          layoutX: 5
+          layoutY: 5
+          spacing: 5
+          content: [
+            Hyperlink {
+              text: "close menu"
+              action: function() {
+                popupMenu.visible = false;
+              }
+            }
+            Hyperlink {
+              text: "set in clipboard"
+              action: function() {
+                popupMenu.visible = false;
+                var ci = popupMenuItem.data as ClipboardItem;
+                removeItem(ci, true);
+                clipboard.setContent(ci.data);
+              }
+            }
+            Hyperlink {
+              text: "edit"
+              action: function() {
+                popupMenu.visible = false;
+                editItem(popupMenuItem);
+              }
+            }
+            Hyperlink {
+              text: "delete"
+              action: function() {
+                popupMenu.visible = false;
+                removeItem(popupMenuItem.data as ClipboardItem, true);
+              }
+            }
+          ]
+        }
       ]
-    };
-  
-    //insert popupMenu into mainContent;
+    }
+  }
+
+  function showMenu(item: ListItem, x: Number, y: Number) {
+    popupMenuItem = item;
     
-    var tx = x - 140; //popupMenu.layoutBounds.width;
+    var tx = x - popupMenu.layoutBounds.width; //popupMenu.layoutBounds.width;
     if(tx < 0 ) tx = 0;
     popupMenu.translateX = tx;
-    var ty = y; // - popupMenu.layoutBounds.height;
+    var ty = y - (popupMenu.layoutBounds.height / 2); // - popupMenu.layoutBounds.height;
     if(ty < 0 ) ty = 0;
     popupMenu.translateY = ty;
-    popupMenu.visible = true;
 
-    //println("pop: {popupMenu.boundsInParent.minX}, {popupMenu.boundsInParent.minY}");
-    popupMenu.toFront();
+    popupMenu.visible = true;
   }
 
   function editItem(item: ListItem): Void {
@@ -266,13 +261,14 @@ content: Rectangle {
     Group {
       content: [
         itemListView,
-        BoundsPainter { targetNode: popupMenu }
+        popupMenu
       ]
     }
   ];
 
   postinit {
     timer.play();
+    popupMenu.visible = false;
   }
 
 }
