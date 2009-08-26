@@ -83,7 +83,7 @@ public class NodeListView extends CustomNode {
 
     public function add(item: ListItem): ListItem {
       if(not hScrolling) {
-        item.width = width;     // TODO: Hmmm... might not be the best idea...
+        item.width = 600;     // TODO: Hmmm... might not be the best idea...
       }
 
       //item.height = 0;
@@ -130,6 +130,7 @@ public class NodeListView extends CustomNode {
         return item;
     }
 
+    public var visibleWidth: Number = bind clipView.layoutBounds.maxX;
     var clipView: ClipView;
     var verticalScroll: ScrollBar = ScrollBar {
         min: 0

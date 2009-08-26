@@ -15,9 +15,7 @@ import javafx.scene.Scene;
 public class Main extends Stage, ClipboardManager {
 
     override var widgetWidth = bind scene.width - 2;
-    override var widgetHeight = bind scene.height - 2 on replace {
-        println("widgetHeight={widgetHeight}");
-    };
+    override var widgetHeight = bind scene.height - 2;
 
     init {
         scene = Scene {

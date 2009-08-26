@@ -28,8 +28,8 @@ public class WidgetMain extends Widget, ClipboardManager {
 
 public function run() {
     WidgetMain {
-        width: 100
-        height: 160
+        width: 300
+        height: 300
     };
 }
 
