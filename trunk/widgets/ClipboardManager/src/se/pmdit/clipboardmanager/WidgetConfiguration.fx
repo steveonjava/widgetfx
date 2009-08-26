@@ -34,7 +34,7 @@ public class WidgetConfiguration extends Configuration {
 
   override var scene = Scene {
       var pathLabel = SwingLabel {
-          text: "Default path "
+          text: "?"
       };
       var pathText = SwingTextField {
           text: bind tempPath with inverse

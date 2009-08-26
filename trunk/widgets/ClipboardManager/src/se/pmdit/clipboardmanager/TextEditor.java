@@ -13,10 +13,11 @@ package se.pmdit.clipboardmanager;
 /**
  *
  * @author pmd
+ * // TODO: look into JFXtras multiline editor instead of swing...
  */
 public class TextEditor extends javax.swing.JFrame {
 
-  private ClipboardData ci = null;
+  private ClipboardData cd = null;
 
   /** Creates new form TextEditor */
   public TextEditor() {
@@ -82,8 +83,8 @@ public class TextEditor extends javax.swing.JFrame {
   }// </editor-fold>//GEN-END:initComponents
 
     private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
-      synchronized(ci) {
-        //ci.setText(getText());
+      synchronized(cd) {
+        cd.setText();
       }
       this.setVisible(false);
       this.dispose();
@@ -103,7 +104,7 @@ public class TextEditor extends javax.swing.JFrame {
   }
 
   public void setClipboardItem(ClipboardData ci) {
-    this.ci = ci;
+    this.cd = ci;
     //setText(ci.getText());
   }
 

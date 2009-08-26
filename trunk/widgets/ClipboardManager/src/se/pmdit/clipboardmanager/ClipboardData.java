@@ -7,6 +7,7 @@ package se.pmdit.clipboardmanager;
 
 import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
@@ -17,6 +18,7 @@ import se.pmdit.clipboardmanager.ClipboardHandler.Type;
 /**
  *
  * @author pmd
+ * TODO: fix duplicate classes CD and CI
  */
 public class ClipboardData implements Transferable {
 
@@ -89,6 +91,13 @@ public class ClipboardData implements Transferable {
 
   public String getMimeType() {
     return this.mimeType;
+  }
+
+  public void setText() {
+//    if(type == Type.TEXT) {
+//      StringSelection ss = new StringSelection(changedText);
+//      this.data = ss;
+//    }
   }
 
   public String getDescription() {

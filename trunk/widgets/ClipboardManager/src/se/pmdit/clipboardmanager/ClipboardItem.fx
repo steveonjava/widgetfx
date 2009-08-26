@@ -12,6 +12,7 @@ import javafx.scene.image.Image;
  * @author pmd
  */
 
+// TODO: More icons... check if TEXT is URL etc.
 public def images: Image[] = [
   Image { url: "{__DIR__}icons/view-refresh.png" },
   Image { url: "{__DIR__}icons/text-x-generic.png" },

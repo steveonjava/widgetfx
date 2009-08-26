@@ -163,7 +163,7 @@ public class ClipboardHandler implements FlavorListener, ClipboardOwner {
 
   @Override
   public void flavorsChanged(FlavorEvent e) {
-    System.out.println("----------> flavors changed");
+    //System.out.println("----------> flavors changed");
     this.clipboardUpdated = true;
   }
 

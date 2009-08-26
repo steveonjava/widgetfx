@@ -76,13 +76,14 @@ public mixin class ClipboardManager {
   };
 
   var historySizeLimit = 10;
-  var refreshRate: Duration = 750ms;
+  var refreshRate: Duration = 2s;
   var history: ClipboardItem[] = [];
   var textHistory: String[];
 
   function addItem(ci: ClipboardItem): Void {
     var btn: Button;
     var item: ListItem = ListItem {
+      //width: bind itemListView.visibleWidth
       data: ci
       content: Grid {
         rows: Row {
@@ -204,6 +205,8 @@ public mixin class ClipboardManager {
               }
             }
             Hyperlink {
+              //opacity: bind if((popupMenuItem.data as ClipboardItem).type == ClipboardItem.IMAGE) 0.5 else 1
+              disable: bind ((popupMenuItem.data as ClipboardItem).type != ClipboardItem.IMAGE)
               text: "edit"
               action: function() {
                 popupMenu.visible = false;
