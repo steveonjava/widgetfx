@@ -16,32 +16,19 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.StageStyle;
-import se.pmdit.screenshotfx.imageeditor.ImageEditor;
-
-
 import java.lang.Exception;
-
-
-
-
-
-
 import javafx.scene.Group;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import java.awt.GraphicsDevice;
 import javafx.util.Sequences;
-
 import org.jfxtras.scene.layout.Grid;
-
 import org.jfxtras.scene.layout.LayoutConstants.*;
-
 import org.jfxtras.scene.layout.ResizableVBox;
-
-
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.effect.Lighting;
+import se.pmdit.imageeditor.ImageEditor;
 // </editor-fold>
 
 // TODO: change package name
@@ -250,6 +237,7 @@ public mixin class ScreenshotFX {
         );
 
         ImageEditor {
+          // TODO: default path
             bf: bf
         }
     }
