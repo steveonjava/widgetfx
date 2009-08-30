@@ -109,7 +109,8 @@ public mixin class ClipboardManager {
             ImageView {  // TODO: add background to make "real" button = whole button area
               image: Image { url: "{__DIR__}icons/preferences-system.png" };
               onMouseClicked: function(e: MouseEvent) {
-                showMenu(item, e.sceneX, e.sceneY);
+                var itemLocalToParent = item.localToParent(0, 0);
+                showMenu(item, e.sceneX, itemLocalToParent.y);
               }
             }
 //            btn = Button {
@@ -232,7 +233,7 @@ public mixin class ClipboardManager {
     var tx = x - popupMenu.layoutBounds.width; //popupMenu.layoutBounds.width;
     if(tx < 0 ) tx = 0;
     popupMenu.translateX = tx;
-    var ty = y - (popupMenu.layoutBounds.height / 2); // - popupMenu.layoutBounds.height;
+    var ty = y - (popupMenu.layoutBounds.height / 5); // - popupMenu.layoutBounds.height;
     if(ty < 0 ) ty = 0;
     popupMenu.translateY = ty;
 
