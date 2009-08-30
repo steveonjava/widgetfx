@@ -102,3 +102,24 @@ Stage {
         ]
     }
 }
+
+//              onMouseClicked: function(e: MouseEvent) {
+//                println("e: x={e.x}, y={e.y}");
+//
+//                //var b = iv.sceneToLocal(e.sceneX, e.sceneY);
+//                var i1 = item.localToScene(0, 0);
+//                println("i1: x={i1.x}, y={i1.y}");
+//
+//                var i2 = item.localToScene(e.sceneX, e.sceneY);
+//                println("i2: x={i2.x}, y={i2.y}");
+//
+//                var iv1 = iv.localToScene(0, 0);
+//                println("iv1: x={iv1.x}, y={iv1.y}");
+//
+//                var iv2 = iv.localToScene(e.sceneX, e.sceneY);
+//                println("iv2: x={iv2.x}, y={iv2.y}");
+//
+//                println("");
+//                // widgetOffsetY = b.height;
+//                //showMenu(item, b.x, b.y);
+//              }
