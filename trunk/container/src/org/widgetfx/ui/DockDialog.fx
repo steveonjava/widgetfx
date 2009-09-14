@@ -134,6 +134,7 @@ public class DockDialog extends JFXDialog {
 
     var launchOnStartup:Boolean = true on replace {
         if (launchOnStartup) {
+            println("StartupDir={InstallUtil.getStartupFolder()}");
             InstallUtil.copyStartupFile();
         } else {
             InstallUtil.deleteStartupFile();

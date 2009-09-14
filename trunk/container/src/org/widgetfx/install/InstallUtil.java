@@ -35,6 +35,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.sun.deploy.Environment;
+import com.sun.deploy.util.WinRegistry;
+import com.sun.deploy.config.Config;
 
 /**
  * @author Stephen Chin
@@ -89,4 +92,25 @@ public class InstallUtil {
             destination.write(buf, 0, i);
         }
     }
+    
+    public static String getStartupFolder(){
+        if (isWindows){
+            // from WinInstallHandler
+            int i = -2147483647;
+            String str = "";
+
+            if (Environment.isSystemCacheMode()) {
+                i = -2147483646;
+                str = "Common ";
+            }
+            return WinRegistry.getString(i, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", str + "Startup");
+        } else {
+            return "";
+        }
+    }
+
+    public static void installShortcut(String path, String name, String desc, String app, String args, String dir, String icon){
+        Config.getInstance().installShortcut(path, name, desc, app, args, dir, icon);
+    }
+
 }

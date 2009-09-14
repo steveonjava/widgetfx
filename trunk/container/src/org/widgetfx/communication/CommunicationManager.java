@@ -112,16 +112,22 @@ public enum CommunicationManager implements Runnable {
                 while (misses < SEARCH_DEPTH) {
                     try {
                         Socket socket = new Socket((String) null, port);
-                        CommunicationSender sender = new CommunicationSender(socket);
-                        newSenders.add(sender);
                         if (serverSocket != null) {
+                            CommunicationSender sender = new CommunicationSender(socket);
+                            newSenders.add(sender);
                             if (!sender.sendPort(serverPort)) {
                                 misses++;
                             }
+                        } else {
+                            Logger.getLogger(CommunicationManager.class.getName()).log(Level.WARNING, "ServerSocket is null.  Trying to start one on port: "+port);
+                            socket.close();
+                            startCommunicationServer(port);
+                            misses++;
                         }
                     } catch (UnknownHostException ex) {
                         Logger.getLogger(CommunicationManager.class.getName()).log(Level.SEVERE, "Communication Server can't start up due to UnknownHostException", ex);
                     } catch (ConnectException ex) {
+                        Logger.getLogger(CommunicationManager.class.getName()).log(Level.INFO, "Unable to connect to port: "+port);
                         misses++;
                         if (serverSocket == null) {
                             startCommunicationServer(port);
@@ -142,7 +148,7 @@ public enum CommunicationManager implements Runnable {
         private void startCommunicationServer(int port) throws IOException {
             serverPort = port;
             serverSocket = new ServerSocket(port);
-            System.out.println("Starting WidgetFX server on port " + port);
+            System.out.println("Started WidgetFX server on port " + port);
             Thread connectionListener = new Thread(CommunicationManager.this, "Communication Server");
             connectionListener.setDaemon(true);
             connectionListener.start();
