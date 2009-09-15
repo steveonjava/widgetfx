@@ -71,6 +71,11 @@ public class WidgetFXConfiguration {
         }
     }
 
+    public function getJnlpFile():String {
+        return if (devMode) "WidgetFX.jnlp" else "launch.jnlp";
+    }
+
+
     public-read var configFolder = new File(System.getProperty("user.home"),
         if (devMode) ".WidgetFXDev" else ".WidgetFX") on replace {
         println("Configuration directory location is: \"{configFolder}\"");

@@ -37,6 +37,7 @@ import java.awt.GraphicsEnvironment;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.*;
+
 import javafx.scene.*;
 import javafx.scene.input.*;
 import javafx.scene.paint.*;
@@ -134,8 +135,8 @@ public class DockDialog extends JFXDialog {
 
     var launchOnStartup:Boolean = true on replace {
         if (launchOnStartup) {
-            println("StartupDir={InstallUtil.getStartupFolder()}");
-            InstallUtil.copyStartupFile();
+            var path = InstallUtil.getStartupFolder();
+            InstallUtil.installShortcut(path, "WidgetFX", "WidgetFX Launcher", InstallUtil.getJavaWebStartPath(), "-localfile -offline \"{InstallUtil.getJavaCacheFileReference(configuration.getJnlpFile())}\"", null, InstallUtil.getIconPath());
         } else {
             InstallUtil.deleteStartupFile();
         }

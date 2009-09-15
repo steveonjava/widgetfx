@@ -33,11 +33,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.sun.deploy.Environment;
 import com.sun.deploy.util.WinRegistry;
-import com.sun.deploy.config.Config;
+import com.sun.deploy.config.ConfigFactory;
+import com.sun.javaws.IcoEncoder;
+import com.sun.deploy.net.DownloadEngine;
+import javax.jnlp.BasicService;
+import javax.jnlp.ServiceManager;
+import javax.jnlp.UnavailableServiceException;
 
 /**
  * @author Stephen Chin
@@ -110,7 +116,34 @@ public class InstallUtil {
     }
 
     public static void installShortcut(String path, String name, String desc, String app, String args, String dir, String icon){
-        Config.getInstance().installShortcut(path, name, desc, app, args, dir, icon);
+        ConfigFactory.newInstance().installShortcut(path + File.separatorChar + name + ".lnk", name, desc, app, args, dir, icon);
     }
 
+    public static String getJavaCacheFileReference(String jnlpFileName) throws UnavailableServiceException{
+        BasicService basicService = (BasicService) ServiceManager.lookup("javax.jnlp.BasicService");
+
+        try {
+            java.net.URL url= new java.net.URL(basicService.getCodeBase(), jnlpFileName);
+            return DownloadEngine.getCachedFile(url).getAbsolutePath();
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(InstallUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }  catch (IOException ex) {
+            Logger.getLogger(InstallUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+
+    public static String getJavaWebStartPath() {
+        return ConfigFactory.newInstance().getSystemJavawsPath();
+    }
+
+    public static String getIconPath() throws UnavailableServiceException{
+        BasicService basicService = (BasicService) ServiceManager.lookup("javax.jnlp.BasicService");
+        try {
+            return IcoEncoder.getIconPath(new java.net.URL(basicService.getCodeBase(), "icon48.png"), null);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(InstallUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
 }
