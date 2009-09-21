@@ -87,20 +87,24 @@ public class SlideShow extends Widget {
     var fileCount = 0;
     var scale:Number = 1;
     var showReflections = false;
+
     var zoomTimeline = Timeline {
         keyFrames: [
             at (0s) {scale => 1}
             at (1s) {scale => .6 tween Interpolator.SPLINE(.05, .5, .5, .95)}
         ]
     }
+
     var shelfLayoutInfo = LayoutInfo {
         height: bind height * scale
     }
+
     override var onMouseEntered = function(e) {
         showReflections = true;
         zoomTimeline.rate = 1;
         zoomTimeline.play();
     }
+
     override var onMouseExited = function(e) {
         showReflections = false;
         zoomTimeline.rate = -1;
