@@ -127,7 +127,7 @@ public enum CommunicationManager implements Runnable {
                     } catch (UnknownHostException ex) {
                         Logger.getLogger(CommunicationManager.class.getName()).log(Level.SEVERE, "Communication Server can't start up due to UnknownHostException", ex);
                     } catch (ConnectException ex) {
-                        Logger.getLogger(CommunicationManager.class.getName()).log(Level.INFO, "Unable to connect to port: "+port);
+                        Logger.getLogger(CommunicationManager.class.getName()).log(Level.FINE, "Unable to connect to port: "+port);
                         misses++;
                         if (serverSocket == null) {
                             startCommunicationServer(port);
