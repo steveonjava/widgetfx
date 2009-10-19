@@ -211,6 +211,7 @@ public class DockDialog extends JFXDialog {
     }
 
     public function showDock() {
+        println("show dock.");
         visible = true;
         WidgetManager.getInstance().notifyWidgetsShow();
         FX.deferAction(function() {updateDockLocation(true)});
