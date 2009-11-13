@@ -175,7 +175,7 @@ is divided into following sections:
             <arg value="-keyalias"/>
             <arg value="${jnlp.signjar.alias}"/>
             <arg value="-keystorePassword"/>
-            <arg value="${jnlp.signjar.keypass}"/>               
+            <arg value="${jnlp.signjar.keypass}"/>
         </exec>
     </target>
     <target name="-post-compile">

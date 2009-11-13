@@ -32,8 +32,8 @@ import org.widgetfx.*;
 import org.widgetfx.config.*;
 import org.jfxtras.async.*;
 import org.jfxtras.scene.layout.*;
-import org.jfxtras.scene.layout.LayoutConstants.*;
-import org.jfxtras.scene.control.Shelf;
+import org.jfxtras.scene.layout.XGridLayoutInfo.*;
+import org.jfxtras.scene.control.XShelf;
 import javafx.ext.swing.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
@@ -78,7 +78,7 @@ public class SlideShow extends Widget {
     var currentFile:String;
     var index:Integer;
     var nextImage:Image;
-    var worker:JFXWorker;
+    var worker:XWorker;
     var timeline:Timeline;
     var tabbedPane:JTabbedPane;
     var maxFiles = 10000;
@@ -152,7 +152,7 @@ public class SlideShow extends Widget {
                 }
                 initTimeline();
                 timeline.play();
-                shelf = Shelf {
+                shelf = XShelf {
                     layoutInfo: shelfLayoutInfo
                     index: bind index with inverse
                     blocksMouse: false
@@ -165,6 +165,7 @@ public class SlideShow extends Widget {
                     showText: false
                     aspectRatio: aspectRatio
                     reflection:bind showReflections
+                    wrap: true
                 }
                 status = "";
             } else {
@@ -226,7 +227,7 @@ public class SlideShow extends Widget {
         var directoryLabel = Text {content: "Directory:"};
         var directoryEdit = TextBox {text: bind directoryName with inverse, columns: 40};
         var keywordLabel = Text {content: "Filter:"};
-        var keywordEdit = TextBox {text: bind filter with inverse, columns: 40};
+        var keywordEdit = TextBox {text: bind filter with inverse, columns: 40, layoutInfo: XGridLayoutInfo {hspan: 2}};
         var durationLabel = Text {content: "Duration"};
         var shuffleCheckBox = CheckBox {text: "Shuffle", selected: bind shuffle with inverse};
 
@@ -236,6 +237,7 @@ public class SlideShow extends Widget {
         // todo - replace with javafx spinner when one exists
         durationSpinner = new JSpinner(new SpinnerNumberModel(duration, 2, 60, 1));
         var durationSpinnerComponent = SwingComponent.wrap(durationSpinner);
+        durationSpinnerComponent.layoutInfo = XGridLayoutInfo {width: 52, hpos: LEFT}
 
         browseButton = SwingButton {
             text: "Browse...";
@@ -249,17 +251,17 @@ public class SlideShow extends Widget {
             }
         }
 
-        Grid {
+        XGrid {
             rows: [
                 row([directoryLabel, directoryEdit, browseButton]),
-                row([keywordLabel, Cell {content: keywordEdit, hspan: 2}]),
-                row([durationLabel, Cell {content: durationSpinnerComponent, prefWidth: 52, hpos: LEFT}]),
+                row([keywordLabel, keywordEdit]),
+                row([durationLabel, durationSpinnerComponent]),
                 row([shuffleCheckBox])
             ]
         }
     }
 
-    var shelf:Shelf;
+    var shelf:XShelf;
 
     init {
         var view:ImageView;

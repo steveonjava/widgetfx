@@ -296,9 +296,10 @@ public class WidgetManager {
     }
     
     public function removeWidget(instance:WidgetInstance):Void {
-        if (not widgetRunner) {
-            instance.deleteConfig();
+        if (widgetRunner) {
+            FX.exit();
         }
+        instance.deleteConfig();
         delete instance from widgets;
     }
 

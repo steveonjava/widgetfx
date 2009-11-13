@@ -173,6 +173,12 @@ is divided into following sections:
             <arg value="${sign.arg}"/>
             <arg value="-cp"/>
             <arg path="${javac.classpath}"/>
+            <arg value="-keystore"/>
+            <arg path="${jnlp.signjar.keystore}"/>
+            <arg value="-keyalias"/>
+            <arg value="${jnlp.signjar.alias}"/>
+            <arg value="-keystorePassword"/>
+            <arg value="${jnlp.signjar.keypass}"/>
         </exec>
     </target>
     <target name="-post-compile">

@@ -61,7 +61,7 @@ public var RESIZABLE_TOOLBAR_HEIGHT = 18;
 public var NONRESIZABLE_TOOLBAR_HEIGHT = RESIZABLE_TOOLBAR_HEIGHT - BORDER;
 public var DS_RADIUS = 5;
 
-public class WidgetFrame extends JFXDialog, DragContainer {
+public class WidgetFrame extends XDialog, DragContainer {
     var toolbarHeight = bind if (instance.widget.configuration == null) NONRESIZABLE_TOOLBAR_HEIGHT else RESIZABLE_TOOLBAR_HEIGHT;
     
     public-init var hidden = false;
@@ -446,7 +446,7 @@ public class WidgetFrame extends JFXDialog, DragContainer {
                         onClose: function() {
                             WidgetManager.getInstance().removeWidget(instance);
                             close();
-        		            Toolkit.getDefaultToolkit().removeAWTEventListener(awtListener);
+        		    Toolkit.getDefaultToolkit().removeAWTEventListener(awtListener);
                         }
                     }
                 ]

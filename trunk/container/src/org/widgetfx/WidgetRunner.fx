@@ -29,7 +29,11 @@
 package org.widgetfx;
 
 import javafx.lang.*;
-import javax.swing.UIManager;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.StageStyle;
+import org.jfxtras.stage.XDialog;
 import org.widgetfx.config.*;
 import org.widgetfx.ui.AddWidgetDialog;
 
@@ -37,6 +41,26 @@ import org.widgetfx.ui.AddWidgetDialog;
  * @author Stephen Chin
  * @author Keith Combs
  */
+var instance:WidgetInstance;
+
+var splashScreen = XDialog {
+    x: 0
+    y: 0
+    title: "Widget Runner"
+    style: StageStyle.TRANSPARENT
+    alwaysOnTop: true
+    scene: Scene {
+        content: ImageView {
+            image: Image {
+                url: "http://widgetfx.googlecode.com/svn/site/images/WidgetFX_Logo_Transparent.png"
+            }
+            onMousePressed: function(e) {
+                instance.frame.toFront();
+            }
+        }
+        fill: null
+    }
+}
 
 for (arg in FX.getArguments() where arg.equals("no-transparency")) {
     WidgetFXConfiguration.TRANSPARENT = false;
@@ -52,7 +76,7 @@ function closeHook() {
 }
 
 function runWidget(jnlpUrl:String) {
-    var instance = WidgetInstance {
+    instance = WidgetInstance {
         jnlpUrl: jnlpUrl
         docked: false
         onLoad: function(instance:WidgetInstance) {

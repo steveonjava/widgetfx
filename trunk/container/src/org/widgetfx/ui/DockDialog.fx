@@ -77,7 +77,7 @@ public function getInstance() {
 /**
  * @author Stephen Chin
  */
-public class DockDialog extends JFXDialog {
+public class DockDialog extends XDialog {
 
     override var title = "WidgetFX";
     override var visible = true;

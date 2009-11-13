@@ -28,10 +28,9 @@
  */
 package org.widgetfx.ui;
 
-import org.jfxtras.stage.*;
-import org.jfxtras.scene.layout.*;
-import org.widgetfx.*;
+import java.util.Properties;
 import javafx.ext.swing.*;
+import javafx.animation.*;
 import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.image.*;
@@ -39,12 +38,11 @@ import javafx.scene.layout.*;
 import javafx.scene.text.*;
 import javafx.stage.*;
 import javax.swing.JProgressBar;
-
-import javafx.scene.paint.*;
-import javafx.scene.shape.*;
+import org.jfxtras.stage.*;
+import org.jfxtras.scene.layout.*;
+import org.jfxtras.scene.layout.XGridLayoutInfo.*;
+import org.widgetfx.*;
 import org.widgetfx.ui.WidgetDragListener;
-import javafx.animation.*;
-import java.util.Properties;
 
 /**
  * @author Stephen Chin
@@ -55,14 +53,14 @@ public class DeviceBar extends CustomNode, WidgetDragListener {
 
     function sendTo(device:String) {
         var progressBar = new JProgressBar();
-        var dialog = JFXDialog {
+        var dialog = XDialog {
             owner: owner
             title: "Device Transfer"
             scene: Scene {
-                content: Grid {
+                content: XGrid {
                     rows: [
-                        Row {cells: Text {content: "Sending to {device}..."}},
-                        Row {cells: SwingComponent.wrap(progressBar)}
+                        row(Text {content: "Sending to {device}..."}),
+                        row(SwingComponent.wrap(progressBar))
                     ]
                 }
             }

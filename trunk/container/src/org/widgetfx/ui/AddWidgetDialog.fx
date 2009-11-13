@@ -30,7 +30,9 @@ package org.widgetfx.ui;
 
 import java.io.File;
 import javafx.ext.swing.*;
+import javafx.geometry.HPos;
 import javafx.scene.*;
+import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
@@ -38,10 +40,8 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.jfxtras.stage.*;
 import org.jfxtras.scene.layout.*;
-import org.jfxtras.scene.layout.LayoutConstants.*;
+import org.jfxtras.scene.layout.XGridLayoutInfo.*;
 import org.widgetfx.*;
-
-import javafx.geometry.HPos;
 
 /**
  * @author Stephen Chin
@@ -56,7 +56,7 @@ public class AddWidgetDialog {
     
     var jnlpUrl:String;
     
-    var dialog:JFXDialog;
+    var dialog:XDialog;
     
     postinit {
         showDialog();
@@ -65,18 +65,16 @@ public class AddWidgetDialog {
     var selected:SwingListItem on replace {
         jnlpUrl = selected.text;
     }
+
+    var cancelled:Boolean = true;
     
     function add() {
-        if (addHandler != null) {
-            addHandler(jnlpUrl);
-        }
+        cancelled = false;
         dialog.close();
     }
     
     function cancel() {
-        if (cancelHandler != null) {
-            cancelHandler();
-        }
+        cancelled = true;
         dialog.close();
     }
     
@@ -86,10 +84,11 @@ public class AddWidgetDialog {
             items: for (url in WidgetManager.getInstance().recentWidgets) SwingListItem {
                 text: url
             }
+            layoutInfo: XGridLayoutInfo {hspan: 2, height: 200}
         }
-        var listLabel = SwingLabel {text: "Recent Widgets:", labelFor: widgetList}
-        var jarField = SwingTextField {text: bind jnlpUrl with inverse, columns: 30, action: add};
-        var jarLabel = SwingLabel {text: "Widget URL:", labelFor: jarField};
+        var listLabel = Label {text: "Recent Widgets:"}
+        var jarField = TextBox {text: bind jnlpUrl with inverse, columns: 30, action: add};
+        var jarLabel = Label {text: "Widget URL:"};
         var browseButton:SwingButton = SwingButton {
             text: "Browse...";
             action: function() {
@@ -109,32 +108,40 @@ public class AddWidgetDialog {
             }
         }
         
-        dialog = JFXDialog {
+        dialog = XDialog {
             title: "Add Widget"
             resizable: false
             icons: Image {
                 url: "{__DIR__}images/WidgetFXIcon16.png"
             }
             owner: owner
+            onClose: function() {
+                if (cancelled) {
+                    if (cancelHandler != null) {
+                        cancelHandler();
+                    }
+                } else if (addHandler != null) {
+                    addHandler(jnlpUrl);
+                }
+            }
             scene: Scene {
-                var grid:Grid;
-                content: grid = Grid {
-                    growRows: [1]
+                var grid:XGrid;
+                content: grid = XGrid {
+                    // todo - does this break anything?: growRows: [1]
                     var box:HBox;
                     rows: [
-                        row([Grid {
-                            border: 0
-                            growRows: [1]
+                        row([XGrid {
+                            // todo - does this break anything?: growRows: [1]
                             rows: [
-                                row([listLabel, Cell {content: widgetList, hspan: 2, prefHeight: 200}]),
+                                row([listLabel, widgetList]),
                                 row([jarLabel, jarField, browseButton]),
-                                row(Cell {hspan: 3, content: ResizableHBox {
-                                        hpos: HPos.RIGHT
-                                        content: [
-                                            SwingButton {text: "Add", action: add},
-                                            SwingButton {text: "Cancel", action: cancel}
-                                        ]
-                                    }
+                                row(XHBox {
+                                    hpos: HPos.RIGHT
+                                    content: [
+                                        Button {text: "Launch", action: add},
+                                        Button {text: "Exit", action: cancel}
+                                    ]
+                                    layoutInfo: XGridLayoutInfo {hspan: 3}
                                 })
                             ]
                         }])
