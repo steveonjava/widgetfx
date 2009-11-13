@@ -379,7 +379,7 @@ public class WidgetInstance {
         }
     }
     
-    var configDialog:JFXDialog;
+    var configDialog:XDialog;
     
     public function save() {
         if (widget.configuration.onSave != null) {
@@ -408,7 +408,7 @@ public class WidgetInstance {
         if (widget instanceof FlashWidget) {
             (widget as FlashWidget).configure();
         } else if (widget.configuration != null) {
-            configDialog = JFXDialog {
+            configDialog = XDialog {
                 icons: Image {
                     url: "{__DIR__}ui/images/WidgetFXIcon16.png"
                 }

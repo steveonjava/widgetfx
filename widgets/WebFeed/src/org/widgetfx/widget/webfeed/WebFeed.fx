@@ -30,6 +30,7 @@ package org.widgetfx.widget.webfeed;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.jfxtras.scene.layout.*;
+import org.jfxtras.scene.layout.XGridLayoutInfo.*;
 import org.widgetfx.*;
 import org.widgetfx.config.*;
 import javafx.animation.*;
@@ -194,11 +195,8 @@ public class WebFeed extends Widget {
             var label = Label {text: "RSS Feed:"};
             var textField = TextBox {text: bind feedUrl with inverse, columns: 40};
             content: [
-                Grid {
-                    rows: Row {cells: [
-                        label,
-                        textField
-                    ]}
+                XGrid {
+                    rows: row([label, textField])
                 }
             ]
         }
@@ -227,7 +225,7 @@ public class WebFeed extends Widget {
                 }
             },
             VBox {
-                visible: bind error.length() == 0
+                visible: bind error != ""
                 translateY: bind height / 2
                 var errorText:Text;
                 var feedText:Text;

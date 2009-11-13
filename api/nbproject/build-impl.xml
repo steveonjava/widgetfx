@@ -290,15 +290,7 @@ is divided into following sections:
     -->
     <target depends="init" name="-javadoc-build">
         <mkdir dir="${dist.javadoc.dir}"/>
-        <path id="javafxdoc.classpath">
-            <fileset dir="${platform.fxhome}/lib">
-                <include name="desktop/**/*.jar"/>
-                <include name="shared/**/*.jar"/>
-            </fileset>
-            <pathelement location="${build.dir}/compiled"/>
-            <pathelement path="${javac.classpath}"/>
-        </path>        
-        <javadoc author="${javadoc.author}" classpath="${toString:javafxdoc.classpath}" destdir="${dist.javadoc.dir}" executable="${platform.fxhome}/bin/javafxdoc${binary.extension}" failonerror="true" private="${javadoc.private}" useexternalfile="true" version="${javadoc.version}">
+        <javadoc author="${javadoc.author}" classpath="${javac.classpath}" destdir="${dist.javadoc.dir}" executable="${platform.fxhome}/bin/javafxdoc${binary.extension}" failonerror="true" private="${javadoc.private}" useexternalfile="true" version="${javadoc.version}">
             <fileset dir="${src.dir}" includes="**/*.fx"/>
         </javadoc>
         <condition property="javadoc.available">

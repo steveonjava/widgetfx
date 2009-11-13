@@ -27,6 +27,7 @@
         <jar href="dist/lib/swing-worker-1.2.jar"/>
     </resources>
     <application-desc main-class="com.sun.javafx.runtime.main.Main">
-        <argument>MainJavaFXScript=org.widgetfx.Main</argument>
+        <argument>MainJavaFXScript=org.widgetfx.WidgetRunner</argument>
+        <argument>../widgets/RallyWidget/dist/RallyWidget.jnlp</argument>
     </application-desc>
 </jnlp>

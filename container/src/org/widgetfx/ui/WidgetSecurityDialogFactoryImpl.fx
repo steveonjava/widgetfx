@@ -6,7 +6,7 @@
 
 package org.widgetfx.ui;
 
-import org.jfxtras.stage.JFXDialog;
+import org.jfxtras.stage.XDialog;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -22,7 +22,7 @@ import javafx.scene.paint.Color;
 public class WidgetSecurityDialogFactoryImpl extends WidgetSecurityDialogFactory {
     public-init var owner:Stage;
 
-    var d:JFXDialog;
+    var d:XDialog;
 
     override function securityWarning(companyName:String, publisherName:String, certificateUrl:String, trusted:Boolean):Boolean {
         var accepted:Boolean;
@@ -79,7 +79,7 @@ public class WidgetSecurityDialogFactoryImpl extends WidgetSecurityDialogFactory
                 accepted = false;
             }
         }
-        JFXDialog {
+        XDialog {
             style: StageStyle.TRANSPARENT
             owner: owner
             modal: true
